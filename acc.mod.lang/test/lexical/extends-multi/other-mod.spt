@@ -1,0 +1,113 @@
+module lexical/extends-multi/other-mod
+
+test private [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : private B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+test private internal [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : private internal B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+test internal [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : internal B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+test protected internal [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : protected internal B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test protected [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : protected B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test public [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : public B { }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+
+
+
+

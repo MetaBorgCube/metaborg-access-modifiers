@@ -1,0 +1,22 @@
+module statics/base
+
+signature
+
+  name-resolution
+	labels
+	  LEX 					// lexical parent
+	  IMPORT 				// import
+	  EXTENDS				// extends (across module boundary)
+      EXTENDS_INTERNAL      // extends (same package)
+
+	  // Labels for visibility levels
+      PROTECTED
+      INTERNAL
+      PROTECTED_INTERNAL // TODO: needed?
+      PRIVATE
+      PRIVATE_INTERNAL   // TODO: needed? 
+
+  sorts TYPE constructors
+    INT		: TYPE
+    CLASS 	: scope -> TYPE
+

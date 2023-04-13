@@ -1,0 +1,101 @@
+module statics/modules
+
+imports
+
+  signatures/start-sig
+  
+  statics/base
+  statics/classes
+
+signature
+
+  relations
+    mod: ID -> scope
+    thisMod: scope
+
+rules
+
+  declareMod: scope * ID * scope
+  resolveLexicalMod: scope * ID -> list((path * (ID * scope)))
+  resolveLocalMod: scope * ID -> list((path * (ID * scope)))
+
+  declareMod(s, x, s_mod) :-
+    !mod[x, s_mod] in s,
+    !thisMod[s_mod] in s_mod,
+    resolveLocalMod(s, x) == [_] | error $[Duplicate Module Declaration [x].].
+
+  resolveLexicalMod(s, x) = R :-
+    query mod
+      filter LEX* 
+        and { x' :- x' == x }
+      min $ < LEX
+      in s |-> R.
+
+  resolveLocalMod(s, x) = R :-
+    query mod
+      filter e
+        and { x' :- x' == x }
+      min $ < LEX
+      in s |-> R.
+
+rules
+
+  scopeOfMod: (path * (ID * scope)) -> scope
+  nameOfMod: (path * (ID * scope)) -> ID
+
+  scopeOfMod((_, (_, s_mod))) = s_mod.
+  nameOfMod((_, (x, _))) = x.
+
+rules
+
+  resolveMod: scope * QId -> scope
+ 
+  resolveMod(s, Id(x)) = s_mod :- {M}
+    resolveLexicalMod(s, x) == [M | _],
+    @x.ref := nameOfMod(M),
+    s_mod == scopeOfMod(M).
+
+  resolveMod(s, QId(qid, x)) = s_mod :- {s_prnt M}
+    resolveMod(s, qid) == s_prnt,
+    resolveLocalMod(s, x) == [M | _],
+    @x.ref := nameOfMod(M),
+    s_mod == scopeOfMod(M).
+
+rules
+
+  thisMod: scope -> scope
+  thisMod(s) = s_mod :-
+    query thisMod
+      filter LEX*
+      min $ < LEX
+      in s |-> [(_, s_mod) | _].
+
+rules
+
+  moduleElemOk: scope * ModuleOrClassOrImport
+  moduleElemsOk maps moduleElemOk(*, list(*))
+
+  moduleElemOk(s, Module2ModuleOrClassOrImport(mod)) :-
+    moduleOk(s, mod).
+
+  moduleElemOk(s, Import2ModuleOrClassOrImport(imp)) :-
+    importOk(s, imp).
+
+  moduleElemOk(s, Class2ModuleOrClassOrImport(class)) :-
+    classOk(s, class).
+
+rules
+
+  moduleOk: scope * Module
+  moduleOk(s, Module(x, members)) :- {s_mod}
+    new s_mod,
+    s_mod -LEX-> s,
+    declareMod(s, x, s_mod),
+    moduleElemsOk(s_mod, members).
+
+rules
+
+  importOk: scope * Import
+  importOk(s, Import(qid)) :- {s_mod}
+    resolveMod(s, qid) == s_mod,
+    s -IMPORT-> s_mod.

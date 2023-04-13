@@ -1,0 +1,16 @@
+module p {
+  class A {
+    public var x = 31
+    public m(i : int) {
+      return 42
+    }
+  }
+}
+module q {
+  import p
+  class B : private A {
+    private override m(x : int) {
+      return m(x)
+    }
+  }
+}

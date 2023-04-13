@@ -1,0 +1,81 @@
+module member/variable/same-mod
+
+test private [[
+module p {
+  class A {
+    private var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test private internal [[
+module p {
+  class A {
+    private internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test internal [[
+module p {
+  class A {
+    internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test protected internal [[
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test protected [[
+module p {
+  class A {
+    protected var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test public [[
+module p {
+  class A {
+    public var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+

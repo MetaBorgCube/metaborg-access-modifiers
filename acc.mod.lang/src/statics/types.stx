@@ -1,0 +1,30 @@
+module statics/types
+
+imports
+
+  signatures/start-sig
+
+  statics/base
+  statics/classes
+
+rules
+
+  typeOfType: scope * Type -> TYPE
+  typeOfType(_, IntT()) = INT().
+  typeOfType(s, RefT(x)) = CLASS(s_cls) :- {x'}
+    resolveClass(s, x) == [(_, (x', s_cls)) | _],
+    @x.ref := x'.
+
+rules
+
+  subtype: TYPE * TYPE
+
+  subtype(INT(), INT()).
+
+  subtype(CLASS(s1), CLASS(s2)) :- {s1' s2'}
+    thisClass(s1) == s1',
+    thisClass(s2) == s2',
+    query ()
+      filter (EXTENDS | EXTENDS_INTERNAL)*
+        and { s' :- s' == s2' }
+      in s1' |-> [_].

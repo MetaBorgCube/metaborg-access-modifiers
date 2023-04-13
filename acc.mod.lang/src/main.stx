@@ -1,0 +1,15 @@
+module main
+
+imports
+
+  signatures/start-sig
+  
+  statics/base
+  statics/modules
+
+rules
+
+  programOk : Start
+  programOk(Program(prog)) :- {s}
+    new s,
+    moduleElemsOk(s, prog).

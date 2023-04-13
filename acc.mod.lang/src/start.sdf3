@@ -1,0 +1,192 @@
+module start
+
+
+// Identifiers
+
+lexical sorts
+
+  ID
+
+lexical syntax
+
+  ID = [a-zA-Z] [a-zA-Z0-9\_\']*
+
+  ID = "int" {reject}
+
+lexical restrictions
+
+  ID -/- [a-zA-Z0-9\_\']
+
+// Composite IDs
+
+context-free sorts
+
+  QId
+
+context-free syntax
+
+  QId.Id  = ID
+  QId.QId = <<QId>.<ID>> 
+
+
+// Integers
+
+lexical sorts
+
+  INT
+
+lexical syntax
+
+  INT = [\-]? [1-9][0-9]*
+
+lexical restrictions
+
+  INT -/- [0-9]
+
+
+// Program
+
+context-free start-symbols
+
+  Start
+
+context-free sorts
+
+  Start
+
+context-free syntax
+
+  Start.Program = <<{ModuleOrClassOrImport "\n"}*>>
+
+
+// Modules, Classes and Imports
+
+context-free sorts
+
+  ModuleOrClassOrImport
+  Module
+  Class
+  Import
+
+context-free syntax
+
+  ModuleOrClassOrImport = Module
+  ModuleOrClassOrImport = Class
+  ModuleOrClassOrImport = Import
+
+  Module.Module = <module <ID> {
+    <{ModuleOrClassOrImport "\n"}*>
+  }>
+
+  Class.Class = <class <ID> <Extends> {
+    <{MemberDecl "\n"}*>
+  }>
+  
+  Import.Import = <import <QId>>
+
+
+// Extends clauses
+
+context-free sorts
+
+  Extends
+  ExtendsClause
+
+context-free syntax
+
+  Extends.NoExtends 			= <>
+  Extends.Extends 				= <: <{ExtendsClause ", "}*>>
+
+  ExtendsClause.ExtendsClause 	= <<AccessModifier> <ID>>
+
+
+// Member decls
+  
+context-free sorts
+
+  MemberDecl
+  MethodModifier
+  Arg
+
+context-free syntax
+
+  MemberDecl.Field  = <<AccessModifier> var <ID> = <Expr>>
+  MemberDecl.Method = <<AccessModifier> <MethodModifier> <ID>(<{Arg ","}*>) {
+    <{Stmt "\n"}*>
+    return <Expr>
+  }>
+
+  MethodModifier.NoMethodModifier	= <>
+  MethodModifier.Override  			= <override>
+  MethodModifier.New  				= <new>
+
+  Arg.Arg   = <<ID> : <Type>>
+
+
+// Statements & Expressions
+
+context-free sorts
+
+  Stmt Expr LHS
+
+context-free syntax
+
+  Stmt.ExprStmt		= <<Expr>;>
+  Stmt.Assign		= <<LHS> := <Expr>;>
+
+  LHS.Var           = QId
+  
+  Expr 				= LHS
+  Expr.NewInstance  = <new <ID>()>
+  Expr.Plus 		= <<Expr> + <Expr>> {left}
+  Expr.IntLit       = INT
+
+  Expr.Invoke       = <<ID>(<{Expr ", "}*>)>
+  Expr.QInvoke      = <<Expr>.<ID>(<{Expr ", "}*>)>
+
+context-free priorities
+
+  LHS.Var >
+  Expr.Plus
+
+
+// Types
+
+context-free sorts
+
+  Type
+
+context-free syntax
+
+  Type.IntT = <int>
+  Type.RefT = <<ID>>
+
+
+// Access modifiers
+
+context-free sorts
+
+  AccessModifier
+
+context-free syntax
+
+  AccessModifier.Public 			= <public>          	// Everywhere
+  AccessModifier.Protected 			= <protected>    		// All subclasses
+  AccessModifier.Internal  			= <internal>     		// Same module only
+  AccessModifier.ProtectedInternal	= <protected internal> 	// Subclasses and classes in same module
+  AccessModifier.PrivateInternal	= <private internal> 	// Only subclasses in the same module
+  AccessModifier.Private        	= <private> 			// Only own class
+
+
+// TODO: friends????
+
+// Layout
+// TODO: comments
+
+lexical syntax
+
+  LAYOUT = [\ \n\t\v\f\r]
+
+context-free restrictions
+
+  LAYOUT? -/- [\ \n\t\v\f\r]

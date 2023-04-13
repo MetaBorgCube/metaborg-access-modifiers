@@ -1,0 +1,105 @@
+module statics/variables
+
+imports
+
+  signatures/start-sig
+  
+  statics/base
+  statics/classes
+  statics/modules
+
+signature
+  
+  relations
+    var : ID -> TYPE
+
+rules
+
+  declareVar: scope * scope * ID * TYPE
+  declareVar(s_cls, s, x, T) :-
+    resolveLocalVar(s_cls, x) == [_] | error $[Duplicate Declaration of Variable [x].],
+    !var[x, T] in s.
+
+rules
+
+  resolveLocalVar: scope * ID -> list((path * (ID * TYPE)))
+
+  resolveLocalVar(s, x) = R :-
+    query var
+      filter ( PROTECTED
+             | INTERNAL
+             | PROTECTED_INTERNAL
+             | PRIVATE_INTERNAL
+             | PRIVATE
+             )?
+        and { x' :- x' == x }
+      in s |-> R.
+
+rules
+
+  resolveLexicalVar: scope * ID -> TYPE
+  resolveMemberVar: scope * ID -> TYPE
+
+  resolveLexicalVar(s, x) = T :- {x'}
+    query var
+      filter
+        LEX*
+        PRIVATE?
+        ( PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
+        ( ( PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
+        | ( EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
+        )
+      and
+        { x' :- x' == x }
+      min
+        PROTECTED < EXTENDS,
+        PROTECTED < EXTENDS_INTERNAL,
+
+        INTERNAL < EXTENDS,
+        INTERNAL < EXTENDS_INTERNAL,
+
+        PRIVATE < EXTENDS,
+        PRIVATE < EXTENDS_INTERNAL,
+
+        PROTECTED_INTERNAL < EXTENDS,
+        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
+
+        PRIVATE_INTERNAL < EXTENDS,
+        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+
+        $ < PROTECTED,
+        $ < INTERNAL,
+        $ < PRIVATE,
+        $ < PROTECTED_INTERNAL,
+        $ < PRIVATE_INTERNAL
+      in s |-> [(_, (x', T)) | _],
+    @x.ref := x'.
+
+  resolveMemberVar(s, x) = T :- {x'}
+    query var
+      filter
+        ( (EXTENDS | EXTENDS_INTERNAL)* // public members
+        | (EXTENDS_INTERNAL | PROTECTED_INTERNAL | INTERNAL)*
+        )
+      and
+        { x' :- x' == x }
+      min
+        INTERNAL < EXTENDS, 
+        INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED_INTERNAL < EXTENDS, 
+        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
+        $ < INTERNAL,
+        $ < PROTECTED_INTERNAL
+      in s |-> [(_, (x', T)) | _],
+    @x.ref := x'.
+
+rules
+
+  resolveVar: scope * QId -> TYPE
+  resolveVar(s, Id(x)) = resolveLexicalVar(s, x).
+
+  resolveVar(s, QId(qid, x)) = resolveMemberVar(s_inst, x) :- {s_cls}
+    CLASS(s_cls) == resolveVar(s, qid),
+    new s_inst,
+    extend("<inst>", thisMod(s), thisMod(s_cls), s_inst, s_inst, s_cls).
+  

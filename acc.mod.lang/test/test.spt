@@ -1,0 +1,14 @@
+module test
+test parse some program [[
+module A {
+  module B {
+    import C
+    class A : protected B, public C {
+      protected var x = 21
+    }
+  }
+}
+module C {
+
+}
+]] parse succeeds
