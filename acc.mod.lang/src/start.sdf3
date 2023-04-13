@@ -183,9 +183,20 @@ context-free syntax
 // Layout
 // TODO: comments
 
+lexical sorts
+
+  BLOCK_COMMENT
+
 lexical syntax
 
   LAYOUT = [\ \n\t\v\f\r]
+  LAYOUT = BLOCK_COMMENT
+
+  BLOCK_COMMENT = "//" ~[\r\n]*
+
+lexical restrictions
+
+  BLOCK_COMMENT -/- ~[\r\n]
 
 context-free restrictions
 
