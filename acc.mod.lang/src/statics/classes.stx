@@ -53,55 +53,55 @@ rules
 rules
 
   classOk: scope * Class
-  classOk(s, Class(x, extends, members)) :- {s_pub s_prot s_int s_priv s_prot_int s_priv_int}
-    new s_pub s_prot s_int s_priv s_prot_int s_priv_int,
+  classOk(s, Class(x, extends, members)) :- {s_pub}
+    new s_pub,
     declareClass(s, x, s_pub),
     
     s_pub -LEX-> s,
-    s_pub -PROTECTED-> s_prot,
-    s_pub -INTERNAL-> s_int,
-    s_pub -PROTECTED_INTERNAL-> s_prot_int,
-    s_pub -PRIVATE-> s_priv,
-    s_pub -PRIVATE_INTERNAL-> s_priv_int,
 
-    extendsOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, extends),   
-    membersOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, members).
+    extendsOk(s_pub, extends),   
+    membersOk(s_pub, members).
 
     
 rules
 
-  extendsOk: scope * scope * scope * scope * scope * scope * Extends
-  extendsClauseOk: scope * scope * scope * scope * scope * scope * ExtendsClause
-  extendsClausesOk maps extendsClauseOk(*, *, *, *, *, *, list(*))
+  extendsOk: scope * Extends
+  extendsClauseOk: scope * ExtendsClause
+  extendsClausesOk maps extendsClauseOk(*, list(*))
   extend: /* class name */ID * /* source module */scope * /* target module */scope * /* class scope*/scope * /* source scope */scope * /* target scope */scope
   noDuplExtend: scope * ID
 
-  extendsOk(_, _, _, _, _, _, NoExtends()).
-  extendsOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, Extends(clauses)) :-
-    extendsClausesOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, clauses).
+  extendsOk(_, NoExtends()).
+  extendsOk(s_pub, Extends(clauses)) :-
+    extendsClausesOk(s_pub, clauses).
 
-  extendsClauseOk(s_pub, _, _, _, _, _, ExtendsClause(Public(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(Public(), x)) :- {s_tgt}
     scopeOfClassRef(s_pub, x) == s_tgt,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_pub, s_tgt).
 
-  extendsClauseOk(s_pub, s_prot, _, _, _, _, ExtendsClause(Protected(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(Protected(), x)) :- {s_tgt s_prot}
     scopeOfClassRef(s_pub, x) == s_tgt,
+    new s_prot, s_pub -PROTECTED-> s_prot,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_prot, s_tgt).
 
-  extendsClauseOk(s_pub, _, s_int, _, _, _, ExtendsClause(Internal(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(Internal(), x)) :- {s_tgt s_int}
     scopeOfClassRef(s_pub, x) == s_tgt,
+    new s_int, s_pub -INTERNAL-> s_int,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_int, s_tgt).
 
-  extendsClauseOk(s_pub, _, _, s_priv, _, _, ExtendsClause(Private(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(Private(), x)) :- {s_tgt s_priv}
     scopeOfClassRef(s_pub, x) == s_tgt,
+    new s_priv, s_pub -PRIVATE-> s_priv,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_priv, s_tgt).
 
-  extendsClauseOk(s_pub, _, _, _, s_prot_int, _, ExtendsClause(ProtectedInternal(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(ProtectedInternal(), x)) :- {s_tgt s_prot_int}
     scopeOfClassRef(s_pub, x) == s_tgt,
+    new s_prot_int, s_pub -PROTECTED_INTERNAL-> s_prot_int,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_prot_int, s_tgt).
 
-  extendsClauseOk(s_pub, _, _, _, _, s_priv_int, ExtendsClause(PrivateInternal(), x)) :- {s_tgt}
+  extendsClauseOk(s_pub, ExtendsClause(PrivateInternal(), x)) :- {s_tgt s_priv_int}
     scopeOfClassRef(s_pub, x) == s_tgt,
+    new s_priv_int, s_pub -PRIVATE_INTERNAL-> s_priv_int,
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_priv_int, s_tgt).
 
   extend(x, s_mod, s_mod, s_cls, s_src, s_tgt) :-
@@ -120,14 +120,14 @@ rules
 
 rules
 
-  memberOk: scope * scope * scope * scope * scope * scope * MemberDecl
-  membersOk maps memberOk(*, *, *, *, *, *, list(*))
+  memberOk: scope * MemberDecl
+  membersOk maps memberOk(*, list(*))
 
-  memberOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, Field(acc, x, init)) :- {T}
-    typeOfExpr(s_pub, init) == T,
-    fieldDeclOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, acc, x, T).
+  memberOk(s_cls, Field(acc, x, init)) :- {T}
+    typeOfExpr(s_cls, init) == T,
+    fieldDeclOk(s_cls, acc, x, T).
 
-  memberOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, Method(acc, mth, x, args, stmts, ret_exp)) :- 
+  memberOk(s_pub, Method(acc, mth, x, args, stmts, ret_exp)) :- 
     {s_mthd s_mthd_id Ts T_ret}
       new s_mthd,
       s_mthd -LEX-> s_pub,
@@ -140,28 +140,33 @@ rules
       
       methodModOk(s_pub, acc, mth, x, Ts, T_ret),
     
-      methodDeclOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, acc, x, Ts, T_ret) == s_mthd_id.
+      methodDeclOk(s_pub, acc, x, Ts, T_ret) == s_mthd_id.
 
 rules
 
-  fieldDeclOk: scope * scope * scope * scope * scope * scope * AccessModifier * ID * TYPE
+  fieldDeclOk: scope * AccessModifier * ID * TYPE
 
-  fieldDeclOk(s_pub, _, _, _, _, _, Public(), x, T) :-
+  fieldDeclOk(s_pub, Public(), x, T) :-
     declareVar(s_pub, s_pub, x, T).
 
-  fieldDeclOk(s_pub, s_prot, _, _, _, _, Protected(), x, T) :-
+  fieldDeclOk(s_pub, Protected(), x, T) :- {s_prot}
+    new s_prot, s_pub -PROTECTED-> s_prot,
     declareVar(s_pub, s_prot, x, T).
-
-  fieldDeclOk(s_pub, _, s_int, _, _, _, Internal(), x, T) :-
+ 
+  fieldDeclOk(s_pub, Internal(), x, T) :- {s_int}
+    new s_int, s_pub -INTERNAL-> s_int,
     declareVar(s_pub, s_int, x, T).
 
-  fieldDeclOk(s_pub, _, _, s_priv, _, _, Private(), x, T) :-
+  fieldDeclOk(s_pub, Private(), x, T) :- {s_priv}
+    new s_priv, s_pub -PRIVATE-> s_priv,
     declareVar(s_pub, s_priv, x, T).
 
-  fieldDeclOk(s_pub, _, _, _, s_prot_int, _, ProtectedInternal(), x, T) :-
+  fieldDeclOk(s_pub, ProtectedInternal(), x, T) :- {s_prot_int}
+    new s_prot_int, s_pub -PROTECTED_INTERNAL-> s_prot_int,
     declareVar(s_pub, s_prot_int, x, T).
 
-  fieldDeclOk(s_pub, _, _, _, _, s_priv_int, PrivateInternal(), x, T) :-
+  fieldDeclOk(s_pub, PrivateInternal(), x, T) :- {s_priv_int}
+    new s_priv_int, s_pub -PRIVATE-> s_priv_int,
     declareVar(s_pub, s_priv_int, x, T).
 
 rules
@@ -212,24 +217,29 @@ rules
 
 rules
 
-  methodDeclOk: scope * scope * scope * scope * scope * scope * AccessModifier * ID * list(TYPE) * TYPE -> scope
+  methodDeclOk: scope * AccessModifier * ID * list(TYPE) * TYPE -> scope
 
-  methodDeclOk(s_pub, _, _, _, _, _, Public(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, Public(), x, T_args, T) = s_mthd_id :-
     declareMethod(s_pub, s_pub, x, T_args, T) == s_mthd_id.
 
-  methodDeclOk(s_pub, s_prot, _, _, _, _, Protected(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, Protected(), x, T_args, T) = s_mthd_id :- {s_prot}
+    new s_prot, s_pub -PROTECTED-> s_prot,
     declareMethod(s_pub, s_prot, x, T_args, T) == s_mthd_id.
 
-  methodDeclOk(s_pub, _, s_int, _, _, _, Internal(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, Internal(), x, T_args, T) = s_mthd_id :- {s_int}
+    new s_int, s_pub -INTERNAL-> s_int,
     declareMethod(s_pub, s_int, x, T_args, T) == s_mthd_id.
 
-  methodDeclOk(s_pub, _, _, s_priv, _, _, Private(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, Private(), x, T_args, T) = s_mthd_id :- {s_priv}
+    new s_priv, s_pub -PRIVATE-> s_priv,
     declareMethod(s_pub, s_priv, x, T_args, T) == s_mthd_id.
 
-  methodDeclOk(s_pub, _, _, _, s_prot_int, _, ProtectedInternal(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, ProtectedInternal(), x, T_args, T) = s_mthd_id :- {s_prot_int}
+    new s_prot_int, s_pub -PROTECTED_INTERNAL-> s_prot_int,
     declareMethod(s_pub, s_prot_int, x, T_args, T) == s_mthd_id.
 
-  methodDeclOk(s_pub, _, _, _, _, s_priv_int, PrivateInternal(), x, T_args, T) = s_mthd_id :-
+  methodDeclOk(s_pub, PrivateInternal(), x, T_args, T) = s_mthd_id :- {s_priv_int}
+    new s_priv_int, s_pub -PRIVATE_INTERNAL-> s_priv_int,
     declareMethod(s_pub, s_priv_int, x, T_args, T) == s_mthd_id.
     
     
