@@ -71,7 +71,9 @@ rules
         $ < INTERNAL,
         $ < PRIVATE,
         $ < PROTECTED_INTERNAL,
-        $ < PRIVATE_INTERNAL
+        $ < PRIVATE_INTERNAL,
+        
+        $ < LEX
       in s |-> [(_, (x', T))]
       | error $[Reference [x] is ambiguous.],
     @x.ref := x'.
@@ -87,10 +89,14 @@ rules
       min
         INTERNAL < EXTENDS, 
         INTERNAL < EXTENDS_INTERNAL,
+
         PROTECTED_INTERNAL < EXTENDS, 
         PROTECTED_INTERNAL < EXTENDS_INTERNAL,
+
         $ < INTERNAL,
-        $ < PROTECTED_INTERNAL
+        $ < PROTECTED_INTERNAL,
+        
+        $ < LEX
       in s |-> [(_, (x', T))]
       | error $[Reference [x] is ambiguous.],
     @x.ref := x'.
