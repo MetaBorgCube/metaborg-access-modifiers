@@ -1,16 +1,6 @@
 module p {
-  class A {
-    public var x = 31
-    public m(i : int) {
-      return 42
-    }
+  class A : protected B {
   }
-}
-module q {
-  import p
   class B : private A {
-    private override m(x : int) {
-      return m(x)
-    }
   }
 }

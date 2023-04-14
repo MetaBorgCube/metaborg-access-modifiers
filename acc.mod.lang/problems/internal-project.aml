@@ -1,0 +1,14 @@
+module p {
+  import q
+  class A {
+    internal var x = 42
+  }
+  class C {
+    private var b = new B()
+    private var x = b.x // Should be able to see internal x
+  }
+}
+module q {
+  import p
+  class B : public A { }
+}

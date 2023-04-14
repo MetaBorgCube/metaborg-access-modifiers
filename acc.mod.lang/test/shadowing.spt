@@ -1,0 +1,133 @@
+module shadowing
+
+test simple shadowing [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public var [[x]] = 42
+}
+class C : public B {
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+test simple shadowing - protected member [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  protected var [[x]] = 42
+}
+class C : public B {
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+
+test simple shadowing - protected inheritance - 1 [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public var [[x]] = 42
+}
+class C : protected B {
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+
+test simple shadowing - protected inheritance - 2 [[
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var [[x]] = 42
+}
+class C : public B {
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+test simple shadowing - local var - public [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public var [[x]] = 42
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+test simple shadowing - local var - private var [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  private var [[x]] = 42
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+
+test simple shadowing - local var - protected inheritance [[
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var [[x]] = 42
+  public var y = [[x]]
+}
+]]
+analysis succeeds
+resolve #2 to #1
+
+test ambiguous [[
+class A {
+  public var x = 42
+}
+class B {
+  public var x = 21
+}
+class C : public A, public B {
+  private var y = x
+}
+]]
+analysis fails
+
+test ambiguous - different inheritance [[
+class A {
+  public var x = 42
+}
+class B {
+  public var x = 21
+}
+class C : internal A, public B {
+  private var y = x
+}
+]]
+analysis fails
+
+test ambiguous - different inheritance [[
+class A {
+  protected var x = 42
+}
+class B {
+  public var x = 21
+}
+class C : internal A, public B {
+  private var y = x
+}
+]]
+analysis fails

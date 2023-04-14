@@ -52,6 +52,27 @@ rules
 
 rules
 
+  subClass: scope * scope -> list((path * scope))
+  subClass(s_cls, s_prnt) = R :-
+    query ()
+      filter
+        ( PARENT
+          ( PROTECTED
+          | PROTECTED_INTERNAL
+          | INTERNAL
+          | PRIVATE_INTERNAL
+          | PRIVATE
+          )?
+          (EXTENDS | EXTENDS_INTERNAL)
+        )*
+        PARENT?
+      and
+        { s_prnt' :- s_prnt' == s_prnt }
+      in s_cls |-> R.
+
+
+rules
+
   classOk: scope * Class
   classOk(s, Class(x, extends, members)) :- {s_pub s_prot s_int s_priv s_prot_int s_priv_int}
     new s_pub s_prot s_int s_priv s_prot_int s_priv_int,
@@ -64,20 +85,31 @@ rules
     s_pub -PRIVATE-> s_priv,
     s_pub -PRIVATE_INTERNAL-> s_priv_int,
 
-    extendsOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, extends),   
+    extendsOk(s, s_pub, extends),   
     membersOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, members).
 
     
 rules
 
-  extendsOk: scope * scope * scope * scope * scope * scope * Extends
+  extendsOk: scope * scope * Extends
   extendsClauseOk: scope * scope * scope * scope * scope * scope * ExtendsClause
   extendsClausesOk maps extendsClauseOk(*, *, *, *, *, *, list(*))
   extend: /* class name */ID * /* source module */scope * /* target module */scope * /* class scope*/scope * /* source scope */scope * /* target scope */scope
-  noDuplExtend: scope * ID
+  noDuplExtend: scope * scope * ID
 
-  extendsOk(_, _, _, _, _, _, NoExtends()).
-  extendsOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, Extends(clauses)) :-
+  extendsOk(_, _, NoExtends()).
+  extendsOk(s, s_cls, Extends(clauses)) :-
+  {s_pub s_prot s_int s_priv s_prot_int s_priv_int}
+    new s_pub s_prot s_int s_priv s_prot_int s_priv_int,
+    
+    s_cls -PARENT-> s_pub,
+    s_pub -LEX-> s,
+    s_pub -PROTECTED-> s_prot,
+    s_pub -INTERNAL-> s_int,
+    s_pub -PROTECTED_INTERNAL-> s_prot_int,
+    s_pub -PRIVATE-> s_priv,
+    s_pub -PRIVATE_INTERNAL-> s_priv_int,
+    
     extendsClausesOk(s_pub, s_prot, s_int, s_priv, s_prot_int, s_priv_int, clauses).
 
   extendsClauseOk(s_pub, _, _, _, _, _, ExtendsClause(Public(), x)) :- {s_tgt}
@@ -105,14 +137,17 @@ rules
     extend(x, thisMod(s_pub), thisMod(s_tgt), s_pub, s_priv_int, s_tgt).
 
   extend(x, s_mod, s_mod, s_cls, s_src, s_tgt) :-
-    noDuplExtend(s_cls, x),
+    noDuplExtend(s_cls, s_tgt, x),
     s_src -EXTENDS_INTERNAL-> s_tgt.
 
   extend(x, _, _, s_cls, s_src, s_tgt) :-
-    noDuplExtend(s_cls, x),
+    noDuplExtend(s_cls, s_tgt, x),
     s_src -EXTENDS-> s_tgt.
 
-  noDuplExtend(s, x) :-
+  noDuplExtend(s, s_tgt, x) :-
+    subClass(s_tgt, s) == []
+      | error $[Cyclic Inheritance],
+    // Cannot use `subClass(s, s_tgt) == [_]`, because then equal extends clauses `: public C, public C` are not detected.
     !extends[x] in s,
     query extends
       filter e and { x' :- x' == x } in s |-> [_]

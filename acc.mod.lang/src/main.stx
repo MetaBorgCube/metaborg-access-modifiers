@@ -12,4 +12,5 @@ rules
   programOk : Start
   programOk(Program(prog)) :- {s}
     new s,
+    !thisMod[s] in s,
     moduleElemsOk(s, prog).

@@ -24,7 +24,4 @@ rules
   subtype(CLASS(s1), CLASS(s2)) :- {s1' s2'}
     thisClass(s1) == s1',
     thisClass(s2) == s2',
-    query ()
-      filter (EXTENDS | EXTENDS_INTERNAL)*
-        and { s' :- s' == s2' }
-      in s1' |-> [_].
+    subClass(s1', s2') == [_ | _].

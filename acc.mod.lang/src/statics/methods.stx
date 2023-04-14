@@ -47,28 +47,20 @@ rules // references (with/without) receivers
     query method
       filter
         LEX*
+        PARENT?
         PRIVATE?
-        ( PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
-        ( ( PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
-        | ( EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
+        ( PARENT | PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
+        ( ( PARENT | PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
+        | ( PARENT | EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
         )
       and
         { (x', _) :- x' == x }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE < EXTENDS,
-        PRIVATE < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE_INTERNAL < EXTENDS,
-        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PRIVATE < PARENT,
+        PROTECTED_INTERNAL < PARENT,
+        PRIVATE_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,
@@ -84,8 +76,8 @@ rules // references (with/without) receivers
   resolveMemberMethod(s, x) = T :- {x'}
     query method
       filter
-        ( (EXTENDS | EXTENDS_INTERNAL)*
-        | (EXTENDS_INTERNAL | PROTECTED_INTERNAL | INTERNAL)*
+        ( (PARENT | EXTENDS | EXTENDS_INTERNAL)*
+        | (PARENT | EXTENDS_INTERNAL | PROTECTED_INTERNAL | INTERNAL)*
         )
       and
         { (x', _) :- x' == x }
@@ -113,6 +105,7 @@ rules // resolve ignore visibility
     query method
       filter
         LEX*
+        PARENT
         ( PROTECTED
         | INTERNAL
         | PROTECTED_INTERNAL
@@ -120,26 +113,18 @@ rules // resolve ignore visibility
         | PRIVATE
         )?
         ( EXTENDS   | EXTENDS_INTERNAL)
-        ( EXTENDS   | EXTENDS_INTERNAL 
+        ( PARENT
+        | EXTENDS   | EXTENDS_INTERNAL
         | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL | PRIVATE
         )*
       and
         { (x', _) :- x' == x }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE < EXTENDS,
-        PRIVATE < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE_INTERNAL < EXTENDS,
-        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PRIVATE < PARENT,
+        PROTECTED_INTERNAL < PARENT,
+        PRIVATE_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,
@@ -154,6 +139,7 @@ rules // resolve ignore visibility
     query method
       filter
         LEX*
+        PARENT
         ( PROTECTED
         | INTERNAL
         | PROTECTED_INTERNAL
@@ -161,27 +147,18 @@ rules // resolve ignore visibility
         | PRIVATE
         )?
         ( EXTENDS   | EXTENDS_INTERNAL)
-        ( PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
-        ( ( PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
-        | ( EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
+        ( PARENT | PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
+        ( ( PARENT | PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
+        | ( PARENT | EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
         )
       and
         { (x', _) :- x' == x }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE < EXTENDS,
-        PRIVATE < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE_INTERNAL < EXTENDS,
-        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PRIVATE < PARENT,
+        PROTECTED_INTERNAL < PARENT,
+        PRIVATE_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,
@@ -205,7 +182,7 @@ rules
     query method
       filter
         LEX*
-        (EXTENDS | EXTENDS_INTERNAL)*
+        (PARENT (EXTENDS | EXTENDS_INTERNAL))*
       and
         { (_, id') :- id' == id }
       min
@@ -218,24 +195,20 @@ rules
     query method
       filter
         LEX*
-        ( INTERNAL
+        ( PARENT
+        | INTERNAL 
         | PROTECTED_INTERNAL
         )?
-        ( (PROTECTED_INTERNAL | EXTENDS_INTERNAL)*
-           EXTENDS          (PROTECTED_INTERNAL | EXTENDS  | EXTENDS_INTERNAL)*
-        |  EXTENDS_INTERNAL (PROTECTED_INTERNAL | INTERNAL | EXTENDS_INTERNAL)*
+        ( (PROTECTED_INTERNAL | PARENT | EXTENDS_INTERNAL)*
+           EXTENDS          (PARENT | PROTECTED_INTERNAL | EXTENDS  | EXTENDS_INTERNAL)*
+        |  EXTENDS_INTERNAL (PARENT | PROTECTED_INTERNAL | INTERNAL | EXTENDS_INTERNAL)*
         )
       and
         { (_, id') :- id' == id }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-        
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PROTECTED_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,
@@ -248,7 +221,8 @@ rules
     query method
       filter
         LEX*
-        ( PROTECTED
+        ( PARENT
+        | PROTECTED
         | PROTECTED_INTERNAL
         )?
         ( EXTENDS | EXTENDS_INTERNAL)
@@ -256,14 +230,9 @@ rules
       and
         { (_, id') :- id' == id }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-        
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PROTECTED_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,
@@ -276,25 +245,21 @@ rules
     query method
       filter
         LEX*
-        ( PROTECTED
+        ( PARENT
+        | PROTECTED
         | INTERNAL
         | PROTECTED_INTERNAL
         | PRIVATE_INTERNAL
         )?
-        ( (PROTECTED | PROTECTED_INTERNAL | EXTENDS          | EXTENDS_INTERNAL)*
-        | (INTERNAL  | PROTECTED_INTERNAL | PRIVATE_INTERNAL | EXTENDS_INTERNAL)*
+        ( (PARENT | PROTECTED | PROTECTED_INTERNAL | EXTENDS          | EXTENDS_INTERNAL)*
+        | (PARENT | INTERNAL  | PROTECTED_INTERNAL | PRIVATE_INTERNAL | EXTENDS_INTERNAL)*
         )
       and
         { (_, id') :- id' == id }
       min
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE_INTERNAL < EXTENDS,
-        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+        INTERNAL < PARENT,
+        PROTECTED_INTERNAL < PARENT,
+        PRIVATE_INTERNAL < PARENT,
 
         $ < INTERNAL,
         $ < PROTECTED_INTERNAL,
@@ -307,27 +272,18 @@ rules
     query method
       filter
         LEX*
-        ( PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
-        ( ( PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
-        | ( EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
+        ( PARENT | PROTECTED | PROTECTED_INTERNAL | EXTENDS_INTERNAL )*
+        ( ( PARENT | PROTECTED_INTERNAL | PROTECTED | EXTENDS | EXTENDS_INTERNAL )*
+        | ( PARENT | EXTENDS_INTERNAL | PROTECTED | INTERNAL | PROTECTED_INTERNAL | PRIVATE_INTERNAL)*
         )
       and
         { (_, id') :- id' == id }
       min
-        PROTECTED < EXTENDS,
-        PROTECTED < EXTENDS_INTERNAL,
-
-        INTERNAL < EXTENDS,
-        INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE < EXTENDS,
-        PRIVATE < EXTENDS_INTERNAL,
-
-        PROTECTED_INTERNAL < EXTENDS,
-        PROTECTED_INTERNAL < EXTENDS_INTERNAL,
-
-        PRIVATE_INTERNAL < EXTENDS,
-        PRIVATE_INTERNAL < EXTENDS_INTERNAL,
+        PROTECTED < PARENT,
+        INTERNAL < PARENT,
+        PRIVATE < PARENT,
+        PROTECTED_INTERNAL < PARENT,
+        PRIVATE_INTERNAL < PARENT,
 
         $ < PROTECTED,
         $ < INTERNAL,

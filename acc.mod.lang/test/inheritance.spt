@@ -1,0 +1,57 @@
+module inheritance
+
+test simple inheritance [[
+module p {
+  class A {
+  }
+  class B : public A {
+  }
+}
+]]
+analysis succeeds
+
+test multiple inheritance [[
+module p {
+  class A {
+  }
+  class B {
+  }
+  class C : public A, private B {
+  }
+}
+]]
+analysis succeeds
+
+test double inheritance [[
+module p {
+  class A {
+  }
+  class B {
+  }
+  class C : public A, public A {
+  }
+}
+]]
+analysis fails
+
+test double inheritance [[
+module p {
+  class A {
+  }
+  class B {
+  }
+  class C : public A, private A {
+  }
+}
+]]
+analysis fails
+
+test cyclic inheritance [[
+module p {
+  class A : public B {
+  }
+  class B : public A {
+  }
+}
+]]
+analysis fails
