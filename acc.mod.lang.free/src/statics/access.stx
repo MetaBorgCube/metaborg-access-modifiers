@@ -92,13 +92,13 @@ rules
   memberAccessOk(_, p, ACCESS(Private())) :-
     false.
 
-  // When `internal` also exposes to parent modules
+  // When `internal` also exposes to child modules
   internalOk(s_src, p) :- {s_mod_src s_mod_tgt}
     thisMod(s_src) == s_mod_src,
     thisMod(dst(p)) == s_mod_tgt,
     query ()
-      filter LEX* and { s :- s == s_mod_src }
-      in s_mod_tgt |-> [_ | _].
+      filter LEX* and { s :- s == s_mod_tgt }
+      in s_mod_src |-> [_ | _].
   /*
   // When `internal` only exposes to the local module.
   internalOk(s_src, p) :-

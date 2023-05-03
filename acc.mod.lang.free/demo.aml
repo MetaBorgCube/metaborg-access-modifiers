@@ -1,11 +1,12 @@
 class A {
-  public foo() {
+  internal foo() {
     return 42
   }
 }
-
-class B : private A {
-  protected override foo() {
-    return 31
+module M {
+  class B {
+    protected foo() {
+      return new A().foo()
+    }
   }
 }
