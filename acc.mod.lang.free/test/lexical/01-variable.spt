@@ -1,6 +1,6 @@
-module lexical/single-same-mod
+module lexical/variable
 
-test private [[
+test same mod - private [[
 module p {
   class A {
     private var x = 42
@@ -12,43 +12,7 @@ module p {
 ]]
 analysis fails
 
-test private internal [[
-module p {
-  class A {
-    private internal var x = 42
-  }
-  class B : private A {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
-
-test internal [[
-module p {
-  class A {
-    internal var x = 42
-  }
-  class B : private A {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
-
-test protected internal [[
-module p {
-  class A {
-    protected internal var x = 42
-  }
-  class B : private A {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
-
-test protected [[
+test same mod - protected [[
 module p {
   class A {
     protected var x = 42
@@ -60,7 +24,7 @@ module p {
 ]]
 analysis succeeds
 
-test public [[
+test same mod - public [[
 module p {
   class A {
     public var x = 42
@@ -72,4 +36,47 @@ module p {
 ]]
 analysis succeeds
 
+test other mod - private [[
+module p {
+  class A {
+    private var x = 42
+  }
+}
+module q {
+  import p
+  class B : private A {
+    private var y = x
+  }
+}
+]]
+analysis fails
 
+test other mod - protected [[
+module p {
+  class A {
+    protected var x = 42
+  }
+}
+module q {
+  import p
+  class B : private A {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test other mod - public [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : private A {
+    private var y = x
+  }
+}
+]]
+analysis succeeds

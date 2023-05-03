@@ -2,9 +2,10 @@ module statics/expressions
 
 imports
 
-  signatures/start-sig
+  signatures/lib/start-sig
 
   statics/base
+  statics/access
   statics/modules
   statics/classes
   statics/variables
@@ -28,13 +29,17 @@ rules
     typeOfExpr(s, e1) == INT(),
     typeOfExpr(s, e2) == INT().
 
-  typeOfExpr(s, Invoke(x, args)) = T_ret :- {T_formal T_actual}
-    resolveLexicalMethod(s, x) == METHOD(T_formal, T_ret),
+  typeOfExpr(s, Invoke(x, args)) = T_ret :- {T_formal T_actual p ACC}
+    resolveLexicalMethod(s, x) == (p, (METHOD(T_formal, T_ret), ACC)),
+    lexicalAccessOk(s, p, ACC)
+      | error $[Method [x] is not visible.],
     typesOfExprs(s, args) == T_actual,
     allCovariant(T_formal, T_actual).
 
-  typeOfExpr(s, QInvoke(recv, x, args)) = T_ret :- {s_cls T_formal T_actual}
+  typeOfExpr(s, QInvoke(recv, x, args)) = T_ret :- {s_cls T_formal T_actual p ACC}
     typeOfExpr(s, recv) == CLASS(s_cls),
-    resolveMemberMethod(s_cls, x) == METHOD(T_formal, T_ret),
+    resolveMemberMethod(s_cls, x) == (p, (METHOD(T_formal, T_ret), ACC)),
+    memberAccessOk(s, p, ACC)
+      | error $[Method [x] is not visible.],
     typesOfExprs(s, args) == T_actual,
     allCovariant(T_formal, T_actual).

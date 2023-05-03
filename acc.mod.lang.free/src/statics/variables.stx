@@ -1,0 +1,85 @@
+module statics/variables
+
+imports
+
+  signatures/lib/start-sig
+  
+  statics/base
+  statics/access
+  statics/classes
+  statics/modules
+
+signature
+  
+  sorts
+    VAR_DECL = (TYPE * ACCESS)
+    VAR_PATH = (path * VAR_DECL)
+  
+  relations
+    var : ID -> VAR_DECL
+
+rules
+
+  declareVar: scope * ID * TYPE * ACCESS
+  declareVar(s_cls, x, T, ACC) :-
+    resolveLocalVar(s_cls, x) == [_] | error $[Duplicate Declaration of Variable [x].],
+    !var[x, (T, ACC)] in s_cls.
+
+rules
+
+  resolveLocalVar: scope * ID -> list((path * (ID * VAR_DECL)))
+
+  resolveLocalVar(s, x) = R :-
+    query var
+      filter e and { x' :- x' == x }
+      in s |-> R.
+
+rules
+
+  resolveLexicalVar: scope * ID -> VAR_PATH
+  resolveMemberVar: scope * ID -> VAR_PATH
+
+  resolveLexicalVar(s, x) = (p, T) :- {x'}
+    query var
+      filter
+        LEX*
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { x' :- x' == x }
+      min
+        LEX < EXTEND,
+        LEX < EXTEND_PROT,
+        LEX < EXTEND_PRIV,
+        
+        $ < LEX
+      in s |-> [(p, (x', T))]
+      | error $[Reference [x] is ambiguous.],
+    @x.ref := x'.
+
+  resolveMemberVar(s, x) = (p, T) :- {x'}
+    query var
+      filter
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { x' :- x' == x }
+      min
+        $ < EXTEND,
+        $ < EXTEND_PROT,
+        $ < EXTEND_PRIV
+      in s |-> [(p, (x', T))]
+      | error $[Reference [x] is ambiguous.],
+    @x.ref := x'.
+
+rules
+
+  resolveVar: scope * QId -> TYPE
+  resolveVar(s, Id(x)) = T :- {p ACC}
+    (p, (T, ACC)) == resolveLexicalVar(s, x),
+    lexicalAccessOk(s, p, ACC)
+      | error $[Variable [x] is not visible.] @x.
+
+  resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
+    CLASS(s_cls) == resolveVar(s, qid),
+    (p, (T, ACC)) == resolveMemberVar(s_cls, x),
+    memberAccessOk(s, p, ACC)
+      | error $[Field [x] is not visible.] @x.

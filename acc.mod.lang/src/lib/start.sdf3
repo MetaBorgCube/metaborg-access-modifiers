@@ -1,4 +1,4 @@
-module start
+module lib/start
 
 
 // Identifiers
@@ -46,17 +46,13 @@ lexical restrictions
 
 // Program
 
-context-free start-symbols
-
-  Start
-
 context-free sorts
 
-  Start
+  Program
 
 context-free syntax
 
-  Start.Program = <<{ModuleOrClassOrImport "\n"}*>>
+  Program.Program = <<{ModuleOrClassOrImport "\n"}*>>
 
 
 // Modules, Classes and Imports

@@ -2,7 +2,7 @@ module statics/modules
 
 imports
 
-  signatures/start-sig
+  signatures/lib/start-sig
   
   statics/base
   statics/classes

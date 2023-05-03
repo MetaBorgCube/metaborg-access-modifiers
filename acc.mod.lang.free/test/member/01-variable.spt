@@ -1,0 +1,193 @@
+module member/variable
+
+test same mod - private [[
+module p {
+  class A {
+    private var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test same mod - private internal [[
+module p {
+  class A {
+    private internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test same mod - internal [[
+module p {
+  class A {
+    internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test same mod - protected internal [[
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test same mod - protected [[
+module p {
+  class A {
+    protected var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test same mod - public [[
+module p {
+  class A {
+    public var x = 42
+  }
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test other mod - private [[
+module p {
+  class A {
+    private var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test other mod - private internal [[
+module p {
+  class A {
+    private internal var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test other mod - internal [[
+module p {
+  class A {
+    internal var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test other mod - protected internal [[
+module p {
+  class A {
+    protected internal var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test other mod - protected [[
+module p {
+  class A {
+    protected var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis fails
+
+test other mod - public [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test inheritance through multiple mods [[
+module p {
+  import q
+  class A {
+    internal var x = 42
+  }
+  class C : public B {
+    private var b = new B()
+    private var y = b.x
+  }
+}
+module q {
+  import p
+  class B : public A { }
+}
+]]
+analysis succeeds

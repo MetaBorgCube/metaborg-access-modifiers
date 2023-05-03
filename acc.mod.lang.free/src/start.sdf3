@@ -1,0 +1,18 @@
+module start
+
+imports
+
+  lib/start
+
+context-free start-symbols
+
+  Start
+
+context-free sorts
+
+  Start
+
+context-free syntax
+
+  Start = Program
+  

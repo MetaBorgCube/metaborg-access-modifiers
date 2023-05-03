@@ -1,0 +1,169 @@
+module statics/access
+
+imports
+
+  statics/base
+  statics/modules
+  statics/classes
+
+rules
+
+  lexicalPaths   : path -> list((path * scope))
+  memberPaths    : path -> list((path * scope))
+  
+  lexicallyVisible : path
+  memberVisible    : path
+
+  nonEmptyPathList : list((path * scope))
+
+  lexicalPaths(p) = R :- {s_tgt}
+    s_tgt == dst(p),
+    query () 
+      filter
+        LEX*
+        EXTEND_PRIV?
+        (EXTEND | EXTEND_PROT)*
+      and
+      	{ s :- s == s_tgt }
+      in src(p) |-> R.
+
+  memberPaths(p) = R :- {s_tgt}
+    s_tgt == dst(p),
+    query () 
+      filter
+        EXTEND*
+      and
+      	{ s :- s == s_tgt }
+      in src(p) |-> R.
+
+  lexicallyVisible(p) :- nonEmptyPathList(lexicalPaths(p)).
+  memberVisible(p)    :- nonEmptyPathList(memberPaths(p)).
+  nonEmptyPathList([_|_]).
+  nonEmptyPathList([]) :- false.
+
+
+rules
+
+  lexicalAccessOk : scope * path * ACCESS
+  memberAccessOk  : scope * path * ACCESS
+  internalOk      : scope * path
+
+  lexicalAccessOk(_, p, ACCESS(Local())).
+
+  lexicalAccessOk(_, p, ACCESS(Public())) :-
+    lexicallyVisible(p).
+
+  lexicalAccessOk(_, p, ACCESS(Protected())) :-
+    lexicallyVisible(p).
+
+  lexicalAccessOk(_, p, ACCESS(ProtectedInternal())) :-
+    lexicallyVisible(p).
+
+  lexicalAccessOk(s_src, p, ACCESS(Internal())) :-
+    internalOk(s_src, p).
+
+  lexicalAccessOk(s_src, p, ACCESS(PrivateInternal())) :-
+    lexicallyVisible(p),
+    internalOk(s_src, p).
+
+  lexicalAccessOk(s_src, p, ACCESS(Private())) :-
+    thisClass(s_src) == dst(p).
+
+
+  memberAccessOk(_, _, ACCESS(Local())).
+
+  memberAccessOk(_, p, ACCESS(Public())) :-
+    memberVisible(p).
+
+  memberAccessOk(_, _, ACCESS(Protected())) :-
+    false.
+
+  memberAccessOk(s_src, p, ACCESS(ProtectedInternal())) :-
+    memberVisible(p),
+    internalOk(s_src, p).
+
+  memberAccessOk(s_src, p, ACCESS(Internal())) :-
+    memberVisible(p),
+    internalOk(s_src, p).
+
+  memberAccessOk(_, p, ACCESS(PrivateInternal())) :-
+    false.
+
+  memberAccessOk(_, p, ACCESS(Private())) :-
+    false.
+
+  // When `internal` also exposes to parent modules
+  internalOk(s_src, p) :- {s_mod_src s_mod_tgt}
+    thisMod(s_src) == s_mod_src,
+    thisMod(dst(p)) == s_mod_tgt,
+    query ()
+      filter LEX* and { s :- s == s_mod_src }
+      in s_mod_tgt |-> [_ | _].
+  /*
+  // When `internal` only exposes to the local module.
+  internalOk(s_src, p) :-
+    thisMod(s_src) == thisMod(dst(p)).
+  */
+
+rules
+
+  nonEmpty : list((path * scope)) -> B
+  nonEmpty([_ | _]) = T().
+  nonEmpty([]) = F().
+
+rules // paths
+
+  dst: path -> scope
+  src: path -> scope
+  
+  dst(_PathEmpty(s)) = s.
+  dst(_PathStep(_, _, s)) = s.
+  
+  src(_PathEmpty(s)) = s.
+  src(_PathStep(p, _, _)) = src(p).
+
+signature
+  sorts B constructors
+    T : B
+    F : B
+
+rules // logic
+
+  isTrue: B
+  isTrue(b) :-
+    try { b == T() }.
+
+  andB  : B * B
+  andB_ : B * B -> B
+  
+  andB(b1, b2) :-
+  	isTrue(andB_(b1, b2)).
+  andB_(T(), T()) = T().
+  andB_(_, _) = F().
+  
+  orB  : B * B
+  orB_ : B * B -> B
+
+  orB(b1, b2) :-
+  	isTrue(orB_(b1, b2)).
+  orB_(T(), _) = T().
+  orB_(_, T()) = T().
+  orB_(_, _) = F().
+  
+
+  allB : list(B)
+  allB_: list(B) -> B
+  
+  allB(bs) :-
+  	isTrue(allB_(bs)).
+  allB_([]) = T().
+  allB_([b | bs]) = andB_(b, allB_(bs)).
+  
+
+  anyB : list(B)
+  anyB_: list(B) -> B
+  
+  anyB(bs) :-
+  	isTrue(allB_(bs)).
+  anyB_([]) = T().
+  anyB_([b | bs]) = orB_(b, anyB_(bs)).

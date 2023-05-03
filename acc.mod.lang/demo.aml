@@ -1,6 +1,0 @@
-module p {
-  class A : protected B {
-  }
-  class B : private A {
-  }
-}

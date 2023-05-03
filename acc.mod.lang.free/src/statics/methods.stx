@@ -1,0 +1,159 @@
+module statics/methods
+
+imports
+
+  signatures/lib/start-sig
+
+  statics/base
+  statics/types
+
+signature
+  
+  sorts METHOD constructors
+    METHOD : list(TYPE) * TYPE -> METHOD
+
+  sorts
+    METHOD_DECL  = (METHOD * ACCESS)
+    METHOD_PATH  = (path * METHOD_DECL)
+    METHOD_DECLS = list((path * (ID * METHOD_DECL)))
+
+  relations
+    method : ID -> METHOD_DECL
+
+rules
+
+  declareMethod: scope * ID * list(TYPE) * TYPE * ACCESS
+  declareMethod(s, x, T_args, T_ret, ACC) :-
+    resolveLocalMethod(s, x) == [_] | error $[Duplicate Declaration of Method [x].],
+    !method[x, (METHOD(T_args, T_ret), ACC)] in s.
+
+rules // locally declared methods (for duplication checking)
+
+  resolveLocalMethod: scope * ID -> METHOD_DECLS
+
+  resolveLocalMethod(s, x) = R :-
+    query method
+      filter e
+        and { x' :- x' == x }
+      in s |-> R.
+
+rules // references (with/without) receivers
+
+  resolveLexicalMethod : scope * ID -> METHOD_PATH
+  resolveMemberMethod  : scope * ID -> METHOD_PATH
+
+  resolveLexicalMethod(s, x) = (p, T) :- {x'}
+    query method
+      filter
+        LEX*
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { x' :- x' == x }
+      min
+        LEX < EXTEND,
+        LEX < EXTEND_PROT,
+        LEX < EXTEND_PRIV,
+        
+        $ < LEX
+      in s |-> [(p, (x', T))]
+      | error $[Reference to method [x] is ambiguous.],
+    @x.ref := x'.
+
+  resolveMemberMethod(s, x) = (p, T) :- {x'}
+    query method
+      filter
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { x' :- x' == x }
+      min
+        $ < EXTEND,
+        $ < EXTEND_PROT,
+        $ < EXTEND_PRIV
+      in s |-> [(p, (x', T)) | _]
+      | error $[Reference to method [x] is ambiguous.],
+    @x.ref := x'.
+
+rules // resolve ignore visibility
+
+  resolveParentMethods: scope * ID -> METHOD_DECLS
+  childVisible: scope * METHOD_DECLS -> METHOD_DECLS
+
+  resolveParentMethods(s, x) = childVisible(s, R) :-
+    query method
+      filter
+        ( EXTEND | EXTEND_PROT | EXTEND_PRIV)
+        ( EXTEND | EXTEND_PROT )*
+      and
+        { x' :- x' == x }
+      min
+        $ < EXTEND,
+        $ < EXTEND_PROT
+      in s |-> R.
+
+  childVisible(_, []) = [].
+
+  childVisible(s, [d@(p, (_, (_, ACCESS(Public())))) | ds]) = [d | childVisible(s, ds)].
+  childVisible(s, [d@(p, (_, (_, ACCESS(Protected())))) | ds]) = [d | childVisible(s, ds)].
+  childVisible(s, [d@(p, (_, (_, ACCESS(ProtectedInternal())))) | ds]) = [d | childVisible(s, ds)].
+  childVisible(s, [d@(p, (_, (_, ACCESS(Private())))) | ds]) = childVisible(s, ds).
+  
+  // TODO: how to deal with overriding internal methods?
+  //   allow when ancestor is in same package?
+  //         when all ancestors up to the definition are in the same package?
+  childVisible(s, [d@(p, (_, (_, ACCESS(PrivateInternal())))) | ds]) = childVisible(s, ds).
+  childVisible(s, [d@(p, (_, (_, ACCESS(Internal())))) | ds]) = childVisible(s, ds).
+
+rules
+
+  accessibilityElevationOk : scope * /* new access */AccessModifier * /* overridden method access */ACCESS * scope
+
+  // Can always elevate to Public
+  accessibilityElevationOk(_, Public(), _, _).
+
+  // Can elevate to `protected internal` unless it was public
+  accessibilityElevationOk(s, ProtectedInternal(), ACCESS(acc), id) :- {R}
+    query ()
+      filter
+        EXTEND*
+      and
+        { id' :- id' == id }
+      min
+        $ < EXTEND
+      in s |-> R,
+    try { (acc, R) != (Public(), [_|_]) }.
+
+  // Can elevate to `protected` unless it was public or protected internal,
+  // which is the case if that is the access modifier AND there are only public extensions in the inheritance chain.
+  accessibilityElevationOk(s, Protected(), ACCESS(acc), id) :- {R}
+    query ()
+      filter
+        LEX*
+        EXTEND*
+      and
+        { id' :- id' == id }
+      min
+        $ < LEX,
+        LEX < EXTEND
+      in s |-> R,
+    try { (acc, R) != (Public(), [_|_]) },
+    try { (acc, R) != (ProtectedInternal(), [_|_]) }.
+
+  // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
+  // 				  `try { a != c OR b != d }`, mimicing an OR-operator.
+
+rules
+
+  overrideOk: METHOD * METHOD
+
+  overrideOk(METHOD(T_args, T_ret), METHOD(T_args', T_ret')) :-
+    allContravariant(T_args, T_args') | error $[Method argument count does not match overridden method.],
+    covariant(T_ret, T_ret').
+
+  covariant: TYPE * TYPE
+  contravariant: TYPE * TYPE
+  
+  allCovariant maps covariant(list(*), list(*))
+  allContravariant maps contravariant(list(*), list(*))
+
+  covariant(T, T')     :- subtype(T, T') | error $[[T] is not a subtype of [T'].].
+  contravariant(T, T') :- subtype(T', T) | error $[[T'] is not a subtype of [T].].

@@ -2,14 +2,16 @@ module main
 
 imports
 
-  signatures/start-sig
+  signatures/lib/start-sig
   
+  statics/access
   statics/base
   statics/modules
 
 rules
 
-  programOk : Start
+  // No injection explication for top-level sort `Start`.
+  programOk : Program
   programOk(Program(prog)) :- {s}
     new s,
     !thisMod[s] in s,

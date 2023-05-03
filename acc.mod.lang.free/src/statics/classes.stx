@@ -1,0 +1,202 @@
+module statics/classes
+
+imports
+
+  signatures/lib/start-sig
+
+  statics/base
+  statics/access
+  statics/types
+  statics/variables
+  statics/methods
+  statics/expressions
+  statics/modules
+
+signature
+
+  relations
+    class: ID -> scope
+    thisClass: scope
+    extends: ID // track double extension
+
+rules
+
+  declareClass: scope * ID * scope
+  resolveClass: scope * ID -> list((path * (ID * scope)))
+  scopeOfClassRef: scope * ID -> scope
+
+  declareClass(s, x, s_cls) :-
+    // TODO: duplicate check.
+    !class[x, s_cls] in s,
+    !thisClass[s_cls] in s_cls.
+
+  resolveClass(s, x) = R :-
+    query class
+      filter LEX* IMPORT?
+        and { x' :- x' == x }
+      min
+        $ < LEX, LEX < IMPORT
+      in s |-> R.
+
+  scopeOfClassRef(s, x) = s_cls :- {x'}
+    resolveClass(s, x) == [(_, (x', s_cls)) | _],
+    @x.ref := x'.
+
+rules
+
+  thisClass: scope -> scope
+  thisClass(s) = s_cls :-
+    query thisClass
+      filter LEX*
+      min $ < LEX
+      in s |-> [(_, s_cls) | _].
+
+rules
+
+  subClass: scope * scope -> list((path * scope))
+  subClass(s_cls, s_prnt) = R :-
+    query ()
+      filter
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { s_prnt' :- s_prnt' == s_prnt }
+      in s_cls |-> R.
+
+rules
+
+  classOk: scope * Class
+  classOk(s, Class(x, extends, members)) :- {s_cls}
+    new s_cls,
+    declareClass(s, x, s_cls),
+    
+    s_cls -LEX-> s,
+
+    extendsOk(s_cls, extends),   
+    membersOk(s_cls, members).
+
+    
+rules
+
+  extendsOk: scope * Extends
+  extendsClauseOk: scope * ExtendsClause
+  extendsClausesOk maps extendsClauseOk(*, list(*))
+  extends: AccessModifier * scope * scope
+  noDuplExtend: scope * scope * ID
+
+  extendsOk(_, NoExtends()).
+  extendsOk(s_cls, Extends(clauses)) :-    
+    extendsClausesOk(s_cls, clauses).
+
+  extendsClauseOk(s_cls, ExtendsClause(acc, x)) :- {s_tgt}
+    scopeOfClassRef(s_cls, x) == s_tgt,
+    noDuplExtend(s_cls, s_tgt, x),
+    extends(acc, s_cls, s_tgt).
+
+  extends(Public(), s_cls, s_tgt) :-
+    s_cls -EXTEND-> s_tgt.
+
+  extends(Protected(), s_cls, s_tgt) :-
+    s_cls -EXTEND_PROT-> s_tgt.
+
+  extends(Private(), s_cls, s_tgt) :-
+    s_cls -EXTEND_PRIV-> s_tgt.
+
+  extends(acc, s_cls, s_tgt) :-
+  	false | error $[Invalid access modifier: only 'public', 'private' and 'protected' are allowed.],
+    s_cls -EXTEND-> s_tgt.
+
+  noDuplExtend(s, s_tgt, x) :-
+    subClass(s_tgt, s) == []
+      | error $[Cyclic Inheritance],
+    // Cannot use `subClass(s, s_tgt) == [_]`, because then equal extends clauses `: public C, public C` are not detected.
+    !extends[x] in s,
+    query extends
+      filter e and { x' :- x' == x } in s |-> [_]
+      | error $[Extending [x] multiple times.].
+
+rules
+
+  memberOk: scope * MemberDecl
+  membersOk maps memberOk(*, list(*))
+
+  memberOk(s_cls, Field(acc, x, init)) :- {T}
+    typeOfExpr(s_cls, init) == T,
+    fieldDeclOk(s_cls, acc, x, T).
+
+  memberOk(s_cls, Method(acc, mth, x, args, stmts, ret_exp)) :- 
+    {s_mthd Ts T_ret}
+      new s_mthd,
+      s_mthd -LEX-> s_cls,
+    
+      argumentsOk(s_mthd, args) == Ts,
+    
+      typeOfExpr(s_mthd, ret_exp) == T_ret,
+      
+      stmtsOk(s_mthd, stmts),
+      
+      methodModOk(s_cls, acc, mth, x, Ts, T_ret),
+    
+      methodDeclOk(s_cls, acc, x, Ts, T_ret).
+
+rules
+
+  fieldDeclOk: scope * AccessModifier * ID * TYPE
+
+  fieldDeclOk(s_cls, acc, x, T) :-
+    declareVar(s_cls, x, T, ACCESS(acc)).
+
+rules
+
+  argumentOk : scope * Arg -> TYPE
+  argumentsOk maps argumentOk(*, list(*)) = list(*)
+
+  argumentOk(s, Arg(x, t)) = T :-
+    typeOfType(s, t) == T,
+    declareVar(s, x, T, ACCESS(Local())).
+
+rules
+
+  stmtOk : scope * Stmt
+  stmtsOk maps stmtOk(*, list(*))
+
+  stmtOk(s, ExprStmt(exp)) :-
+    typeOfExpr(s, exp) == _.
+
+  stmtOk(s, Assign(recv, exp)) :- {T_recv T_exp}
+    typeOfLHS(s, recv) == T_recv,
+    typeOfExpr(s, exp) == T_exp,
+    subtype(T_recv, T_exp).
+
+rules
+
+  methodModOk : scope * AccessModifier * MethodModifier * ID * list(TYPE) * TYPE
+
+  methodModOk(s, _, n@NoMethodModifier(), x, _, _) :-
+    resolveParentMethods(s, x) == []  | error $[Overriding Parent Method.] @n.
+
+  methodModOk(s, _, n@New(), x, _, _) :- {M}
+    resolveParentMethods(s, x) == M,
+    try { M != [] } | error $[No method found to override] @n.
+
+  methodModOk(s, acc, o@Override(), x, Ts, T) :- {M}
+    resolveParentMethods(s, x) == M,
+    try { M != [] } | error $[No method found to override] @o,
+    overridesCompat(s, o, acc, METHOD(Ts, T), M).
+
+rules
+
+  overrideCompat : scope * MethodModifier * AccessModifier * METHOD * (path * (ID * METHOD_DECL)) 
+  overridesCompat maps overrideCompat(*, *, *, *, list(*))
+
+  overrideCompat(s, mod, acc, M, (p, (_, (M', ACC)))) :-
+    accessibilityElevationOk(s, acc, ACC, dst(p)) | error $[Cannot restrict access level of overriding method to [acc].] @acc,
+    overrideOk(M, M').
+
+rules
+
+  methodDeclOk: scope * AccessModifier * ID * list(TYPE) * TYPE
+
+  methodDeclOk(s_cls, acc, x, T_args, T) :-
+    declareMethod(s_cls, x, T_args, T, ACCESS(acc)).
+    
+    

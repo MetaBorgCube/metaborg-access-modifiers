@@ -1,0 +1,5 @@
+module lib/main
+
+imports
+
+  strategolib

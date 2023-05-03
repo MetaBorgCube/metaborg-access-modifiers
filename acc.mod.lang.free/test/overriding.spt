@@ -1,0 +1,231 @@
+module overriding
+
+// Override keyword
+
+test simple override [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  public override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - visibility reduction [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  private override foo() {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - multiple classes [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+class B : public A { }
+class C : public B { }
+class D : public C {
+  public override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - different argument count [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  public override foo(x: int) {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - different argument type [[
+class A {
+  public foo(a: A) {
+    return 42
+  }
+}
+
+class B : public A {
+  public override foo(x: int) {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - different return type [[
+class A {
+  public foo() {
+    return new A()
+  }
+}
+
+class B : public A {
+  public override foo() {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - equal visibility - protected internal [[
+class A {
+  protected internal foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  protected internal override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - equal visibility - protected [[
+class A {
+  protected foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - limit visibility - 1 [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - inheritance-limited visibility - 1a [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : protected A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - inheritance-limited visibility - 1b [[
+class A {
+  protected foo() {
+    return 42
+  }
+}
+
+class B : protected A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - limit visibility - 2 [[
+class A {
+  protected internal foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis fails
+
+test override - inheritance-limited visibility - 2a [[
+class A {
+  protected internal foo() {
+    return 42
+  }
+}
+
+class B : protected A {
+  protected override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+test override - inheritance-limited visibility - 2b [[
+class A {
+  protected internal foo() {
+    return 42
+  }
+}
+
+class B : protected A {
+  protected internal override foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds
+
+// New keyword
+
+test simple new [[
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : public A {
+  public new foo() {
+    return 31
+  }
+}
+]]
+analysis succeeds

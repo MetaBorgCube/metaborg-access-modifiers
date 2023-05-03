@@ -1,0 +1,11 @@
+class A {
+  public foo() {
+    return 42
+  }
+}
+
+class B : private A {
+  protected override foo() {
+    return 31
+  }
+}

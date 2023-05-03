@@ -1,6 +1,6 @@
-module lexical/extends-multi/same-mod
+module lexical/extends-multi
 
-test private [[
+test same mod - private [[
 module p {
   class A {
     public var x = 42
@@ -14,49 +14,8 @@ module p {
 ]]
 analysis fails
 
-test private internal [[
-module p {
-  class A {
-    public var x = 42
-  }
-  class B : public A { }
-  class C : private internal B { }
-  class D : public C {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
 
-test internal [[
-module p {
-  class A {
-    public var x = 42
-  }
-  class B : public A { }
-  class C : internal B { }
-  class D : public C {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
-
-test protected internal [[
-module p {
-  class A {
-    public var x = 42
-  }
-  class B : public A { }
-  class C : protected internal B { }
-  class D : public C {
-    private var y = x
-  }
-}
-]]
-analysis succeeds
-
-test protected [[
+test same mod - protected [[
 module p {
   class A {
     public var x = 42
@@ -70,7 +29,7 @@ module p {
 ]]
 analysis succeeds
 
-test public [[
+test same mod - public [[
 module p {
   class A {
     public var x = 42
@@ -85,3 +44,55 @@ module p {
 analysis succeeds
 
 
+test other mod - private [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : private B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+test other mod - protected [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : protected B {
+  }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test other mod - public [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A { }
+  class C : public B { }
+  class D : public C {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
