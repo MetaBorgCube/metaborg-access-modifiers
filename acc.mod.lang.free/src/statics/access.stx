@@ -56,13 +56,13 @@ rules
   lexicalAccessOk(_, p, ACCESS(Protected())) :-
     lexicallyVisible(p).
 
-  lexicalAccessOk(_, p, ACCESS(ProtectedInternal())) :-
+  lexicalAccessOk(_, p, ACCESS(ProtectedInternalSelf())) :-
     lexicallyVisible(p).
 
-  lexicalAccessOk(s_src, p, ACCESS(Internal())) :-
+  lexicalAccessOk(s_src, p, ACCESS(InternalSelf())) :-
     internalOk(s_src, p).
 
-  lexicalAccessOk(s_src, p, ACCESS(PrivateInternal())) :-
+  lexicalAccessOk(s_src, p, ACCESS(PrivateInternalSelf())) :-
     lexicallyVisible(p),
     internalOk(s_src, p).
 
@@ -78,15 +78,15 @@ rules
   memberAccessOk(_, _, ACCESS(Protected())) :-
     false.
 
-  memberAccessOk(s_src, p, ACCESS(ProtectedInternal())) :-
+  memberAccessOk(s_src, p, ACCESS(ProtectedInternalSelf())) :-
     memberVisible(p),
     internalOk(s_src, p).
 
-  memberAccessOk(s_src, p, ACCESS(Internal())) :-
+  memberAccessOk(s_src, p, ACCESS(InternalSelf())) :-
     memberVisible(p),
     internalOk(s_src, p).
 
-  memberAccessOk(_, p, ACCESS(PrivateInternal())) :-
+  memberAccessOk(_, p, ACCESS(PrivateInternalSelf())) :-
     false.
 
   memberAccessOk(_, p, ACCESS(Private())) :-

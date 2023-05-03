@@ -94,14 +94,14 @@ rules // resolve ignore visibility
 
   childVisible(s, [d@(p, (_, (_, ACCESS(Public())))) | ds]) = [d | childVisible(s, ds)].
   childVisible(s, [d@(p, (_, (_, ACCESS(Protected())))) | ds]) = [d | childVisible(s, ds)].
-  childVisible(s, [d@(p, (_, (_, ACCESS(ProtectedInternal())))) | ds]) = [d | childVisible(s, ds)].
+  childVisible(s, [d@(p, (_, (_, ACCESS(ProtectedInternalSelf())))) | ds]) = [d | childVisible(s, ds)].
   childVisible(s, [d@(p, (_, (_, ACCESS(Private())))) | ds]) = childVisible(s, ds).
   
   // TODO: how to deal with overriding internal methods?
   //   allow when ancestor is in same package?
   //         when all ancestors up to the definition are in the same package?
-  childVisible(s, [d@(p, (_, (_, ACCESS(PrivateInternal())))) | ds]) = childVisible(s, ds).
-  childVisible(s, [d@(p, (_, (_, ACCESS(Internal())))) | ds]) = childVisible(s, ds).
+  childVisible(s, [d@(p, (_, (_, ACCESS(PrivateInternalSelf())))) | ds]) = childVisible(s, ds).
+  childVisible(s, [d@(p, (_, (_, ACCESS(InternalSelf())))) | ds]) = childVisible(s, ds).
 
 rules
 
@@ -111,7 +111,7 @@ rules
   accessibilityElevationOk(_, Public(), _, _).
 
   // Can elevate to `protected internal` unless it was public
-  accessibilityElevationOk(s, ProtectedInternal(), ACCESS(acc), id) :- {R}
+  accessibilityElevationOk(s, ProtectedInternalSelf(), ACCESS(acc), id) :- {R}
     query ()
       filter
         EXTEND*
@@ -136,7 +136,7 @@ rules
         LEX < EXTEND
       in s |-> R,
     try { (acc, R) != (Public(), [_|_]) },
-    try { (acc, R) != (ProtectedInternal(), [_|_]) }.
+    try { (acc, R) != (ProtectedInternalSelf(), [_|_]) }.
 
   // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
   // 				  `try { a != c OR b != d }`, mimicing an OR-operator.

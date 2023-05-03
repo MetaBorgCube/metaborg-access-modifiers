@@ -4,15 +4,15 @@ imports
 
   statixruntime
   statix/api
-  injections/-
+  injections/lib/-
   signatures/start-sig
   pp
   completion
 
 rules // Analysis
 
-  pre-analyze  = explicate-injections-accmodlang-Start
-  post-analyze = implicate-injections-accmodlang-Start
+  pre-analyze  = explicate-injections-accmodlang-Program
+  post-analyze = implicate-injections-accmodlang-Program
 
   editor-analyze = stx-editor-analyze(pre-analyze, post-analyze|"main", "programOk")
   editor-resolve = stx-editor-resolve

@@ -163,16 +163,26 @@ context-free syntax
 context-free sorts
 
   AccessModifier
+  ModuleRef
 
 context-free syntax
 
-  AccessModifier.Public 			= <public>          	// Everywhere
-  AccessModifier.Protected 			= <protected>    		// All subclasses
-  AccessModifier.Internal  			= <internal>     		// Same module only
-  AccessModifier.ProtectedInternal	= <protected internal> 	// Subclasses and classes in same module
-  AccessModifier.PrivateInternal	= <private internal> 	// Only subclasses in the same module
-  AccessModifier.Private        	= <private> 			// Only own class
+  AccessModifier.Public 				= <public>          						// Everywhere
+  AccessModifier.Protected 				= <protected>    							// All subclasses
 
+  AccessModifier.InternalSelf  			= <internal>     							// Own module only
+  AccessModifier.Internal  				= <internal(<{ModuleRef ","}+>)>     		// Exposed modules only
+
+  AccessModifier.ProtectedInternalSelf	= <protected internal> 						// Subclasses and classes in own module
+  AccessModifier.ProtectedInternal    	= <protected internal(<{ModuleRef ","}+>)> 	// Subclasses and classes in exposed modules
+
+  AccessModifier.PrivateInternalSelf	= <private internal> 						// Only subclasses in the own module
+  AccessModifier.PrivateInternal    	= <private internal(<{ModuleRef ","}+>)> 	// Only subclasses in the exposed modules
+ 
+  AccessModifier.Private        		= <private> 								// Only own class
+
+  ModuleRef.Self 		= <self>
+  ModuleRef.ModuleRef 	= <<QId>>
 
 // TODO: friends????
 

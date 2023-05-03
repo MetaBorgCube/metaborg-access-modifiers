@@ -53,13 +53,13 @@
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.swt_3.116.0.v20210302-1107.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.text_3.11.0.v20210203-1022.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.ui.editors_3.14.0.v20210215-0846.jar"/>
-	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.ui.ide_3.18.100.v20210122-1536.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.ui.workbench.texteditor_3.16.0.v20210120-0733.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/org.eclipse.ui.workbench_3.122.100.v20210215-1525.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/rv32im.eclipse_0.19.3.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/spoofax.compiler.eclipsebundle_0.19.3.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/spoofax.eclipse_0.19.3.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/spoofax.lwb.eclipse_0.19.3.jar"/>
+	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/spt.eclipse_0.19.3.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/strategolib.eclipse_0.19.3.jar"/>
 	<classpathentry kind="lib" path="/Applications/Development/Spoofax3.app/Contents/Eclipse/plugins/tooling.eclipsebundle_0.19.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
