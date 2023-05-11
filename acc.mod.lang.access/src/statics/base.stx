@@ -48,4 +48,14 @@ rules
       filter LEX*
       min LEX < $
       in s |-> [(_, s_root)]. 
-    
+
+rules // paths
+
+  dst: path -> scope
+  src: path -> scope
+  
+  dst(_PathEmpty(s)) = s.
+  dst(_PathStep(_, _, s)) = s.
+  
+  src(_PathEmpty(s)) = s.
+  src(_PathStep(p, _, _)) = src(p).

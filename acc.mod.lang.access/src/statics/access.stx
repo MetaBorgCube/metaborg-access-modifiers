@@ -84,10 +84,6 @@ rules
 
 rules
 
-  lexicallyVisibleOrInExposedModule : 
-
-rules
-
   allExposedTo : path * scope
   exposedTo: /*s_src*/scope * /*modules*/scope -> list((path * scope))
 
@@ -105,15 +101,3 @@ rules
 		    in s |-> [_|_]
 		}
       in s_mods |-> MS.
-
-
-rules // paths
-
-  dst: path -> scope
-  src: path -> scope
-  
-  dst(_PathEmpty(s)) = s.
-  dst(_PathStep(_, _, s)) = s.
-  
-  src(_PathEmpty(s)) = s.
-  src(_PathStep(p, _, _)) = src(p).
