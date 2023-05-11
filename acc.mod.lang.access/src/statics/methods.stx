@@ -48,7 +48,7 @@ rules // references (with/without) receivers
         LEX*
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
       and
-        { x' :- x' == x }
+        { x'' :- x'' == x }
       min
         LEX < EXTEND,
         LEX < EXTEND_PROT,
@@ -66,7 +66,7 @@ rules // references (with/without) receivers
       filter
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
       and
-        { x' :- x' == x }
+        { x'' :- x'' == x }
       min
         $ < EXTEND,
         $ < EXTEND_PROT,
@@ -76,6 +76,39 @@ rules // references (with/without) receivers
     memberAccessOk(s, p, ACC)
       | error $[Method [x] is not visible.],
     @x.ref := x'.
+
+rules
+
+  methodModOk : scope * AccessModifier * ACCESS * MethodModifier * ID * list(TYPE) * TYPE
+
+  methodModOk(s, _, _, n@NoMethodModifier(), x, _, _) :-
+    resolveParentMethods(s, x) == []  | error $[Overriding Parent Method.] @n.
+
+  methodModOk(s, _, _, n@New(), x, _, _) :- {M}
+    resolveParentMethods(s, x) == M,
+    try { M != [] } | error $[No method found to override] @n.
+
+  methodModOk(s, acc, ACC, o@Override(), x, Ts, T) :- {M}
+    resolveParentMethods(s, x) == M,
+    try { M != [] } | error $[No method found to override] @o,
+    overridesCompat(s, o, acc, ACC, METHOD(Ts, T), M).
+
+rules
+
+  overrideCompat : scope * MethodModifier * AccessModifier * ACCESS * METHOD * (path * (ID * METHOD_DECL)) 
+  overridesCompat maps overrideCompat(*, *, *, *, *, list(*))
+
+  overrideCompat(s, mod, acc, ACC_NEW, M, (p, (_, (M', ACC_PARENT)))) :-
+    accessibilityElevationOk(s, dst(p), ACC_NEW, ACC_PARENT) 
+      | error $[Cannot restrict access level of overriding method to [acc].] @acc,
+    overrideOk(M, M').
+
+rules
+
+  methodDeclOk: scope * ACCESS * ID * list(TYPE) * TYPE
+
+  methodDeclOk(s, ACC, x, T_args, T) :-
+    declareMethod(s, x, T_args, T, ACC).
 
 rules // resolve ignore visibility
 
@@ -144,3 +177,5 @@ rules
 
   covariant(T, T')     :- subtype(T, T') | error $[[T] is not a subtype of [T'].].
   contravariant(T, T') :- subtype(T', T) | error $[[T'] is not a subtype of [T].].
+    
+  

@@ -43,7 +43,7 @@ rules
         LEX*
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
       and
-        { x' :- x' == x }
+        { x'' :- x'' == x }
       min
         LEX < EXTEND,
         LEX < EXTEND_PROT,
@@ -59,7 +59,7 @@ rules
       filter
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
       and
-        { x' :- x' == x }
+        { x'' :- x'' == x }
       min
         $ < EXTEND,
         $ < EXTEND_PROT,

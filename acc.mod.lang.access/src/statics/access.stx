@@ -50,7 +50,7 @@ rules
         EXTEND_PRIV?
         (EXTEND | EXTEND_PROT)*
       and
-      	{ s :- s == s_tgt }
+      	{ s' :- s' == s_tgt }
       in s |-> R.
 
   memberPaths(s, s_tgt) = R :-
@@ -58,7 +58,7 @@ rules
       filter
         EXTEND*
       and
-      	{ s :- s == s_tgt }
+      	{ s' :- s' == s_tgt }
       in s |-> R.
 
   lexicallyVisible(p) :- nonEmpty(lexicalPaths(src(p), dst(p))).
