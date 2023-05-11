@@ -1,17 +1,13 @@
 module p {
   class A {
-    protected internal(p1) foo() {
-      return 41
-    }
+    protected internal var x = 42
   }
   class B : public A { 
-    protected internal(p1) override foo() {
-      return 34
+    public foo(a: A, b : int, c: int) {
+      a := new A();
+      b := x;
+      c := a.x;
+      return x
     }
-  }
-}
-
-module p1 {
-  module p2 {
   }
 }

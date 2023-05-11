@@ -12,7 +12,7 @@ rules
 
   // No injection explication for top-level sort `Start`.
   programOk : Program
-  programOk(Program(prog)) :- {s}
+  programOk(Program(_, _, _, _, prog)) :- {s}
     new s,
     !thisMod[s] in s,
     moduleElemsOk(s, prog).

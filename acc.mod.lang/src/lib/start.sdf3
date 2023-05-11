@@ -53,8 +53,42 @@ context-free sorts
 
 context-free syntax
 
-  Program.Program = <<{ModuleOrClassOrImport "\n"}*>>
+  Program.Program = <
+    <ExposureMode>
+    <ExposureRange>
+    <LexicalInternal>
+    <MemberProtected>
 
+    <{ModuleOrClassOrImport "\n"}*>
+  >
+
+// Type Checker Configuration
+
+context-free sorts
+
+  ExposureMode
+  ExposureRange
+
+  LexicalInternal
+  MemberProtected
+
+context-free syntax
+
+  ExposureMode.NoExposureMode    		= <>
+  ExposureMode.IncludeSubmodules 		= <exposure-mode: include-submodules>
+  ExposureMode.DirectChildOnly  		= <exposure-mode: direct-child-only>
+
+  ExposureRange.NoExposureRange  		= <>
+  ExposureRange.All              		= <exposure-range: all>
+  ExposureRange.Ancestors        		= <exposure-range: ancestors>
+
+  LexicalInternal.NoLexicalInternal 	= <>
+  LexicalInternal.AllowLexicalInternal  = <lexical-internal-access: allow>
+  LexicalInternal.DenyLexicalInternal   = <lexical-internal-access: deny>
+
+  MemberProtected.NoMemberProtected 	= <>
+  MemberProtected.AllowMemberProtected  = <member-protected-access: allow>
+  MemberProtected.DenyMemberProtected   = <member-protected-access: deny>
 
 // Modules, Classes and Imports
 

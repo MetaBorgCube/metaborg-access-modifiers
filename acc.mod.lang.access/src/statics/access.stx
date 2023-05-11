@@ -123,9 +123,5 @@ rules
   exposedTo(s, s_mods) = MS :-
     query ()
       filter MODULE
-        and { m :- 
-          query ()
-		    filter LEX* and { m' :- m' == m }
-		    in s |-> [_|_]
-		}
+        and { m :- isEnclosingScope(s, m) }
       in s_mods |-> MS.
