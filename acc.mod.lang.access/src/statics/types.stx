@@ -7,6 +7,11 @@ imports
   statics/base
   statics/classes
 
+signature
+  sorts TYPE constructors
+    INT		: TYPE
+    CLASS 	: scope -> TYPE
+
 rules
 
   typeOfType: scope * Type -> TYPE

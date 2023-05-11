@@ -1,7 +1,5 @@
 module statics/base
 
-imports signatures/lib/start-sig
-
 signature
 
   name-resolution
@@ -11,34 +9,6 @@ signature
 	  EXTEND				// extends
 	  EXTEND_PROT			// extends with protected visibility
 	  EXTEND_PRIV			// extends with private visibility
-
-      MODULE                // module included in access
-
-  sorts TYPE constructors
-    INT		: TYPE
-    CLASS 	: scope -> TYPE
-
-  sorts SUBCLASSACCESS constructors
-    SUBCLASSACCESS   		: SUBCLASSACCESS
-    MODULESUBCLASSACCESS 	: SUBCLASSACCESS
-    NOSUBCLASSACCESS 		: SUBCLASSACCESS
- 
-  sorts ACCESS constructors
-    MEMBER : /*modules*/ scope * SUBCLASSACCESS /* * /* friends */list(scope)*/ -> ACCESS
-    LOCAL  : ACCESS
-
-rules
-
-  memberAccess: list(scope) * SUBCLASSACCESS -> ACCESS
-  moduleAccessOk: scope * scope
-  moduleAccessesOk maps moduleAccessOk(*, list(*))
-
-  memberAccess(mods, sca) = MEMBER(s_mods, sca) :-
-    new s_mods,
-    moduleAccessesOk(s_mods, mods).
-
-  moduleAccessOk(s, s_mod) :-
-    s -MODULE-> s_mod.
 
 rules
 

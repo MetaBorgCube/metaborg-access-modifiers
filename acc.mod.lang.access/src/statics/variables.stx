@@ -6,8 +6,6 @@ imports
   
   statics/base
   statics/access
-  statics/classes
-  statics/modules
 
 signature
   

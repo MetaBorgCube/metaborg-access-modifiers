@@ -15,7 +15,6 @@ signature
 
   sorts
     METHOD_DECL  = (METHOD * ACCESS)
-    METHOD_PATH  = (path * METHOD_DECL)
     METHOD_DECLS = list((path * (ID * METHOD_DECL)))
 
   relations
@@ -40,10 +39,10 @@ rules // locally declared methods (for duplication checking)
 
 rules // references (with/without) receivers
 
-  resolveLexicalMethod : scope * ID -> METHOD_PATH
-  resolveMemberMethod  : scope * ID -> METHOD_PATH
+  resolveLexicalMethod : scope * ID -> METHOD
+  resolveMemberMethod  : scope * ID -> METHOD
 
-  resolveLexicalMethod(s, x) = (p, T) :- {x'}
+  resolveLexicalMethod(s, x) = T :- {x' p ACC}
     query method
       filter
         LEX*
@@ -56,11 +55,13 @@ rules // references (with/without) receivers
         LEX < EXTEND_PRIV,
         
         $ < LEX
-      in s |-> [(p, (x', T))]
+      in s |-> [(p, (x', (T, ACC)))]
       | error $[Reference to method [x] is ambiguous.],
+    lexicalAccessOk(p, ACC)
+      | error $[Method [x] is not visible.],
     @x.ref := x'.
 
-  resolveMemberMethod(s, x) = (p, T) :- {x'}
+  resolveMemberMethod(s, x) = T :- {x' p ACC}
     query method
       filter
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
@@ -70,8 +71,10 @@ rules // references (with/without) receivers
         $ < EXTEND,
         $ < EXTEND_PROT,
         $ < EXTEND_PRIV
-      in s |-> [(p, (x', T)) | _]
+      in s |-> [(p, (x', (T, ACC))) | _]
       | error $[Reference to method [x] is ambiguous.],
+    memberAccessOk(s, p, ACC)
+      | error $[Method [x] is not visible.],
     @x.ref := x'.
 
 rules // resolve ignore visibility

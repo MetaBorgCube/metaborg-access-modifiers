@@ -6,6 +6,32 @@ imports
   statics/modules
   statics/classes
 
+signature
+  name-resolution
+    labels
+      MODULE                // module included in access
+
+  sorts SUBCLASSACCESS constructors
+    SUBCLASSACCESS   		: SUBCLASSACCESS
+    MODULESUBCLASSACCESS 	: SUBCLASSACCESS
+    NOSUBCLASSACCESS 		: SUBCLASSACCESS
+ 
+  sorts ACCESS constructors
+    MEMBER : /*modules*/ scope * SUBCLASSACCESS /* * /* friends */list(scope)*/ -> ACCESS
+    LOCAL  : ACCESS
+
+rules
+
+  memberAccess: list(scope) * SUBCLASSACCESS -> ACCESS
+  moduleAccessOk: scope * scope
+  moduleAccessesOk maps moduleAccessOk(*, list(*))
+
+  memberAccess(mods, sca) = MEMBER(s_mods, sca) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+  moduleAccessOk(s, s_mod) :-
+    s -MODULE-> s_mod.
 rules
 
   lexicalPaths   : scope * scope -> list((path * scope))

@@ -23,12 +23,14 @@ rules
 
   declareClass: scope * ID * scope
   resolveClass: scope * ID -> list((path * (ID * scope)))
+  resolveLocalClass: scope * ID -> list((path * (ID * scope)))
   scopeOfClassRef: scope * ID -> scope
 
   declareClass(s, x, s_cls) :-
-    // TODO: duplicate check.
     !class[x, s_cls] in s,
-    !thisClass[s_cls] in s_cls.
+    !thisClass[s_cls] in s_cls,
+    resolveLocalClass(s, x) == [_]
+      | error $[Duplicate Declaration of Class [x].].
 
   resolveClass(s, x) = R :-
     query class
@@ -36,6 +38,12 @@ rules
         and { x' :- x' == x }
       min
         $ < LEX, LEX < IMPORT
+      in s |-> R.
+
+  resolveLocalClass(s, x) = R :-
+    query class
+      filter e
+        and { x' :- x' == x }
       in s |-> R.
 
   scopeOfClassRef(s, x) = s_cls :- {x'}
