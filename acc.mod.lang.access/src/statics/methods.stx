@@ -5,6 +5,7 @@ imports
   signatures/lib/start-sig
 
   statics/base
+  statics/access
   statics/types
 
 signature
@@ -92,51 +93,38 @@ rules // resolve ignore visibility
 
   childVisible(_, []) = [].
 
-  childVisible(s, [d@(p, (_, (_, ACCESS(Public())))) | ds]) = [d | childVisible(s, ds)].
-  childVisible(s, [d@(p, (_, (_, ACCESS(Protected())))) | ds]) = [d | childVisible(s, ds)].
-  childVisible(s, [d@(p, (_, (_, ACCESS(ProtectedInternalSelf())))) | ds]) = [d | childVisible(s, ds)].
-  childVisible(s, [d@(p, (_, (_, ACCESS(Private())))) | ds]) = childVisible(s, ds).
-  
+  childVisible(s, [d@(p, (_, (_, MEMBER(_, SUBCLASSACCESS())))) | ds]) = [d | childVisible(s, ds)].  
   // TODO: how to deal with overriding internal methods?
   //   allow when ancestor is in same package?
   //         when all ancestors up to the definition are in the same package?
-  childVisible(s, [d@(p, (_, (_, ACCESS(PrivateInternalSelf())))) | ds]) = childVisible(s, ds).
-  childVisible(s, [d@(p, (_, (_, ACCESS(InternalSelf())))) | ds]) = childVisible(s, ds).
+  childVisible(s, [d@(p, (_, (_, MEMBER(_, _)))) | ds]) = childVisible(s, ds).
 
 rules
 
-  accessibilityElevationOk : scope * /* new access */AccessModifier * /* overridden method access */ACCESS * scope
+  accessibilityElevationOk : scope * /* target scope */ scope * /* new access */ACCESS * /* overridden method access */ACCESS 
+  protIntElevationOk : scope * list(())
 
   // Can always elevate to Public
-  accessibilityElevationOk(_, Public(), _, _).
-
-  // Can elevate to `protected internal` unless it was public
-  accessibilityElevationOk(s, ProtectedInternalSelf(), ACCESS(acc), id) :- {R}
+  accessibilityElevationOk(s, s_tgt, MEMBER(new_mods, SUBCLASSACCESS()), MEMBER(old_mods, _)) :- {MV UC}
+    memberPaths(s, s_tgt) == MV,
+    // condition: all modules in `old_mods` must be covered by `new_mods`.
+    // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`
     query ()
-      filter
-        EXTEND*
-      and
-        { id' :- id' == id }
-      min
-        $ < EXTEND
-      in s |-> R,
-    try { (acc, R) != (Public(), [_|_]) }.
-
-  // Can elevate to `protected` unless it was public or protected internal,
-  // which is the case if that is the access modifier AND there are only public extensions in the inheritance chain.
-  accessibilityElevationOk(s, Protected(), ACCESS(acc), id) :- {R}
-    query ()
-      filter
-        LEX*
-        EXTEND*
-      and
-        { id' :- id' == id }
-      min
-        $ < LEX,
-        LEX < EXTEND
-      in s |-> R,
-    try { (acc, R) != (Public(), [_|_]) },
-    try { (acc, R) != (ProtectedInternalSelf(), [_|_]) }.
+      filter MODULE
+        and { m :- 
+          query ()
+            filter MODULE
+              and { m' :-
+                query ()
+                  filter LEX*
+                    and { m'' :- m'' == m' }
+                  in m |-> [_|_]			  
+			  }
+            in new_mods |-> []        
+        }
+      in old_mods |-> UC,
+    // MV is empty OR UC is empty
+    try { (MV, UC) != ([_|_], [_|_]) }.
 
   // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
   // 				  `try { a != c OR b != d }`, mimicing an OR-operator.

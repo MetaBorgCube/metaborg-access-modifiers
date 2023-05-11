@@ -12,6 +12,7 @@ lexical syntax
   ID = [a-zA-Z] [a-zA-Z0-9\_\']*
 
   ID = "int" {reject}
+  ID = "self" {reject}
 
 lexical restrictions
 
@@ -91,7 +92,7 @@ context-free sorts
 context-free syntax
 
   Extends.NoExtends 			= <>
-  Extends.Extends 				= <: <{ExtendsClause ", "}*>>
+  Extends.Extends 				= <: <{ExtendsClause ", "}+>>
 
   ExtendsClause.ExtendsClause 	= <<AccessModifier> <ID>>
 
@@ -111,6 +112,7 @@ context-free syntax
     <{Stmt "\n"}*>
     return <Expr>
   }>
+ 
 
   MethodModifier.NoMethodModifier	= <>
   MethodModifier.Override  			= <override>
@@ -207,3 +209,4 @@ lexical restrictions
 context-free restrictions
 
   LAYOUT? -/- [\ \n\t\v\f\r]
+  LAYOUT? -/- [\/].[\/]

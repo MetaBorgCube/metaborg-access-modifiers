@@ -1,0 +1,17 @@
+module p {
+  class A {
+    protected internal(p1) foo() {
+      return 41
+    }
+  }
+  class B : public A { 
+    protected internal(p1) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}

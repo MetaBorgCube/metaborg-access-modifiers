@@ -3,3 +3,15 @@ module lib/main
 imports
 
   strategolib
+
+  signatures/lib/start-sig
+
+rules
+
+  desugar-access-mod :: TP
+  desugar-access-mod: ProtectedInternalSelf(){a*} 	-> ProtectedInternal([Self()]){a*}
+  desugar-access-mod: PrivateInternalSelf(){a*} 	-> PrivateInternal([Self()]){a*}
+  desugar-access-mod: InternalSelf(){a*} 			-> Internal([Self()]){a*}
+
+  desugar-all :: TP
+  desugar-all = topdown(try(desugar-access-mod))

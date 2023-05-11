@@ -1,6 +1,0 @@
-shared.defaultArtifactId=accmodlangfree
-shared.defaultClassPrefix=AccModLangFree
-shared.defaultGroupId=org.metaborg
-shared.defaultPackageId=mb.accmodlangfree
-shared.defaultVersion=0.1.0
-stratego.source.files.languageStrategyAffix=accmodlangfree

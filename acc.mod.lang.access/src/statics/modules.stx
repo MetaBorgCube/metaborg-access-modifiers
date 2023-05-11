@@ -57,7 +57,7 @@ rules
 
   resolveMod(s, QId(qid, x)) = s_mod :- {s_prnt M}
     resolveMod(s, qid) == s_prnt,
-    resolveLocalMod(s, x) == [M | _],
+    resolveLocalMod(s_prnt, x) == [M | _],
     @x.ref := nameOfMod(M),
     s_mod == scopeOfMod(M).
 

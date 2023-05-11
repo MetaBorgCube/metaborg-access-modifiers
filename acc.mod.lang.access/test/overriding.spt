@@ -213,6 +213,117 @@ class B : protected A {
 ]]
 analysis succeeds
 
+
+test override - protected internal - equal module [[
+module p {
+  class A {
+    protected internal(p1) foo() {
+      return 41
+    }
+  }
+  class B : public A { 
+    protected internal(p1) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}
+]]
+analysis succeeds
+
+
+test override - protected internal - parent module [[
+module p {
+  class A {
+    protected internal(p1.p2) foo() {
+      return 41
+    }
+  }
+  class B : public A { 
+    protected internal(p1) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}
+]]
+analysis succeeds
+
+
+test override - protected internal - child module [[
+module p {
+  class A {
+    protected internal(p1) foo() {
+      return 41
+    }
+  }
+  class B : public A { 
+    protected internal(p1.p2) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}
+]]
+analysis fails
+
+
+test override - protected internal - different module [[
+module p {
+  class A {
+    protected internal(p1) foo() {
+      return 41
+    }
+  }
+  class B : public A { 
+    protected internal(p) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}
+]]
+analysis fails
+
+
+test override - protected internal - restricted access [[
+module p {
+  class A {
+    protected internal(p1) foo() {
+      return 41
+    }
+  }
+  class B : protected A { 
+    protected internal(p) override foo() {
+      return 34
+    }
+  }
+}
+
+module p1 {
+  module p2 {
+  }
+}
+]]
+analysis succeeds
+
+
 // New keyword
 
 test simple new [[

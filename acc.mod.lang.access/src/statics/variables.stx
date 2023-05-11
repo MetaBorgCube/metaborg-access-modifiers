@@ -75,7 +75,7 @@ rules
   resolveVar: scope * QId -> TYPE
   resolveVar(s, Id(x)) = T :- {p ACC}
     (p, (T, ACC)) == resolveLexicalVar(s, x),
-    lexicalAccessOk(s, p, ACC)
+    lexicalAccessOk(p, ACC)
       | error $[Variable [x] is not visible.] @x.
 
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
