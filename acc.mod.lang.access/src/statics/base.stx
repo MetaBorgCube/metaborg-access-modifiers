@@ -19,6 +19,13 @@ rules
       min LEX < $
       in s |-> [(_, s_root)]. 
 
+  isEnclosingScope: scope * scope
+  isEnclosingScope(s_inner, s_outer) :-
+    query ()
+      filter LEX*
+        and { s :- s == s_outer }
+      in s_inner |-> [_|_].
+
 rules // paths
 
   dst: path -> scope

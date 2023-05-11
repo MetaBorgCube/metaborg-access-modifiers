@@ -105,7 +105,7 @@ rules // resolve ignore visibility
 rules
 
   accessibilityElevationOk : scope * /* target scope */ scope * /* new access */ACCESS * /* overridden method access */ACCESS 
-  protIntElevationOk : scope * list(())
+  hasNoEnclosingModule: scope * scope
 
   // Can always elevate to Public
   accessibilityElevationOk(s, s_tgt, MEMBER(new_mods, SUBCLASSACCESS()), MEMBER(old_mods, _)) :- {MV UC}
@@ -114,23 +114,19 @@ rules
     // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`
     query ()
       filter MODULE
-        and { m :- 
-          query ()
-            filter MODULE
-              and { m' :-
-                query ()
-                  filter LEX*
-                    and { m'' :- m'' == m' }
-                  in m |-> [_|_]			  
-			  }
-            in new_mods |-> []        
-        }
+        and { m :- hasNoEnclosingModule(m, new_mods) }
       in old_mods |-> UC,
     // MV is empty OR UC is empty
     try { (MV, UC) != ([_|_], [_|_]) }.
 
   // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
   // 				  `try { a != c OR b != d }`, mimicing an OR-operator.
+
+  hasNoEnclosingModule(m, s_mods) :-
+    query ()
+      filter MODULE
+        and { m' :- isEnclosingScope(m, m') }
+      in s_mods |-> [].
 
 rules
 

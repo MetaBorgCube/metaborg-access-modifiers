@@ -32,6 +32,7 @@ rules
 
   moduleAccessOk(s, s_mod) :-
     s -MODULE-> s_mod.
+
 rules
 
   lexicalPaths   : scope * scope -> list((path * scope))
@@ -40,7 +41,7 @@ rules
   lexicallyVisible : path
   memberVisible    : path
 
-  nonEmptyPathList : list((path * scope))
+  nonEmpty : list((path * scope))
 
   lexicalPaths(s, s_tgt) = R :-
     query () 
@@ -60,10 +61,11 @@ rules
       	{ s :- s == s_tgt }
       in s |-> R.
 
-  lexicallyVisible(p) :- nonEmptyPathList(lexicalPaths(src(p), dst(p))).
-  memberVisible(p)    :- nonEmptyPathList(memberPaths(src(p), dst(p))).
-  nonEmptyPathList([_|_]).
-  nonEmptyPathList([]) :- false.
+  lexicallyVisible(p) :- nonEmpty(lexicalPaths(src(p), dst(p))).
+  memberVisible(p)    :- nonEmpty(memberPaths(src(p), dst(p))).
+
+  nonEmpty([_|_]).
+  nonEmpty([]) :- false.
 
 rules
 
@@ -106,16 +108,16 @@ rules
 
   memberAccessOk(s, p, MEMBER(mods, _)) :-
     memberVisible(p),
-    nonEmptyPathList(exposedTo(s, mods)).
+    nonEmpty(exposedTo(s, mods)).
 
 rules
 
   allExposedTo : path * scope
   exposedTo: /*s_src*/scope * /*modules*/scope -> list((path * scope))
 
-  allExposedTo(_PathEmpty(_), _).
+  allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
   allExposedTo(_PathStep(p, _, s), s_mods) :-
-    nonEmptyPathList(exposedTo(s, s_mods)),
+    nonEmpty(exposedTo(s, s_mods)),
     allExposedTo(p, s_mods).
 
   exposedTo(s, s_mods) = MS :-
