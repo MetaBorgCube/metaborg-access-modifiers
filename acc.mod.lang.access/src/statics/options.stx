@@ -1,0 +1,95 @@
+module statics/options
+
+imports
+
+  signatures/lib/start-sig
+  statics/base
+
+signature
+
+  relations
+
+    exposureMode    : ExposureMode
+    exposureRange   : ExposureRange
+    lexicalInternal : LexicalInternal
+    memberProtected : MemberProtected
+
+rules
+
+  exposureModeOk: scope * ExposureMode
+
+  exposureModeOk(s, d@DirectChildOnly()) :-
+    !exposureMode[d] in s.
+
+  exposureModeOk(s, d@IncludeSubmodules()) :-
+    !exposureMode[d] in s.
+
+  // default rule
+  exposureModeOk(s, NoExposureMode()) :-
+    !exposureMode[IncludeSubmodules()] in s.
+
+  resolveExposureMode: scope -> ExposureMode
+  resolveExposureMode(s) = M :-
+    query exposureMode
+      filter LEX*
+      in s |-> [(_, M) | _].
+
+rules
+
+  exposureRangeOk: scope * ExposureRange
+
+  exposureRangeOk(s, d@All()) :-
+    !exposureRange[d] in s.
+
+  exposureRangeOk(s, d@Ancestors()) :-
+    !exposureRange[d] in s.
+
+  // default rule
+  exposureRangeOk(s, NoExposureRange()) :-
+    !exposureRange[All()] in s.
+
+  resolveExposureRange: scope -> ExposureRange
+  resolveExposureRange(s) = M :-
+    query exposureRange
+      filter LEX*
+      in s |-> [(_, M) | _].
+
+rules
+
+  lexicalInternalOk: scope * LexicalInternal
+
+  lexicalInternalOk(s, d@AllowLexicalInternal()) :-
+    !lexicalInternal[d] in s.
+
+  lexicalInternalOk(s, d@DenyLexicalInternal()) :-
+    !lexicalInternal[d] in s.
+
+  // default rule
+  lexicalInternalOk(s, NoLexicalInternal()) :-
+    !lexicalInternal[DenyLexicalInternal()] in s.
+
+  resolveLexicalInternal: scope -> LexicalInternal
+  resolveLexicalInternal(s) = M :-
+    query lexicalInternal
+      filter LEX*
+      in s |-> [(_, M) | _].
+
+rules
+
+  memberProtectedOk: scope * MemberProtected
+
+  memberProtectedOk(s, d@AllowMemberProtected()) :-
+    !memberProtected[d] in s.
+
+  memberProtectedOk(s, d@DenyMemberProtected()) :-
+    !memberProtected[d] in s.
+
+  // default rule
+  memberProtectedOk(s, NoMemberProtected()) :-
+    !memberProtected[DenyMemberProtected()] in s.
+
+  resolveMemberProtected: scope -> MemberProtected
+  resolveMemberProtected(s) = M :-
+    query memberProtected
+      filter LEX*
+      in s |-> [(_, M) | _].

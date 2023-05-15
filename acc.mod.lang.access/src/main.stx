@@ -7,12 +7,20 @@ imports
   statics/access
   statics/base
   statics/modules
+  statics/options
 
 rules
 
   // No injection explication for top-level sort `Start`.
   programOk : Program
-  programOk(Program(_, _, _, _, prog)) :- {s}
+  programOk(Program(EM, ER, LI, MP, prog)) :- {s}
     new s,
     !thisMod[s] in s,
+
+    exposureModeOk(s, EM),
+    exposureRangeOk(s, ER),
+
+    lexicalInternalOk(s, LI),
+    memberProtectedOk(s, MP),
+
     moduleElemsOk(s, prog).
