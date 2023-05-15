@@ -18,11 +18,11 @@ rules
 
   exposureModeOk: scope * ExposureMode
 
-  exposureModeOk(s, d@DirectChildOnly()) :-
-    !exposureMode[d] in s.
+  exposureModeOk(s, DirectChildOnly()) :-
+    !exposureMode[DirectChildOnly()] in s.
 
-  exposureModeOk(s, d@IncludeSubmodules()) :-
-    !exposureMode[d] in s.
+  exposureModeOk(s, IncludeSubmodules()) :-
+    !exposureMode[IncludeSubmodules()] in s.
 
   // default rule
   exposureModeOk(s, NoExposureMode()) :-
@@ -38,11 +38,11 @@ rules
 
   exposureRangeOk: scope * ExposureRange
 
-  exposureRangeOk(s, d@All()) :-
-    !exposureRange[d] in s.
+  exposureRangeOk(s, All()) :-
+    !exposureRange[All()] in s.
 
-  exposureRangeOk(s, d@Ancestors()) :-
-    !exposureRange[d] in s.
+  exposureRangeOk(s, Ancestors()) :-
+    !exposureRange[Ancestors()] in s.
 
   // default rule
   exposureRangeOk(s, NoExposureRange()) :-
@@ -58,11 +58,11 @@ rules
 
   lexicalInternalOk: scope * LexicalInternal
 
-  lexicalInternalOk(s, d@AllowLexicalInternal()) :-
-    !lexicalInternal[d] in s.
+  lexicalInternalOk(s, AllowLexicalInternal()) :-
+    !lexicalInternal[AllowLexicalInternal()] in s.
 
-  lexicalInternalOk(s, d@DenyLexicalInternal()) :-
-    !lexicalInternal[d] in s.
+  lexicalInternalOk(s, DenyLexicalInternal()) :-
+    !lexicalInternal[DenyLexicalInternal()] in s.
 
   // default rule
   lexicalInternalOk(s, NoLexicalInternal()) :-
@@ -78,11 +78,11 @@ rules
 
   memberProtectedOk: scope * MemberProtected
 
-  memberProtectedOk(s, d@AllowMemberProtected()) :-
-    !memberProtected[d] in s.
+  memberProtectedOk(s, AllowMemberProtected()) :-
+    !memberProtected[AllowMemberProtected()] in s.
 
-  memberProtectedOk(s, d@DenyMemberProtected()) :-
-    !memberProtected[d] in s.
+  memberProtectedOk(s, DenyMemberProtected()) :-
+    !memberProtected[DenyMemberProtected()] in s.
 
   // default rule
   memberProtectedOk(s, NoMemberProtected()) :-
