@@ -1,0 +1,53 @@
+module options/exposure-mode
+
+test direct child [[
+#exposure-mode: include-submodules
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  
+  module q {
+    class B {
+      private var a = new A()
+      private var y = a.x
+    }
+  }
+}
+]]
+analysis succeeds
+
+test direct child [[
+#exposure-mode: direct-child-only
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  
+  module q {
+    class B {
+      private var a = new A()
+      private var y = a.x
+    }
+  }
+}
+]]
+analysis fails
+
+test direct child - same module[[
+#exposure-mode: direct-child-only
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  
+  class B {
+    private var a = new A()
+    private var y = a.x
+  }
+}
+]]
+analysis succeeds

@@ -112,7 +112,7 @@ rules
     s_cls -EXTEND_PRIV-> s_tgt.
 
   extends(acc, s_cls, s_tgt) :-
-  	false | error $[Invalid access modifier: only 'public', 'private' and 'protected' are allowed.],
+    false | error $[Invalid access modifier: only 'public', 'private' and 'protected' are allowed.],
     s_cls -EXTEND-> s_tgt.
 
   noDuplExtend(s, s_tgt, x) :-

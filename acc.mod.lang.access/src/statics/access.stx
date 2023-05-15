@@ -5,33 +5,51 @@ imports
   statics/base
   statics/modules
   statics/classes
+  statics/options
 
 signature
   name-resolution
     labels
       MODULE                // module included in access
 
-  sorts SUBCLASSACCESS constructors
-    SUBCLASSACCESS   		: SUBCLASSACCESS
-    MODULESUBCLASSACCESS 	: SUBCLASSACCESS
-    NOSUBCLASSACCESS 		: SUBCLASSACCESS
- 
   sorts ACCESS constructors
-    MEMBER : /*modules*/ scope * SUBCLASSACCESS /* * /* friends */list(scope)*/ -> ACCESS
-    LOCAL  : ACCESS
+    LOCAL                   :          ACCESS
+    UNRESTRICTED            :          ACCESS
+    SUBCLASS_OR_MODULES     : scope -> ACCESS
+    SUBCLASS_IN_MODULES     : scope -> ACCESS
+    MODULES                 : scope -> ACCESS
 
 rules
 
-  memberAccess: list(scope) * SUBCLASSACCESS -> ACCESS
-  moduleAccessOk: scope * scope
-  moduleAccessesOk maps moduleAccessOk(*, list(*))
+  subclassInModules: list(scope) -> ACCESS
+  subclassOrModules: list(scope) -> ACCESS
+  modules: list(scope) -> ACCESS
 
-  memberAccess(mods, sca) = MEMBER(s_mods, sca) :-
+  subclassOrModules(mods) = SUBCLASS_OR_MODULES(s_mods) :-
     new s_mods,
     moduleAccessesOk(s_mods, mods).
 
+  subclassInModules(mods) = SUBCLASS_IN_MODULES(s_mods) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+  modules(mods) = MODULES(s_mods) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+  moduleAccessOk: scope * scope
+  moduleAccessesOk maps moduleAccessOk(*, list(*))
+
   moduleAccessOk(s, s_mod) :-
     s -MODULE-> s_mod.
+
+rules
+
+  modulesOfAccess: ACCESS -> scope
+  modulesOfAccess(UNRESTRICTED()) = new.
+  modulesOfAccess(SUBCLASS_OR_MODULES(s)) = s.
+  modulesOfAccess(SUBCLASS_IN_MODULES(s)) = s.
+  modulesOfAccess(MODULES(s)) = s.
 
 rules
 
@@ -50,7 +68,7 @@ rules
         EXTEND_PRIV?
         (EXTEND | EXTEND_PROT)*
       and
-      	{ s' :- s' == s_tgt }
+        { s' :- s' == s_tgt }
       in s |-> R.
 
   memberPaths(s, s_tgt) = R :-
@@ -58,7 +76,7 @@ rules
       filter
         EXTEND*
       and
-      	{ s' :- s' == s_tgt }
+        { s' :- s' == s_tgt }
       in s |-> R.
 
   lexicallyVisible(p) :- nonEmpty(lexicalPaths(src(p), dst(p))).
@@ -72,16 +90,24 @@ rules
   accessModifierToAccess : scope * AccessModifier -> ACCESS
   resolveModRef: scope * ModuleRef -> scope
   resolveModRefs maps resolveModRef(*, list(*)) = list(*)
+  modRefOk: scope * scope * ExposureRange * QId
   
-  accessModifierToAccess(s, Public()) 					= memberAccess([rootScope(s)], SUBCLASSACCESS()).
-  accessModifierToAccess(s, ProtectedInternal(modRefs)) = memberAccess(resolveModRefs(s, modRefs), SUBCLASSACCESS()).
-  accessModifierToAccess(s, Internal(modRefs)) 			= memberAccess(resolveModRefs(s, modRefs), NOSUBCLASSACCESS()).
-  accessModifierToAccess(s, Protected()) 				= memberAccess([], SUBCLASSACCESS()).
-  accessModifierToAccess(s, PrivateInternal(modRefs))   = memberAccess(resolveModRefs(s, modRefs), MODULESUBCLASSACCESS()).
-  accessModifierToAccess(s, Private()) 					= memberAccess([], NOSUBCLASSACCESS()).
+  accessModifierToAccess(s, Public())                   = UNRESTRICTED().
+  accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, Protected())                = subclassOrModules([]).
+  accessModifierToAccess(s, PrivateInternal(modRefs))   = subclassInModules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, Private())                  = modules([]).
 
   resolveModRef(s, Self()) = thisMod(s).
-  resolveModRef(s, ModuleRef(qid)) = resolveMod(s, qid).
+  resolveModRef(s, ModuleRef(qid)) = s_mod :-
+    s_mod == resolveMod(s, qid),
+    modRefOk(s, s_mod, resolveExposureRange(s), qid).
+
+  modRefOk(s, s_mod, All(), _).
+  modRefOk(s, s_mod, Ancestors(), id) :-
+    isEnclosingScope(s, s_mod)
+    | error $[Not allowed to expose member to non-ancestor module [id].].
 
 rules
 
@@ -89,24 +115,31 @@ rules
   memberAccessOk  : scope * path * ACCESS
 
   lexicalAccessOk(p, LOCAL()).
-
-  lexicalAccessOk(p, MEMBER(s_mods, SUBCLASSACCESS())) :-
+  lexicalAccessOk(p, UNRESTRICTED()) :-
     lexicallyVisible(p).
 
-  lexicalAccessOk(p, MEMBER(s_mods, MODULESUBCLASSACCESS())) :-
+  lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :-
+    lexicallyVisible(p).
+
+  lexicalAccessOk(p, SUBCLASS_IN_MODULES(s_mods)) :-
     lexicallyVisible(p),
     allExposedTo(p, s_mods).
 
-  lexicalAccessOk(p, MEMBER(s_mods, NOSUBCLASSACCESS())) :-
+  lexicalAccessOk(p, MODULES(s_mods)) :-
     thisClass(src(p)) == thisClass(dst(p)).
 
 
-  memberAccessOk(_, _, LOCAL()).
+  memberAccessOk(_, p, UNRESTRICTED()) :-
+    memberVisible(p).
 
-  memberAccessOk(_, p, MEMBER(s_mods, MODULESUBCLASSACCESS())) :-
+  memberAccessOk(_, p, SUBCLASS_IN_MODULES(s_mods)) :-
     false.
 
-  memberAccessOk(s, p, MEMBER(mods, _)) :-
+  memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :-
+    memberVisible(p),
+    nonEmpty(exposedTo(s, mods)).
+
+  memberAccessOk(s, p, MODULES(mods)) :-
     memberVisible(p),
     nonEmpty(exposedTo(s, mods)).
 
@@ -114,14 +147,25 @@ rules
 
   allExposedTo : path * scope
   exposedTo: /*s_src*/scope * /*modules*/scope -> list((path * scope))
+  isExposedTo: scope * scope * ExposureMode
 
   allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
   allExposedTo(_PathStep(p, _, s), s_mods) :-
     nonEmpty(exposedTo(s, s_mods)),
     allExposedTo(p, s_mods).
 
-  exposedTo(s, s_mods) = MS :-
+  exposedTo(s, s_mods) = MS :- {M}
+    M == resolveExposureMode(s),
+
     query ()
       filter MODULE
-        and { m :- isEnclosingScope(s, m) }
+        and { m :- isExposedTo(s, m, M) }
       in s_mods |-> MS.
+
+  isExposedTo(s, m, DirectChildOnly()) :-
+    thisMod(s) == m.
+
+  isExposedTo(s, m, IncludeSubmodules()) :-
+    isEnclosingScope(s, m).
+      
+      

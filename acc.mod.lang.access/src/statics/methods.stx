@@ -7,6 +7,7 @@ imports
   statics/base
   statics/access
   statics/types
+  statics/options
 
 signature
   
@@ -129,37 +130,38 @@ rules // resolve ignore visibility
 
   childVisible(_, []) = [].
 
-  childVisible(s, [d@(p, (_, (_, MEMBER(_, SUBCLASSACCESS())))) | ds]) = [d | childVisible(s, ds)].  
+  childVisible(s, [d@(p, (_, (_, UNRESTRICTED()))) | ds]) = [d | childVisible(s, ds)].  
+  childVisible(s, [d@(p, (_, (_, SUBCLASS_OR_MODULES(_)))) | ds]) = [d | childVisible(s, ds)].  
   // TODO: how to deal with overriding internal methods?
   //   allow when ancestor is in same package?
   //         when all ancestors up to the definition are in the same package?
-  childVisible(s, [d@(p, (_, (_, MEMBER(_, _)))) | ds]) = childVisible(s, ds).
+  childVisible(s, [d@(p, (_, (_, _))) | ds]) = childVisible(s, ds).
 
 rules
 
   accessibilityElevationOk : scope * /* target scope */ scope * /* new access */ACCESS * /* overridden method access */ACCESS 
-  hasNoEnclosingModule: scope * scope
 
   // Can always elevate to Public
-  accessibilityElevationOk(s, s_tgt, MEMBER(new_mods, SUBCLASSACCESS()), MEMBER(old_mods, _)) :- {MV UC}
+  accessibilityElevationOk(s, s_tgt, UNRESTRICTED(), _).
+  accessibilityElevationOk(s, s_tgt, A_new, UNRESTRICTED()) :-
+    // Only allowed if inheritance chain restricts visibility to `protected`.
+    memberPaths(s, s_tgt) == [].
+
+  accessibilityElevationOk(s, s_tgt, A_new, A_old) :- {MV UC new_mods old_mods}
+    new_mods == modulesOfAccess(A_new),
+    old_mods == modulesOfAccess(A_old),
     memberPaths(s, s_tgt) == MV,
     // condition: all modules in `old_mods` must be covered by `new_mods`.
     // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`
     query ()
       filter MODULE
-        and { m :- hasNoEnclosingModule(m, new_mods) }
+        and { m :- exposedTo(m, new_mods) == [] }
       in old_mods |-> UC,
     // MV is empty OR UC is empty
     try { (MV, UC) != ([_|_], [_|_]) }.
 
   // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
-  // 				  `try { a != c OR b != d }`, mimicing an OR-operator.
-
-  hasNoEnclosingModule(m, s_mods) :-
-    query ()
-      filter MODULE
-        and { m' :- isEnclosingScope(m, m') }
-      in s_mods |-> [].
+  //                  `try { a != c OR b != d }`, mimicing an OR-operator.
 
 rules
 

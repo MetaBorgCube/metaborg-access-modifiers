@@ -1,0 +1,42 @@
+module options/exposure-range
+
+test all [[
+#exposure-range: all // default
+
+module p {
+  class A {
+    protected internal(p, q) var x = 42
+  }
+}
+
+module q { }
+]]
+analysis succeeds
+
+test ancestors [[
+#exposure-range: ancestors
+
+module p {
+  class A {
+    protected internal(p, q) var x = 42
+  }
+}
+
+module q { }
+]]
+analysis fails
+
+test ancestors - point to ancestor [[
+#exposure-range: ancestors
+
+module p1 {
+module p2 {
+module p3 {
+  class A {
+    protected internal(p2) var x = 42
+  }
+}
+}
+}
+]]
+analysis succeeds
