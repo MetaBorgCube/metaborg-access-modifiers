@@ -84,6 +84,7 @@ context-free syntax
 
   LexicalInternal.NoLexicalInternal 	= <>
   LexicalInternal.AllowLexicalInternal  = <#lexical-internal-access: allow>
+  LexicalInternal.IfChainInModule       = <#lexical-internal-access: if-chain-in-module>
   LexicalInternal.DenyLexicalInternal   = <#lexical-internal-access: deny>
 
   MemberProtected.NoMemberProtected 	= <>
@@ -243,4 +244,8 @@ lexical restrictions
 context-free restrictions
 
   LAYOUT? -/- [\ \n\t\v\f\r]
-  LAYOUT? -/- [\/].[\/]
+
+template options
+
+  keyword -/- [a-zA-Z0-9]
+  ID = keyword {reject}

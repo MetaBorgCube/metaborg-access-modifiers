@@ -119,7 +119,7 @@ rules
     lexicallyVisible(p).
 
   lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :-
-    lexicallyVisible(p).
+    lexProtectedInternalAccessOk(lexicalPaths(src(p), dst(p)), resolveLexicalInternal(src(p)), p, s_mods).
 
   lexicalAccessOk(p, SUBCLASS_IN_MODULES(s_mods)) :-
     lexicallyVisible(p),
@@ -132,16 +132,46 @@ rules
   memberAccessOk(_, p, UNRESTRICTED()) :-
     memberVisible(p).
 
-  memberAccessOk(_, p, SUBCLASS_IN_MODULES(s_mods)) :-
-    false.
-
   memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :-
     memberVisible(p),
     nonEmpty(exposedTo(s, mods)).
 
+  memberAccessOk(_, p, SUBCLASS_IN_MODULES(s_mods)) :-
+    false.
+
   memberAccessOk(s, p, MODULES(mods)) :-
     memberVisible(p),
     nonEmpty(exposedTo(s, mods)).
+
+rules // protected internal ok
+
+  lexProtectedInternalAccessOk: list((path * scope)) * LexicalInternal * path * /* exposedModules */scope
+
+  lexProtectedInternalAccessOk([_|_], _, _, _).
+
+  lexProtectedInternalAccessOk([], AllowLexicalInternal(), p, s_mods) :-
+    nonEmpty(exposedTo(src(p), s_mods)).
+
+  lexProtectedInternalAccessOk([], IfChainInModule(), p, s_mods) :-
+    allExposedTo(p, s_mods).
+
+  lexProtectedInternalAccessOk([], DenyLexicalInternal(), _, _) :-
+    false.
+
+rules // internal acc
+
+  lexInternalAccessOk: scope * scope * LexicalInternal * path * /* exposedModules */scope
+
+  lexInternalAccessOk(s_cls, s_cls, _, _, _).
+
+  lexInternalAccessOk(_, _, AllowLexicalInternal(), p, s_mods) :-
+    nonEmpty(exposedTo(src(p), s_mods)).
+
+  lexInternalAccessOk(_, _, IfChainInModule(), p, s_mods) :-
+    allExposedTo(p, s_mods).
+
+  lexInternalAccessOk(_, _, DenyLexicalInternal(), _, _) :-
+    false.
 
 rules
 
