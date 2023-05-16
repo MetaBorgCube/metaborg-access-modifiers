@@ -38,7 +38,7 @@ lexical sorts
 
 lexical syntax
 
-  INT = [\-]? [1-9][0-9]*
+  INT = [\-]? [1-9][0-9]* // ([e] [\-]? [1-9][0-9]*)?
 
 lexical restrictions
 
@@ -89,6 +89,7 @@ context-free syntax
 
   MemberProtected.NoMemberProtected 	= <>
   MemberProtected.AllowMemberProtected  = <#member-protected-access: allow>
+  MemberProtected.IfInstanceOfCurrent   = <#member-protected-access: if-instance-of-current>
   MemberProtected.DenyMemberProtected   = <#member-protected-access: deny>
 
 // Modules, Classes and Imports

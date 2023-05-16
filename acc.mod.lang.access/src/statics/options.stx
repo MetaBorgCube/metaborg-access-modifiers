@@ -87,6 +87,9 @@ rules
   memberProtectedOk(s, DenyMemberProtected()) :-
     !memberProtected[DenyMemberProtected()] in s.
 
+  memberProtectedOk(s, IfInstanceOfCurrent()) :-
+    !memberProtected[IfInstanceOfCurrent()] in s.
+
   // default rule
   memberProtectedOk(s, NoMemberProtected()) :-
     !memberProtected[DenyMemberProtected()] in s.

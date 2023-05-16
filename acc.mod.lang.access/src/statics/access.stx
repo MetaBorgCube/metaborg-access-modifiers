@@ -161,10 +161,13 @@ rules
 rules // member access
 
   memberAccessOk       : scope * path * ACCESS
-  moduleMemberAccessOk : /* Exposure paths */PATH_LIST * MemberProtected * scope * path
+  moduleMemberAccessOk : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
 
-  memberAccessOk(_, p, UNRESTRICTED()) :-
-    memberVisible(p).
+  unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
+
+  memberAccessOk(s, p, UNRESTRICTED()) :- {MPs}
+    MPs == memberPaths(src(p), dst(p)),
+    unrestrictedMemberAccessOk(MPs, resolveMemberProtected(s), s, p).
 
   memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :-
     memberVisible(p),
@@ -173,21 +176,44 @@ rules // member access
   memberAccessOk(s, p, SUBCLASS_IN_MODULES(s_mods)) :-
     false.
 
-  memberAccessOk(s, p, MODULES(mods)) :-
-    moduleMemberAccessOk(
-      exposedToModules(s, mods),
-      resolveMemberProtected(src(p)), 
-      s,
-      p
-    ).
+  memberAccessOk(s, p, MODULES(mods)) :- {MPs W}
+    MPs == memberPaths(src(p), dst(p)),
+    W == exposedToModules(s, mods),
+    moduleMemberAccessOk(MPs, W, resolveMemberProtected(s), s, p).
 
-  moduleMemberAccessOk([_|_], _, _, _).
 
-  moduleMemberAccessOk(_, DenyMemberProtected(), _, _) :-
+  unrestrictedMemberAccessOk([_|_], _, _, _).
+
+  unrestrictedMemberAccessOk(_, DenyMemberProtected(), _, _) :-
     false.
 
-  moduleMemberAccessOk(W, AllowMemberProtected(), s, p) :-
+  unrestrictedMemberAccessOk(_, IfInstanceOfCurrent(), s, p) :-
+    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
+    nonEmpty(lexicalPaths(s, dst(p))).
+
+  unrestrictedMemberAccessOk(_, AllowMemberProtected(), s, p) :-
+    nonEmpty(lexicalPaths(s, dst(p))).
+
+
+  moduleMemberAccessOk([_|_], [_|_], _, _, _).
+
+  moduleMemberAccessOk(_, _, DenyMemberProtected(), _, _) :-
+    false.
+
+  // member is protected & not exposed.
+  moduleMemberAccessOk(_, [], IfInstanceOfCurrent(), s, p) :-
+    // Implicitly, `src(p)` will be an instance of `s`, otherwise, no (member) path to `dst(p)` could have been found.
+    thisClass(s) == dst(p).
+
+  moduleMemberAccessOk(_, [], AllowMemberProtected(), s, p) :-
     thisClass(s) == dst(p). // private access
+
+  moduleMemberAccessOk(_, _, IfInstanceOfCurrent(), s, p) :-
+    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)    
+    nonEmpty(lexicalPaths(s, dst(p))).
+
+  moduleMemberAccessOk(_, _, AllowMemberProtected(), s, p) :-
+    nonEmpty(lexicalPaths(s, dst(p))).
 
 rules
 
