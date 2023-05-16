@@ -161,9 +161,9 @@ rules
 rules // member access
 
   memberAccessOk       : scope * path * ACCESS
-  moduleMemberAccessOk : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
-
   unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
+  subclassInModulesAccessOk  : MemberProtected * scope * path * /*modules*/scope
+  moduleMemberAccessOk : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
 
   memberAccessOk(s, p, UNRESTRICTED()) :- {MPs}
     MPs == memberPaths(src(p), dst(p)),
@@ -174,7 +174,7 @@ rules // member access
     exposedTo(s, mods).
 
   memberAccessOk(s, p, SUBCLASS_IN_MODULES(s_mods)) :-
-    false.
+    subclassInModulesAccessOk(resolveMemberProtected(s), s, p, s_mods).
 
   memberAccessOk(s, p, MODULES(mods)) :- {MPs W}
     MPs == memberPaths(src(p), dst(p)),
@@ -194,6 +194,17 @@ rules // member access
   unrestrictedMemberAccessOk(_, AllowMemberProtected(), s, p) :-
     nonEmpty(lexicalPaths(s, dst(p))).
 
+  subclassInModulesAccessOk(DenyMemberProtected(), _, _, _) :-
+    false.
+
+  subclassInModulesAccessOk(IfInstanceOfCurrent(), s, p, s_mods) :- {p' LPs}
+    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
+    lexicalPaths(s, dst(p)) == [(p', _)|_],
+    allExposedTo(p', s_mods).
+
+  subclassInModulesAccessOk(AllowMemberProtected(), s, p, s_mods) :- {p' LPs}
+    lexicalPaths(s, dst(p)) == [(p', _)|_],
+    allExposedTo(p', s_mods).
 
   moduleMemberAccessOk([_|_], [_|_], _, _, _).
 
@@ -243,5 +254,3 @@ rules
 
   isExposedTo(s, m, IncludeSubmodules()) :-
     isEnclosingScope(s, m).
-      
-      
