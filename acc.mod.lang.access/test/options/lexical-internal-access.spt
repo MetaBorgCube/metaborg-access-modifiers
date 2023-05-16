@@ -1,0 +1,224 @@
+module options/lexical-internal-access
+
+// *** internal ***
+
+// Inside module
+
+test inside -- allow [[
+#lexical-internal-access: allow
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  class B : public A {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test inside -- if-chain-in-module [[
+#lexical-internal-access: if-chain-in-module
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  class B : public A {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test inside -- deny [[
+#lexical-internal-access: deny
+
+module p {
+  class A {
+    internal var x = 42
+  }
+  class B : public A {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+// Crossing module boundaries
+
+test outside -- allow [[
+#lexical-internal-access: allow
+
+module p {
+  import q
+  class A {
+    internal var x = 42
+  }
+  class C : public B {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class B : public A { }
+}
+]]
+analysis succeeds
+
+test outside -- if-chain-in-module [[
+#lexical-internal-access: if-chain-in-module
+
+module p {
+  import q
+  class A {
+    internal var x = 42
+  }
+  class C : public B {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class B : public A { }
+}
+]]
+analysis fails
+
+test outside -- deny [[
+#lexical-internal-access: deny
+
+module p {
+  import q
+  class A {
+    internal var x = 42
+  }
+  class C : public B {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class B : public A { }
+}
+]]
+analysis fails
+
+
+// *** protected internal ***
+// Inside module
+
+test inside -- allow [[
+#lexical-internal-access: allow
+
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class C : public B {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test inside -- if-chain-in-module [[
+#lexical-internal-access: if-chain-in-module
+
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class C : public B {
+    private var y = x
+  }
+}
+]]
+analysis succeeds
+
+test inside -- deny [[
+#lexical-internal-access: deny
+
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class C : public B {
+    private var y = x
+  }
+}
+]]
+analysis fails
+
+// Crossing module boundaries
+
+test outside -- allow [[
+#lexical-internal-access: allow
+
+module p {
+  import q
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class D : public C {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class C : public B { }
+}
+]]
+analysis succeeds
+
+test outside -- if-chain-in-module [[
+#lexical-internal-access: if-chain-in-module
+
+module p {
+  import q
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class D : public C {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class C : public B { }
+}
+]]
+analysis fails
+
+test outside -- deny [[
+#lexical-internal-access: deny
+
+module p {
+  import q
+  class A {
+    protected internal var x = 42
+  }
+  class B : private A { }
+  class D : public C {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class C : public B { }
+}
+]]
+analysis fails
+
