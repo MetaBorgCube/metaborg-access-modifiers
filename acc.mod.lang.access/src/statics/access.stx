@@ -161,9 +161,7 @@ rules
 rules // member access
 
   memberAccessOk       : scope * path * ACCESS
-  moduleMemberAccessOk : /* Visible Paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
-
-  internalOrPrivateAccess : /* Exposure paths */PATH_LIST * scope * path
+  moduleMemberAccessOk : /* Exposure paths */PATH_LIST * MemberProtected * scope * path
 
   memberAccessOk(_, p, UNRESTRICTED()) :-
     memberVisible(p).
@@ -177,25 +175,18 @@ rules // member access
 
   memberAccessOk(s, p, MODULES(mods)) :-
     moduleMemberAccessOk(
-      memberPaths(src(p), dst(p)), 
       exposedToModules(s, mods),
       resolveMemberProtected(src(p)), 
       s,
       p
     ).
 
-  moduleMemberAccessOk([_|_], [_|_], _, _, _).
+  moduleMemberAccessOk([_|_], _, _, _).
 
-  moduleMemberAccessOk(_, _, DenyMemberProtected(), _, _) :-
+  moduleMemberAccessOk(_, DenyMemberProtected(), _, _) :-
     false.
 
-  moduleMemberAccessOk(_, W, AllowMemberProtected(), s, p) :-
-    internalOrPrivateAccess(W, s, p).
-
-  internalOrPrivateAccess([_|_], s, p) :-
-     nonEmpty(lexicalPaths(s, dst(p))).
-
-  internalOrPrivateAccess([], s, p) :-
+  moduleMemberAccessOk(W, AllowMemberProtected(), s, p) :-
     thisClass(s) == dst(p). // private access
 
 rules
