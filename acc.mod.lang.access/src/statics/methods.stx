@@ -155,7 +155,7 @@ rules
     // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`
     query ()
       filter MODULE
-        and { m :- exposedTo(m, new_mods) == [] }
+        and { m :- exposedToModules(m, new_mods) == [] }
       in old_mods |-> UC,
     // MV is empty OR UC is empty
     try { (MV, UC) != ([_|_], [_|_]) }.

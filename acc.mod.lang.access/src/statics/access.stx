@@ -8,6 +8,8 @@ imports
   statics/options
 
 signature
+  sorts PATH_LIST = list((path * scope))
+
   name-resolution
     labels
       MODULE                // module included in access
@@ -53,13 +55,13 @@ rules
 
 rules
 
-  lexicalPaths   : scope * scope -> list((path * scope))
-  memberPaths    : scope * scope -> list((path * scope))
+  lexicalPaths   : scope * scope -> PATH_LIST
+  memberPaths    : scope * scope -> PATH_LIST
   
   lexicallyVisible : path
   memberVisible    : path
 
-  nonEmpty : list((path * scope))
+  nonEmpty : PATH_LIST
 
   lexicalPaths(s, s_tgt) = R :-
     query () 
@@ -113,7 +115,7 @@ rules
 
   lexicalAccessOk               : path * ACCESS
   // protected internal lexicall access
-  lexProtectedInternalAccessOk  : list((path * scope)) * LexicalInternal * path * /* exposedModules */scope
+  lexProtectedInternalAccessOk  : PATH_LIST * LexicalInternal * path * /* exposedModules */scope
   // internal lexical access
   lexInternalAccessOk           : scope * scope * LexicalInternal * path * /* exposedModules */scope
 
@@ -136,7 +138,7 @@ rules
   lexProtectedInternalAccessOk([_|_], _, _, _).
 
   lexProtectedInternalAccessOk([], AllowLexicalInternal(), p, s_mods) :-
-    nonEmpty(exposedTo(src(p), s_mods)).
+    exposedTo(src(p), s_mods).
 
   lexProtectedInternalAccessOk([], IfChainInModule(), p, s_mods) :-
     allExposedTo(p, s_mods).
@@ -148,7 +150,7 @@ rules
   lexInternalAccessOk(s_cls, s_cls, _, _, _).
 
   lexInternalAccessOk(_, _, AllowLexicalInternal(), p, s_mods) :-
-    nonEmpty(exposedTo(src(p), s_mods)).
+    exposedTo(src(p), s_mods).
 
   lexInternalAccessOk(_, _, IfChainInModule(), p, s_mods) :-
     allExposedTo(p, s_mods).
@@ -158,34 +160,60 @@ rules
 
 rules // member access
 
-  memberAccessOk  : scope * path * ACCESS
+  memberAccessOk       : scope * path * ACCESS
+  moduleMemberAccessOk : /* Visible Paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
+
+  internalOrPrivateAccess : /* Exposure paths */PATH_LIST * scope * path
 
   memberAccessOk(_, p, UNRESTRICTED()) :-
     memberVisible(p).
 
   memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :-
     memberVisible(p),
-    nonEmpty(exposedTo(s, mods)).
+    exposedTo(s, mods).
 
-  memberAccessOk(_, p, SUBCLASS_IN_MODULES(s_mods)) :-
+  memberAccessOk(s, p, SUBCLASS_IN_MODULES(s_mods)) :-
     false.
 
   memberAccessOk(s, p, MODULES(mods)) :-
-    memberVisible(p),
-    nonEmpty(exposedTo(s, mods)).
+    moduleMemberAccessOk(
+      memberPaths(src(p), dst(p)), 
+      exposedToModules(s, mods),
+      resolveMemberProtected(src(p)), 
+      s,
+      p
+    ).
+
+  moduleMemberAccessOk([_|_], [_|_], _, _, _).
+
+  moduleMemberAccessOk(_, _, DenyMemberProtected(), _, _) :-
+    false.
+
+  moduleMemberAccessOk(_, W, AllowMemberProtected(), s, p) :-
+    internalOrPrivateAccess(W, s, p).
+
+  internalOrPrivateAccess([_|_], s, p) :-
+     nonEmpty(lexicalPaths(s, dst(p))).
+
+  internalOrPrivateAccess([], s, p) :-
+    thisClass(s) == dst(p). // private access
 
 rules
 
   allExposedTo : path * scope
-  exposedTo: /*s_src*/scope * /*modules*/scope -> list((path * scope))
+  exposedTo: /*s_src*/scope * /*modules*/scope
+  exposedToModules: /*s_src*/scope * /*modules*/scope -> PATH_LIST
   isExposedTo: scope * scope * ExposureMode
 
   allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
   allExposedTo(_PathStep(p, _, s), s_mods) :-
-    nonEmpty(exposedTo(s, s_mods)),
+    exposedTo(s, s_mods),
     allExposedTo(p, s_mods).
 
-  exposedTo(s, s_mods) = MS :- {M}
+  exposedTo(s, s_mods) :-
+    nonEmpty(exposedToModules(s, s_mods)).
+
+  exposedToModules(s, s_mods) = MS:- {M}
     M == resolveExposureMode(s),
 
     query ()
