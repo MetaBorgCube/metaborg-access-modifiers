@@ -1,0 +1,114 @@
+module options/member-protected-access
+
+test on member modifier - protected [[
+#member-protected-access: allow
+
+class A {
+  protected var x = 42
+}
+class B : public A {
+  public foo(a: A) {
+    return a.x
+  }
+}
+]]
+analysis succeeds
+test on member modifier - protected internal [[
+#member-protected-access: allow
+
+module p {
+  class A {
+    protected internal var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A {
+    public foo(a: A) {
+      return a.x
+    }
+  }
+}
+]]
+analysis succeeds
+
+// inheritance modifier
+
+test on inheritance modifier - instance of current - no [[
+#member-protected-access: if-instance-of-current
+
+module p {
+class A {
+  internal var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public foo(a: B) {
+    return a.x
+  }
+}
+}
+]]
+analysis fails
+
+test on inheritance modifier - instance of current - yes [[
+#member-protected-access: if-instance-of-current
+
+module p {
+class A {
+  internal var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public foo(a: C) {
+    return a.x
+  }
+}
+}
+]]
+analysis succeeds
+
+test on inheritance modifier - instance of current - no [[
+#member-protected-access: allow
+
+module p {
+class A {
+  internal var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public foo(a: B) {
+    return a.x
+  }
+}
+}
+]]
+analysis succeeds
+
+// private members
+
+test private member access [[
+#member-protected-access: allow
+
+class A {
+  private var x = 42
+  public getX(a: A) {
+    return a.x
+  }
+}
+]]
+analysis succeeds
+
+test private protected member access [[
+#member-protected-access: allow
+
+class A {
+  private protected var x = 42
+}
+class B : public A {
+  public getX(a: A) {
+    return a.x
+  }
+}
+]]
+analysis succeeds
