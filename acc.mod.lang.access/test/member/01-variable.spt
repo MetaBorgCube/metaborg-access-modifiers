@@ -13,10 +13,10 @@ module p {
 ]]
 analysis fails
 
-test same mod - private internal [[
+test same mod - private protected [[
 module p {
   class A {
-    private internal var x = 42
+    private protected var x = 42
   }
   class B {
     private var a = new A()
@@ -94,10 +94,10 @@ module q {
 ]]
 analysis fails
 
-test other mod - private internal [[
+test other mod - private protected [[
 module p {
   class A {
-    private internal var x = 42
+    private protected var x = 42
   }
 }
 module q {

@@ -209,13 +209,13 @@ context-free syntax
   AccessModifier.Protected 				= <protected>    							// All subclasses
 
   AccessModifier.InternalSelf  			= <internal>     							// Own module only
-  AccessModifier.Internal  				= <internal(<{ModuleRef ","}+>)>     		// Exposed modules only
+  AccessModifier.Internal  				= <internal(<{ModuleRef ","}*>)>     		// Exposed modules only
 
   AccessModifier.ProtectedInternalSelf	= <protected internal> 						// Subclasses and classes in own module
-  AccessModifier.ProtectedInternal    	= <protected internal(<{ModuleRef ","}+>)> 	// Subclasses and classes in exposed modules
+  AccessModifier.ProtectedInternal    	= <protected internal(<{ModuleRef ","}*>)> 	// Subclasses and classes in exposed modules
 
-  AccessModifier.PrivateInternalSelf	= <private internal> 						// Only subclasses in the own module
-  AccessModifier.PrivateInternal    	= <private internal(<{ModuleRef ","}+>)> 	// Only subclasses in the exposed modules
+  AccessModifier.PrivateProtectedSelf	= <private protected> 						// Only subclasses in the own module
+  AccessModifier.PrivateProtected    	= <private protected(<{ModuleRef ","}*>)> 	// Only subclasses in the exposed modules
  
   AccessModifier.Private        		= <private> 								// Only own class
 
@@ -229,18 +229,18 @@ context-free syntax
 
 lexical sorts
 
-  BLOCK_COMMENT
+  LINE_COMMENT
 
 lexical syntax
 
   LAYOUT = [\ \n\t\v\f\r]
-  LAYOUT = BLOCK_COMMENT
+  LAYOUT = LINE_COMMENT
 
-  BLOCK_COMMENT = "//" ~[\r\n]*
+  LINE_COMMENT = "//" ~[\r\n]*
 
 lexical restrictions
 
-  BLOCK_COMMENT -/- ~[\r\n]
+  LINE_COMMENT -/- ~[\r\n]
 
 context-free restrictions
 

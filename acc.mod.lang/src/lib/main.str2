@@ -9,9 +9,16 @@ imports
 rules
 
   desugar-access-mod :: TP
-  desugar-access-mod: ProtectedInternalSelf(){a*} 	-> ProtectedInternal([Self()]){a*}
-  desugar-access-mod: PrivateInternalSelf(){a*} 	-> PrivateInternal([Self()]){a*}
-  desugar-access-mod: InternalSelf(){a*} 			-> Internal([Self()]){a*}
+
+  desugar-access-mod: ProtectedInternalSelf() 	-> ProtectedInternal([Self()])
+  desugar-access-mod: ProtectedInternal([]) 	-> ProtectedInternal([Self()])
+
+  desugar-access-mod: PrivateProtectedSelf() 	-> PrivateProtected([Self()])
+  desugar-access-mod: PrivateProtected([]) 		-> PrivateProtected([Self()])
+
+  desugar-access-mod: InternalSelf() 			-> Internal([Self()])
+  desugar-access-mod: Internal([]) 				-> Internal([Self()])
+
 
   desugar-all :: TP
-  desugar-all = topdown(try(desugar-access-mod))
+  desugar-all = topdown(try(preserve-annos(desugar-access-mod)))

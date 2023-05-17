@@ -98,7 +98,7 @@ rules
   accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefs(s, modRefs)).
   accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefs(s, modRefs)).
   accessModifierToAccess(s, Protected())                = subclassOrModules([]).
-  accessModifierToAccess(s, PrivateInternal(modRefs))   = subclassInModules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, PrivateProtected(modRefs))  = subclassInModules(resolveModRefs(s, modRefs)).
   accessModifierToAccess(s, Private())                  = modules([]).
 
   resolveModRef(s, Self()) = thisMod(s).

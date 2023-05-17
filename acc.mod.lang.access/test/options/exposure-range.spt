@@ -1,7 +1,7 @@
 module options/exposure-range
 
 test all [[
-#exposure-range: all // default
+#exposure-range: all
 
 module p {
   class A {
