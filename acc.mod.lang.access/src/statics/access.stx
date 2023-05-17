@@ -114,18 +114,19 @@ rules
 rules
 
   lexicalAccessOk               : path * ACCESS
-  // protected internal lexicall access
-  lexProtectedInternalAccessOk  : PATH_LIST * LexicalInternal * path * /* exposedModules */scope
-  // internal lexical access
+  lexProtectedInternalAccessOk  : PATH_LIST *     LexicalInternal * path * /* exposedModules */scope
   lexInternalAccessOk           : scope * scope * LexicalInternal * path * /* exposedModules */scope
-
+  lexInternalOk					:                 LexicalInternal * path * /* exposedModules */scope
 
   lexicalAccessOk(p, LOCAL()).
   lexicalAccessOk(p, UNRESTRICTED()) :-
+    // The #lexical-internal-access pragma does not influence lexical resolution of public variables
+    // If the inheritance chain restricts the visibility (i.e., makes it private), it is implicitly not `internal` anymore.
     lexicallyVisible(p).
 
-  lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :-
-    lexProtectedInternalAccessOk(lexicalPaths(src(p), dst(p)), resolveLexicalInternal(src(p)), p, s_mods).
+  lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :- {ps}
+    ps == lexicalPaths(src(p), dst(p)),
+    lexProtectedInternalAccessOk(ps, resolveLexicalInternal(src(p)), p, s_mods).
 
   lexicalAccessOk(p, SUBCLASS_IN_MODULES(s_mods)) :-
     lexicallyVisible(p),
@@ -136,26 +137,21 @@ rules
 
 
   lexProtectedInternalAccessOk([_|_], _, _, _).
-
-  lexProtectedInternalAccessOk([], AllowLexicalInternal(), p, s_mods) :-
-    exposedTo(src(p), s_mods).
-
-  lexProtectedInternalAccessOk([], IfChainInModule(), p, s_mods) :-
-    allExposedTo(p, s_mods).
-
-  lexProtectedInternalAccessOk([], DenyLexicalInternal(), _, _) :-
-    false.
-
+  lexProtectedInternalAccessOk([], LI, p, s_mods) :-
+    lexInternalOk(LI, p, s_mods).
 
   lexInternalAccessOk(s_cls, s_cls, _, _, _).
+  lexInternalAccessOk(_, _, LI, p, s_mods) :-
+    lexInternalOk(LI, p, s_mods).
 
-  lexInternalAccessOk(_, _, AllowLexicalInternal(), p, s_mods) :-
+
+  lexInternalOk(AllowLexicalInternal(), p, s_mods) :-
     exposedTo(src(p), s_mods).
 
-  lexInternalAccessOk(_, _, IfChainInModule(), p, s_mods) :-
+  lexInternalOk(IfChainInModule(), p, s_mods) :-
     allExposedTo(p, s_mods).
 
-  lexInternalAccessOk(_, _, DenyLexicalInternal(), _, _) :-
+  lexInternalOk(DenyLexicalInternal(), _, _) :-
     false.
 
 rules // member access
@@ -164,7 +160,11 @@ rules // member access
   unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
   subclassOrModulesAccessOk  : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
   subclassInModulesAccessOk  : MemberProtected * scope * path * /*modules*/scope
-  moduleMemberAccessOk : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
+  moduleMemberAccessOk       : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
+
+  privateMemberAccessOk   : scope * path
+  protectedMemberAccessOk : MemberProtected * scope * path
+  instanceOfCurrentOk     : MemberProtected * scope * path
 
   memberAccessOk(s, p, UNRESTRICTED()) :- {MPs}
     MPs == memberPaths(src(p), dst(p)),
@@ -189,38 +189,25 @@ rules // member access
   unrestrictedMemberAccessOk(_, DenyMemberProtected(), _, _) :-
     false.
 
-  unrestrictedMemberAccessOk(_, IfInstanceOfCurrent(), s, p) :-
-    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
-    nonEmpty(lexicalPaths(s, dst(p))).
-
-  unrestrictedMemberAccessOk(_, AllowMemberProtected(), s, p) :-
+  unrestrictedMemberAccessOk(_, MP, s, p) :-
+    instanceOfCurrentOk(MP, s, p),
     nonEmpty(lexicalPaths(s, dst(p))).
 
 
   subclassOrModulesAccessOk([_|_], [_|_], _, _, _).
 
-  subclassOrModulesAccessOk(_, _, DenyMemberProtected(), _, _) :-
-    false.
-
-  subclassOrModulesAccessOk(_, _, IfInstanceOfCurrent(), s, p) :-
-    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
-    nonEmpty(lexicalPaths(s, dst(p))).
-
-  subclassOrModulesAccessOk(_, _, AllowMemberProtected(), s, p) :-
-    nonEmpty(lexicalPaths(s, dst(p))).
+  subclassOrModulesAccessOk(_, _, MP, s, p) :-
+    protectedMemberAccessOk(MP, s, p).
 
 
   subclassInModulesAccessOk(DenyMemberProtected(), _, _, _) :-
     false.
 
-  subclassInModulesAccessOk(IfInstanceOfCurrent(), s, p, s_mods) :- {p' LPs}
-    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
+  subclassInModulesAccessOk(MP, s, p, s_mods) :- {p' LPs}
+    instanceOfCurrentOk(MP, s, p),
     lexicalPaths(s, dst(p)) == [(p', _)|_],
     allExposedTo(p', s_mods).
 
-  subclassInModulesAccessOk(AllowMemberProtected(), s, p, s_mods) :- {p' LPs}
-    lexicalPaths(s, dst(p)) == [(p', _)|_],
-    allExposedTo(p', s_mods).
 
   moduleMemberAccessOk([_|_], [_|_], _, _, _).
 
@@ -228,19 +215,25 @@ rules // member access
     false.
 
   // member is protected & not exposed.
-  moduleMemberAccessOk(_, [], IfInstanceOfCurrent(), s, p) :-
-    // Implicitly, `src(p)` will be an instance of `s`, otherwise, no (member) path to `dst(p)` could have been found.
-    thisClass(s) == dst(p).
+  moduleMemberAccessOk(_, [], _, s, p) :-
+    privateMemberAccessOk(s, p).
 
-  moduleMemberAccessOk(_, [], AllowMemberProtected(), s, p) :-
+  moduleMemberAccessOk(_, _, MP, s, p) :-
+    protectedMemberAccessOk(MP, s, p).
+
+
+  privateMemberAccessOk(s, p) :-
+    // Implicitly, `src(p)` will be an instance of `s`, otherwise, no (member) path to `dst(p)` could have been found.
     thisClass(s) == dst(p). // private access
 
-  moduleMemberAccessOk(_, _, IfInstanceOfCurrent(), s, p) :-
-    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)    
+  protectedMemberAccessOk(DenyMemberProtected(), _, _) :- false.
+  protectedMemberAccessOk(MP, s, p) :-
+    instanceOfCurrentOk(MP, s, p),
     nonEmpty(lexicalPaths(s, dst(p))).
 
-  moduleMemberAccessOk(_, _, AllowMemberProtected(), s, p) :-
-    nonEmpty(lexicalPaths(s, dst(p))).
+  instanceOfCurrentOk(AllowMemberProtected(), _, _).
+  instanceOfCurrentOk(IfInstanceOfCurrent(), s, p) :-
+    nonEmpty(subClass(src(p), thisClass(s))).
 
 rules
 
