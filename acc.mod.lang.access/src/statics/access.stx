@@ -162,6 +162,7 @@ rules // member access
 
   memberAccessOk       : scope * path * ACCESS
   unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
+  subclassOrModulesAccessOk  : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
   subclassInModulesAccessOk  : MemberProtected * scope * path * /*modules*/scope
   moduleMemberAccessOk : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
 
@@ -169,9 +170,10 @@ rules // member access
     MPs == memberPaths(src(p), dst(p)),
     unrestrictedMemberAccessOk(MPs, resolveMemberProtected(s), s, p).
 
-  memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :-
-    memberVisible(p),
-    exposedTo(s, mods).
+  memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :- {MPs W}
+    MPs == memberPaths(src(p), dst(p)),
+    W == exposedToModules(s, mods),
+    subclassOrModulesAccessOk(MPs, W, resolveMemberProtected(s), s, p).
 
   memberAccessOk(s, p, SUBCLASS_IN_MODULES(s_mods)) :-
     subclassInModulesAccessOk(resolveMemberProtected(s), s, p, s_mods).
@@ -193,6 +195,20 @@ rules // member access
 
   unrestrictedMemberAccessOk(_, AllowMemberProtected(), s, p) :-
     nonEmpty(lexicalPaths(s, dst(p))).
+
+
+  subclassOrModulesAccessOk([_|_], [_|_], _, _, _).
+
+  subclassOrModulesAccessOk(_, _, DenyMemberProtected(), _, _) :-
+    false.
+
+  subclassOrModulesAccessOk(_, _, IfInstanceOfCurrent(), s, p) :-
+    nonEmpty(subClass(src(p), thisClass(s))), // <- instance of current ;-)
+    nonEmpty(lexicalPaths(s, dst(p))).
+
+  subclassOrModulesAccessOk(_, _, AllowMemberProtected(), s, p) :-
+    nonEmpty(lexicalPaths(s, dst(p))).
+
 
   subclassInModulesAccessOk(DenyMemberProtected(), _, _, _) :-
     false.
