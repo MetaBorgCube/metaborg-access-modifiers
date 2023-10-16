@@ -1,0 +1,96 @@
+module targets/java
+
+imports
+  lib/lex
+
+
+context-free start-symbols
+  JStart
+
+context-free sorts
+  JStart
+  JPkgDecl
+  JImport
+  JClassDecl
+  JExtends
+
+context-free syntax
+
+  JStart.CompilationUnit = <
+    <JPkgDecl>
+    <{JImport "\n"}*>
+    
+    <{JClassDecl "\n"}+>
+  >
+
+  JPkgDecl.NoPkgDecl = <>
+  JPkgDecl.PkgDecl   = <package <QId>;>
+
+  JImport.Import = <import <QId>.*;>
+  
+  JClassDecl.ClassDecl = <
+    public class <ID> <JExtends> {
+      <{JClassMemberDecl "\n"}*>
+    }
+  >
+  
+  JExtends.NoExtends = <>
+  JExtends.Extends   = <extends <QId>>
+
+context-free sorts
+
+  JClassMemberDecl
+  JAccMod
+  JOverride
+  JArg
+
+context-free syntax
+
+  JClassMemberDecl.Field  = <<JAccMod> <JType> <ID> = <JExpr>;>
+  JClassMemberDecl.Method = <<JOverride><JAccMod> <JType> <ID>(<{JArg ","}*>) {
+    <{JStatement "\n"}+>
+  }>
+  
+  JOverride.NoOverride = <>
+  JOverride.Override   = [@Override\n]
+  
+  JArg.Arg = <<JType> <ID>>
+  
+  JAccMod.Public    = <public>
+  JAccMod.Protected = <protected>
+  JAccMod.Default   = <>
+  JAccMod.Private   = <private>
+
+context-free sorts
+  
+  JStatement
+
+context-free syntax
+
+  JStatement.Expr = <<JExpr>;>
+  JStatement.Assign = <<QId> = <JExpr>;>
+  JStatement.Return = <return <JExpr>;>
+
+context-free sorts
+ 
+  JExpr
+
+context-free syntax
+
+  JExpr.Var     = QId
+  JExpr.New     = <new <ID>()>
+  JExpr.Add     = <<JExpr> + <JExpr>>
+  JExpr.Int     = INT
+  
+  JExpr.Invoke  = <<ID>(<{JExpr ", "}*>)>
+  JExpr.QInvoke = <<JExpr>.<ID>(<{JExpr ", "}*>)>
+
+
+context-free sorts
+ 
+  JType
+
+context-free syntax
+
+  JType.JInt     = <int>
+  JType.JTypeRef = <<QId>>

@@ -24,9 +24,10 @@ signature
 rules
 
   declareMethod: scope * ID * list(TYPE) * TYPE * ACCESS
-  declareMethod(s, x, T_args, T_ret, ACC) :-
+  declareMethod(s, x, T_args, T_ret, ACC) :- {M}
     resolveLocalMethod(s, x) == [_] | error $[Duplicate Declaration of Method [x].],
-    !method[x, (METHOD(T_args, T_ret), ACC)] in s.
+    !method[x, (M@METHOD(T_args, T_ret), ACC)] in s,
+    @x.type := M.
 
 rules // locally declared methods (for duplication checking)
 
@@ -60,7 +61,8 @@ rules // references (with/without) receivers
       | error $[Reference to method [x] is ambiguous.],
     lexicalAccessOk(p, ACC)
       | error $[Method [x] is not visible.],
-    @x.ref := x'.
+    @x.ref := x',
+    @x.type := T.
 
   resolveMemberMethod(s, x) = T :- {x' p ACC}
     query method
@@ -76,7 +78,8 @@ rules // references (with/without) receivers
       | error $[Reference to method [x] is ambiguous.],
     memberAccessOk(s, p, ACC)
       | error $[Method [x] is not visible.],
-    @x.ref := x'.
+    @x.ref := x',
+    @x.type := T.
 
 rules
 

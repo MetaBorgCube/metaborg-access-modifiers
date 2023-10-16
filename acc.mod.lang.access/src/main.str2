@@ -10,6 +10,8 @@ imports
   completion
 
   lib/-
+  
+  targets/-
 
 rules // Analysis
 

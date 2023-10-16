@@ -1,0 +1,31 @@
+module targets/base
+
+imports
+  strategolib
+
+  signatures/-
+  signatures/lib/-
+
+signature
+
+  sorts Compatible constructors
+    Compatible   :                 Compatible
+    Incompatible : List(string) -> Compatible
+
+  sorts TransformResult(*, *) constructors
+    TransformSuccess : a * pp   -> TransformResult(a, pp)
+    TransformFailure : List(string) -> TransformResult(a, pp)
+
+rules
+
+  transform-builder(Program -> Compatible, Program -> a, a -> pp) :: Program -> TransformResult(a, pp)
+
+  transform-builder(check, trans, pp) : program -> result
+    with switch check
+           case ?Incompatible(reason*) : !TransformFailure(reason*)
+           case ?Compatible()          :
+                ast := <trans> program
+              ; pp  := <pp> ast
+              ; !TransformSuccess(ast, pp)
+         end => result
+

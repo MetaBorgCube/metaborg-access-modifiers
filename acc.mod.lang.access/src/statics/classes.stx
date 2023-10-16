@@ -17,6 +17,7 @@ signature
   relations
     class: ID -> scope
     thisClass: scope
+    thisName: ID
     extends: ID // track double extension
 
 rules
@@ -28,6 +29,7 @@ rules
   declareClass(s, x, s_cls) :-
     !class[x, s_cls] in s,
     !thisClass[s_cls] in s_cls,
+    !thisName[x] in s_cls,
     resolveLocalClass(s, x) == [_]
       | error $[Duplicate Declaration of Class [x].].
 

@@ -1,0 +1,8 @@
+module M {
+class A {
+  protected internal var x = 42
+}
+class B : public A {
+  public var a = new A()
+}
+}

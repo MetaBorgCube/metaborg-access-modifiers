@@ -1,0 +1,262 @@
+module targets/to-java
+
+imports
+
+  strategolib
+
+  libspoofax/analysis/constraint
+  libspoofax/stratego/debug
+
+  statix/api
+  statix/runtime/analysis
+  statix/runtime/ast
+
+  signatures/start-sig
+  signatures/lib/-
+  signatures/targets/-
+
+  pp/targets/java-pp
+  pp
+
+  targets/base
+  
+  main
+
+signature
+
+  sorts Analysis
+
+  sorts JavaFile constructors
+    JavaFile: string * JStart -> JavaFile
+
+  sorts TYPE constructors
+    METHOD : List(TYPE) * TYPE -> TYPE
+    INT    : TYPE
+    CLASS  : Term/* Scope */ -> TYPE
+
+  constructors
+    : blob -> SolverResult 
+
+rules // builder
+
+  // prettyprint-accmodlangaccess-JStart
+
+  transform-to-java(|AnalysisResult) :: Program -> TransformResult(List(JavaFile), ?)
+  transform-to-java(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-java, aml-to-java(|a), pp-java-files-list)
+  
+  pp-java-files-list = map(JavaFile(id, pp-partial-accmodlangaccess-string(|"JStart")))
+
+  java-test-transform :: Program -> List(JavaFile)
+  java-test-transform : program -> result
+    with debug; check-aml-to-java
+       ; switch id
+           case ?Incompatible(reason*) : <with(map(debug); fail); fail> reason*
+           case ?Compatible()          : a := <stx-get-ast-analysis; debug> program
+							           ; <aml-to-java(|a)> program
+         end => result
+
+rules // collect errors
+
+  check-aml-to-java :: Program -> Compatible
+  check-aml-to-java = switch collect-all(java-incompat)
+                        case ?[]   : !Compatible()
+                        case ?msg* : !Incompatible(msg*)
+                      end
+  
+  java-incompat :: ? -> string
+
+  // TODO: review options
+
+  // multiple inheritance
+  java-incompat = ?Extends(<id>); not(?[_]); !"Java does not support multiple inheritance."; debug
+  java-incompat = ?ExtendsClause(<id>, _); not(?Public()); !"Java does only support public inheritance."; debug
+  java-incompat = ?New(); !"Java does not support 'new' modifier on methods."; debug
+  
+  java-incompat = ?Protected(); !"Java does not support 'protected' access modifier; use 'protected internal' instead."; debug
+  java-incompat = ?ProtectedInternal(<id>); not(?[Self()]); !"Java does not support 'protected internal' with custom modules."; debug
+  java-incompat = ?PrivateProtected(_); !"Java does not support 'private protected' access modifier."; debug
+
+rules // transform
+
+  aml-to-java(|SolverResult) :: Start -> List(JavaFile)
+  
+  aml-to-java(|a): Program(_, _, _, _, member*) -> result*
+    with result* := <aml-to-java-members(|a, None(), [])> member*
+  
+  aml-to-java-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(JavaFile)
+  
+  aml-to-java-members(|a, x, import*) : member* -> result*
+    with imp*     := <collect-all(?Import(_))> member*
+       ; all-imp* := [import*, imp*]
+       ; result*  := <map(aml-to-java-member(|a, x, all-imp*)); flatten-list> member*
+  
+  
+  aml-to-java-member(|SolverResult, Option(QId), List(Import)) :: ModuleOrClassOrImport -> List(JavaFile)
+
+  aml-to-java-member(|a, x*, imp*) : Import(_) -> []
+
+  aml-to-java-member(|a, x*, imp*) : Module(x, member*) -> res*
+    with x'   := <(id, lower-case); append-id> (x*, x)
+       ; res* := <aml-to-java-members(|a, Some(x'), imp*)> member*
+
+  aml-to-java-member(|a, x*, imp*) : Class(x, ext, member*) -> [JavaFile(file-name, jcls)]
+    with pkg       := <format-pkg> x*
+       ; file-name := <format-file-name> (x*, x)
+       ; imp'*     := <map(format-imp)> imp*
+       ; ext'      := <format-ext> ext
+       ; member'*  := <map(aml-to-java-cls-member(|a))> member*
+       ; jcls      := CompilationUnit(
+                        pkg,
+                        imp'*,
+                        [ClassDecl(
+                          x,
+                          ext',
+                          member'*
+                        )]
+                      )
+
+
+  aml-to-java-cls-member(|SolverResult) :: MemberDecl -> JClassMemberDecl
+  
+  aml-to-java-cls-member(|a) : Field(acc, x, e) -> Field(acc', tp, x, e')
+    with acc' := <aml-to-java-acc> acc
+       ; tp   := <get-type(|a)> (x, e)
+       ; e'   := <aml-to-java-expr> e
+  
+  aml-to-java-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> mthd
+    with acc'   := <aml-to-java-acc> acc
+       ; ovr    := <method-mod-to-override> mmod
+       ; tp     := <get-type(|a)> (x, ret)
+       ; arg'*  := <map(aml-to-java-formal-arg)> arg*
+       ; stmt'* := <map(aml-to-java-stmt)> stmt*
+       ; e'     := <aml-to-java-expr> ret
+       ; mthd   := Method(ovr, acc', tp, x, arg'*, [stmt'*, Return(e')])
+ 
+   aml-to-java-formal-arg :: Arg -> JArg
+   
+   aml-to-java-formal-arg : Arg(x, t) -> Arg(t', x)
+     with t' := <aml-to-java-type> t
+
+   aml-to-java-type :: Type -> JType
+   aml-to-java-type : IntT() -> JInt()
+   aml-to-java-type : RefT(x) -> JTypeRef(Id(x))
+
+rules // statements & expressions     
+
+  aml-to-java-stmt :: Stmt -> JStatement
+  
+  aml-to-java-stmt : ExprStmt(e)  -> Expr(<aml-to-java-expr> e)  
+  aml-to-java-stmt : Assign(Var(x), e) -> Assign(x, <aml-to-java-expr> e)
+
+
+  aml-to-java-expr :: Expr -> JExpr
+
+  aml-to-java-expr : Var(x) -> Var(x)
+  aml-to-java-expr : NewInstance(x) -> New(x)
+  aml-to-java-expr : Plus(e1, e2) -> Add(e1', e2')
+    with e1' := <aml-to-java-expr> e1
+       ; e2' := <aml-to-java-expr> e2
+  aml-to-java-expr : IntLit(i) -> Int(i)
+  aml-to-java-expr = Invoke(id, map(aml-to-java-expr))
+  aml-to-java-expr = QInvoke(aml-to-java-expr, id, map(aml-to-java-expr))
+
+  aml-to-java-expr = failure(|"Unknown expression")
+
+rules // classes
+
+  format-imp :: Import -> JImport
+  format-imp : Import(x) -> Import(x)
+
+
+  format-ext :: Extends -> JExtends
+  
+  format-ext : NoExtends() -> NoExtends()
+  format-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
+
+
+  aml-to-java-acc :: AccessModifier -> JAccMod
+  aml-to-java-acc : Public() -> Public()
+  // 'protected in Java' is like 'protected | internal'
+  aml-to-java-acc : ProtectedInternal([Self()]) -> Protected()
+  aml-to-java-acc : Internal([Self()]) -> Default()
+  aml-to-java-acc : Private() -> Private()
+  
+  aml-to-java-acc = failure(|"Unknown access modifier")
+
+rules // methods
+
+  method-mod-to-override :: MethodModifier -> JOverride
+  
+  
+  method-mod-to-override : NoMethodModifier() -> NoOverride()
+  method-mod-to-override : Override() -> Override()
+
+  method-mod-to-override = failure(|"Unknown method modifier")
+
+rules // types
+
+  get-type(|SolverResult) :: Tuple(ID, Expr) -> JType
+  get-type(|a) = Snd; type-from-expr
+  get-type(|a) = Fst; extract-type(|a); format-type(|a)
+
+
+  extract-type(|SolverResult) :: ? -> ?  
+  extract-type(|a) = stx-get-ast-type(|a) 
+  
+  extract-type(|a) = failure(|"Cannot retrieve type ")
+
+  format-type(|SolverResult) :: ? -> ?
+  
+  format-type(|a) : INT()    -> JInt()
+  format-type(|a) : CLASS(s) -> JTypeRef(x)
+    with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s
+
+  format-type(|a) = failure(|"Cannot format type")
+
+  type-from-expr :: Expr -> JType
+
+  type-from-expr : IntLit(_)      -> JInt()
+  type-from-expr : NewInstance(x) -> JTypeRef(Id(x))
+
+rules
+
+  append-id :: (Option(QId) * ID) -> QId
+  
+  append-id : (None(), x) -> Id(x)
+  append-id : (Some(x*), x) -> QId(x*, x)
+
+  format-pkg :: Option(QId) -> JPkgDecl
+  
+  format-pkg : None() -> NoPkgDecl()
+  format-pkg : Some(pkg-id) -> PkgDecl(<map-id(lower-case)> pkg-id)
+
+
+  format-file-name :: (Option(QId) * ID) -> string
+
+  format-file-name : (None(), x) -> $[./[x].java]
+  format-file-name : (Some(x'), x) -> $[./[dir]/[x].java]
+    with dir := <fold-id(id, { p, x: \ (p, x) -> $[[p]/[x]] \ })> x'
+  
+rules
+
+  map-id(ID -> ID) :: QId -> QId
+
+  map-id(trans) = fold-id(
+                    {x   : \     x  -> Id(<trans> x)     \}, 
+                    {x, b: \ (b, x) -> QId(b, <trans> x) \}
+                  )
+
+  fold-id(ID -> b, Tuple(b, ID) -> b) :: QId -> b
+  
+  fold-id(init, agg) : Id(x) -> b
+    with b := <init> x
+  
+  fold-id(init, agg) : QId(x', x) -> b'
+    with b  := <fold-id(init, agg)> x'
+       ; b' := <agg> (b, x)
+  
+rules
+
+  failure(|string) :: a -> b
+
+  failure(|msg) = ppdebug(|msg); /* fail fast -> */ with(fail); fail /* <- required for typing */

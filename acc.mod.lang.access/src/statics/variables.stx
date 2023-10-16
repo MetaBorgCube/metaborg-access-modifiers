@@ -21,7 +21,8 @@ rules
   declareVar: scope * ID * TYPE * ACCESS
   declareVar(s_cls, x, T, ACC) :-
     resolveLocalVar(s_cls, x) == [_] | error $[Duplicate Declaration of Variable [x].],
-    !var[x, (T, ACC)] in s_cls.
+    !var[x, (T, ACC)] in s_cls,
+    @x.type := T.
 
 rules
 
@@ -52,7 +53,8 @@ rules
         $ < LEX
       in s |-> [(p, (x', T))]
       | error $[Reference [x] is ambiguous.],
-    @x.ref := x'.
+    @x.ref := x',
+    @x.type := T.
 
   resolveMemberVar(s, x) = (p, T) :- {x'}
     query var
@@ -66,7 +68,8 @@ rules
         $ < EXTEND_PRIV
       in s |-> [(p, (x', T))]
       | error $[Reference [x] is ambiguous.],
-    @x.ref := x'.
+    @x.ref := x',
+    @x.type := T.
 
 rules
 

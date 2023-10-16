@@ -1,13 +1,10 @@
-module p {
-  class A {
-    protected internal var x = 42
-  }
-  class B : public A { 
-    public foo(a: A, b : int, c: int) {
-      a := new A();
-      b := x;
-      c := a.x;
-      return x
-    }
+#member-protected-access: if-instance-of-current
+
+class A {
+  protected var x = 42
+}
+class B : public A {
+  public foo(a: B) {
+    return a.x
   }
 }
