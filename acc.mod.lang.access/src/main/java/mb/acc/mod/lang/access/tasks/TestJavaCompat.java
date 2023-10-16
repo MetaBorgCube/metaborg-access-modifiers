@@ -77,7 +77,7 @@ public class TestJavaCompat implements TaskDef<TestJavaCompat.Args, CommandFeedb
     }
 	
     
-    private static final String relativeTargetDirRoot = "target/java";
+    private static final String relativeTargetDirRoot = "build/test/java";
     
     private final AccModLangAccessParse parse;
 	private final AccModLangAccessAnalyze analyze;
@@ -131,8 +131,8 @@ public class TestJavaCompat implements TaskDef<TestJavaCompat.Args, CommandFeedb
 		
 		// 2. Write to Disk
 		final IStrategoList javaFilesTerm = TermUtils.toListAt(transformResultTerm, 1);
-		final String normalizedFile = normalizeFile(args.file);
 		final HierarchicalResource normalizedProject = normalizeRoot(args.rootDirectory);
+		final String normalizedFile = normalizeFile(args.file, normalizedProject);
 		final Result<Collection<ResourcePath>, IOException> writeResult = writeJavaFiles(context, javaFilesTerm, normalizedFile, normalizedProject);
 		
 		if(writeResult.isErr()) {
@@ -154,10 +154,12 @@ public class TestJavaCompat implements TaskDef<TestJavaCompat.Args, CommandFeedb
 				resourceService.getHierarchicalResource(args.rootDirectory)
 					.appendAsRelativePath(relativeTargetDirRoot)
 					.appendAsRelativePath("src-gen")
+					.appendAsRelativePath(normalizedFile)
 					.getPath(), 
 				resourceService.getHierarchicalResource(args.rootDirectory)
 					.appendAsRelativePath(relativeTargetDirRoot)
 					.appendAsRelativePath("build")
+					.appendAsRelativePath(normalizedFile)
 					.getPath(),
 				false, 
 				false, 
@@ -233,18 +235,21 @@ public class TestJavaCompat implements TaskDef<TestJavaCompat.Args, CommandFeedb
 		return resourceService.getHierarchicalResource(rootDirectory);
 	}
 
-	private String normalizeFile(ResourceKey file) {
+	private String normalizeFile(ResourceKey file, HierarchicalResource root) {
 		if(file.getQualifier().equals("spt")) {
 			final String[] components = file.getIdAsString().split("!!");
-			final ResourcePath baseResource = resourceService.getHierarchicalResource(ResourceKeyString.of(components[0])).getPath();
+			final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), components[0]);
+			final ResourcePath baseResource = resourceService.getResourcePath(baseResourcePath);
 			if(components.length == 1) {
 				// no specific test case
-				return baseResource.getRoot().relativize(baseResource);
+				return root.getPath().relativize(baseResource);
 			} else {
-				return baseResource.getRoot().relativize(baseResource) + "/" + components[1];
+				return root.getPath().relativize(baseResource.appendAsRelativePath(components[1]));
 			}
 		}
-		return file.getIdAsString();
+		final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), file.getIdAsString());
+		final ResourcePath baseResource = resourceService.getResourcePath(baseResourcePath);
+		return root.getPath().relativize(baseResource);
 	}
 
 	@Override
