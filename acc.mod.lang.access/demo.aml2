@@ -1,10 +1,12 @@
 #member-protected-access: if-instance-of-current
-
+module M1 {
 class A {
-  protected var x = 42
+  protected internal var x = 43
 }
+}
+module M2 {
+import M1
 class B : public A {
-  public foo(a: A) {
-    return a.x + 1
-  }
+  public var a = new A()
+}
 }

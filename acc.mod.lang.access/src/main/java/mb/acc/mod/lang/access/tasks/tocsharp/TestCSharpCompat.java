@@ -101,6 +101,9 @@ public class TestCSharpCompat extends TestCompat {
 	private abstract class Command {
 
 		private List<String> cmd = new ArrayList<String>();
+		
+		private List<String> requires = new ArrayList<String>();
+		private List<String> provides = new ArrayList<String>();
 
 		protected Command(String subCommand) {
 			cmd.add("dotnet");
@@ -122,15 +125,28 @@ public class TestCSharpCompat extends TestCompat {
 		protected void addParameter(String name, String value) {
 			cmd.add(String.format("%s %s", name, value));
 		}
-
-		protected void run(ExecContext context, ResourcePath pwd) throws IOException {
-			run(context, pwd, true);
+		
+		protected void require(String file) {
+			requires.add(file);
+		}
+		
+		protected void provide(String file) {
+			provides.add(file);
 		}
 
-		protected KeyedMessages run(ExecContext context, ResourcePath pwd, boolean mustSucceed) throws IOException {
+		protected void run(ExecContext context, ResourcePath workingDirectory) throws IOException {
+			run(context, workingDirectory, true);
+		}
+
+		protected KeyedMessages run(ExecContext context, ResourcePath workingDirectory, boolean mustSucceed) throws IOException {
 			final Runtime rt = Runtime.getRuntime();
 			final String cmd = String.join(" ", this.cmd);
-			final File pwdFile = resourceService.toLocalFile(pwd);
+			
+			context.require(workingDirectory);
+			for(String file: requires) {
+				context.require(workingDirectory.appendAsRelativePath(file));
+			}
+			final File pwdFile = resourceService.toLocalFile(workingDirectory);
 
 			context.logger().info("Running '{}' in {}", cmd, pwdFile);
 			final Process proc = rt.exec(cmd, /*inherit env*/null, pwdFile);
@@ -160,64 +176,96 @@ public class TestCSharpCompat extends TestCompat {
 					kmb.addMessage(msg.toString(), Severity.Error);
 				}
 			} else {				
-				readAllLines(proc.getErrorStream(), line -> { kmb.addMessage(line, Severity.Warning, pwd); });
-				readAllLines(proc.getInputStream(), line -> { kmb.addMessage(line, Severity.Info, pwd); });
+				readAllLines(proc.getErrorStream(), line -> { kmb.addMessage(line, Severity.Warning, workingDirectory); });
+				readAllLines(proc.getInputStream(), line -> { kmb.addMessage(line, Severity.Info, workingDirectory); });
+			}
+
+			for(String file: provides) {
+				context.require(workingDirectory.appendAsRelativePath(file));
 			}
 
 			return kmb.build();
-
-			// TODO: dependency on files
+		}
+		
+		private void readAllLines(Process proc, Consumer<String> consumer) throws IOException {			
+			readAllLines(proc.getInputStream(), consumer);	
+			readAllLines(proc.getErrorStream(), consumer);
+		}
+		
+		private void readAllLines(InputStream inputStream, Consumer<String> consumer) throws IOException {		
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+				reader.lines().forEach(consumer);
+			}
 		}
 
 	}
 	
-	private void readAllLines(Process proc, Consumer<String> consumer) throws IOException {			
-		readAllLines(proc.getInputStream(), consumer);	
-		readAllLines(proc.getErrorStream(), consumer);
+	private abstract class CSCommand extends Command {
+		
+		protected CSCommand(String subCommand) {
+			super(subCommand);
+		}
+		
+		protected String solutionFile(String solutionName) {
+			return solutionName + ".sln";
+		}
+
+		protected String projectFile(String projectName) {
+			return String.format("%s/%s.csproj", projectName, projectName);
+		}
+		
 	}
 	
-	private void readAllLines(InputStream inputStream, Consumer<String> consumer) throws IOException {		
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-			reader.lines().forEach(consumer);
-		}
-	}
 
-	private final class NewSolutionCommand extends Command {
+	private final class NewSolutionCommand extends CSCommand {
 
 		public NewSolutionCommand(String name) {
 			super("new sln");
 			addOption("name", name);
 			addOption("force");
+			provide(solutionFile(name));
 		}
 
 	}
 
-	private final class NewProjectCommand extends Command {
+	private final class NewProjectCommand extends CSCommand {
 
 		public NewProjectCommand(String name) {
 			super("new classlib");
 			addOption("output", name);
 			addOption("force");
+			provide(projectFile(name));
 		}
 
 	}
 
-	private final class AddProjectCommand extends Command {
+	private final class AddProjectCommand extends CSCommand {
 
 		public AddProjectCommand(String projectName, String solutionName) {
 			super("sln");
-			addArgument(solutionName + ".sln");
+			
+			final String solutionFile = solutionFile(solutionName);
+			addArgument(solutionFile);
+			require(solutionFile);
+			
 			addParameter("add", projectName);
+			provide(projectFile(projectName));
+			
+			provide(projectName + "/Class1.cs");
 		}
 
 	}
 
-	private final class AddDependencyCommand extends Command {
+	private final class AddDependencyCommand extends CSCommand {
 
 		public AddDependencyCommand(String projectName, String dependencyName) {
 			super("add");
+			
 			addArgument(projectName);
+			require(projectFile(projectName));
+			
 			addParameter("reference", dependencyName);
+			require(projectFile(dependencyName));
 		}
 
 	}
