@@ -81,12 +81,12 @@ public class TestJavaCompat implements TaskDef<TestJavaCompat.Args, CommandFeedb
     
     private final AccModLangAccessParse parse;
 	private final AccModLangAccessAnalyze analyze;
-	private final TransformToJava transform;
+	private final TransformWithAnalysis transform;
 	private final ResourceService resourceService;
 		
 	
 	@Inject
-	public TestJavaCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToJava transform, ResourceService resourceService) {
+	public TestJavaCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformWithAnalysis transform, ResourceService resourceService) {
 		this.parse = parse;
 		this.analyze = analyze;
 		this.transform = transform;
