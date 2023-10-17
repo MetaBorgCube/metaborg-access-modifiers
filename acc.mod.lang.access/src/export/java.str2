@@ -154,7 +154,7 @@ rules // statements & expressions
 rules // classes
 
   format-java-imp :: Import -> JImport
-  format-java-imp : Import(x) -> Import(x)
+  format-java-imp : Import(x) -> Import(<map-id(lower-case)> x)
 
 
   format-java-ext :: Extends -> JExtends
