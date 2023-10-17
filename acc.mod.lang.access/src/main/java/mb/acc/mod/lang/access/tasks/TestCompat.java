@@ -136,7 +136,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			}
 			
 			final CommandFeedbackBuilder cfb = new CommandFeedbackBuilder();
-			cfb.addShowFeedback(ShowFeedback.showText("Error: source language analysis reported no errors, but Java compiler did.", "Java Compatibility check Failed"));
+			cfb.addShowFeedback(ShowFeedback.showText("Error: source language analysis reported no errors, but target compiler did.", "Compatibility check Failed"));
 			cfb.withKeyedMessages(analysisResult.result.messages.toKeyed(args.file));
 			return cfb.build();
 		} 
@@ -146,7 +146,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		}
 		// but java compiler did
 		final CommandFeedbackBuilder cfb = new CommandFeedbackBuilder();
-		cfb.addShowFeedback(ShowFeedback.showText("Error: source language analysis reported errors, but Java compiler did not.", "Java Compatibility check Failed"));
+		cfb.addShowFeedback(ShowFeedback.showText("Error: source language analysis reported errors, but target compiler did not.", "Compatibility check Failed"));
 		cfb.withKeyedMessages(compilerOutput.get());
 		return cfb.build();
 	}
