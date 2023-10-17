@@ -1,11 +1,10 @@
-module targets/to-java
+module export/java
 
 imports
 
   strategolib
 
   libspoofax/analysis/constraint
-  libspoofax/stratego/debug
 
   statix/api
   statix/runtime/analysis
@@ -13,29 +12,19 @@ imports
 
   signatures/start-sig
   signatures/lib/-
-  signatures/targets/-
+  signatures/export/java-sig
 
-  pp/targets/java-pp
+  pp/export/java-pp
   pp
 
-  targets/base
+  export/base
   
   main
 
 signature
 
-  sorts Analysis
-
   sorts JavaFile constructors
     JavaFile: string * JStart -> JavaFile
-
-  sorts TYPE constructors
-    METHOD : List(TYPE) * TYPE -> TYPE
-    INT    : TYPE
-    CLASS  : Term/* Scope */ -> TYPE
-
-  constructors
-    : blob -> SolverResult 
 
 rules // builder
 
@@ -48,10 +37,10 @@ rules // builder
 
   java-test-transform :: Program -> List(JavaFile)
   java-test-transform : program -> result
-    with debug; check-aml-to-java
+    with check-aml-to-java
        ; switch id
            case ?Incompatible(reason*) : <with(map(debug); fail); fail> reason*
-           case ?Compatible()          : a := <stx-get-ast-analysis; debug> program
+           case ?Compatible()          : a := <stx-get-ast-analysis> program
 							           ; <aml-to-java(|a)> program
          end => result
 
@@ -102,8 +91,8 @@ rules // transform
   aml-to-java-member(|a, x*, imp*) : Class(x, ext, member*) -> [JavaFile(file-name, jcls)]
     with pkg       := <format-pkg> x*
        ; file-name := <format-file-name> (x*, x)
-       ; imp'*     := <map(format-imp)> imp*
-       ; ext'      := <format-ext> ext
+       ; imp'*     := <map(format-java-imp)> imp*
+       ; ext'      := <format-java-ext> ext
        ; member'*  := <map(aml-to-java-cls-member(|a))> member*
        ; jcls      := CompilationUnit(
                         pkg,
@@ -120,13 +109,13 @@ rules // transform
   
   aml-to-java-cls-member(|a) : Field(acc, x, e) -> Field(acc', tp, x, e')
     with acc' := <aml-to-java-acc> acc
-       ; tp   := <get-type(|a)> (x, e)
+       ; tp   := <get-java-type(|a)> (x, e)
        ; e'   := <aml-to-java-expr> e
   
   aml-to-java-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> mthd
     with acc'   := <aml-to-java-acc> acc
-       ; ovr    := <method-mod-to-override> mmod
-       ; tp     := <get-type(|a)> (x, ret)
+       ; ovr    := <java-method-mod-to-override> mmod
+       ; tp     := <get-java-type(|a)> (x, ret)
        ; arg'*  := <map(aml-to-java-formal-arg)> arg*
        ; stmt'* := <map(aml-to-java-stmt)> stmt*
        ; e'     := <aml-to-java-expr> ret
@@ -164,14 +153,14 @@ rules // statements & expressions
 
 rules // classes
 
-  format-imp :: Import -> JImport
-  format-imp : Import(x) -> Import(x)
+  format-java-imp :: Import -> JImport
+  format-java-imp : Import(x) -> Import(x)
 
 
-  format-ext :: Extends -> JExtends
+  format-java-ext :: Extends -> JExtends
   
-  format-ext : NoExtends() -> NoExtends()
-  format-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
+  format-java-ext : NoExtends() -> NoExtends()
+  format-java-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
 
 
   aml-to-java-acc :: AccessModifier -> JAccMod
@@ -185,45 +174,35 @@ rules // classes
 
 rules // methods
 
-  method-mod-to-override :: MethodModifier -> JOverride
+  java-method-mod-to-override :: MethodModifier -> JOverride
   
   
-  method-mod-to-override : NoMethodModifier() -> NoOverride()
-  method-mod-to-override : Override() -> Override()
+  java-method-mod-to-override : NoMethodModifier() -> NoOverride()
+  java-method-mod-to-override : Override() -> Override()
 
-  method-mod-to-override = failure(|"Unknown method modifier")
+  java-method-mod-to-override = failure(|"Unknown method modifier")
 
 rules // types
 
-  get-type(|SolverResult) :: Tuple(ID, Expr) -> JType
-  get-type(|a) = Snd; type-from-expr
-  get-type(|a) = Fst; extract-type(|a); format-type(|a)
+  get-java-type(|SolverResult) :: Tuple(ID, Expr) -> JType
+  get-java-type(|a) = Snd; java-type-from-expr
+  get-java-type(|a) = Fst; extract-type(|a); format-java-type(|a)
 
 
-  extract-type(|SolverResult) :: ? -> ?  
-  extract-type(|a) = stx-get-ast-type(|a) 
+  format-java-type(|SolverResult) :: ? -> JType
   
-  extract-type(|a) = failure(|"Cannot retrieve type ")
-
-  format-type(|SolverResult) :: ? -> ?
-  
-  format-type(|a) : INT()    -> JInt()
-  format-type(|a) : CLASS(s) -> JTypeRef(x)
+  format-java-type(|a) : INT()    -> JInt()
+  format-java-type(|a) : CLASS(s) -> JTypeRef(x)
     with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s
 
-  format-type(|a) = failure(|"Cannot format type")
+  format-java-type(|a) = failure(|"Cannot format type")
 
-  type-from-expr :: Expr -> JType
+  java-type-from-expr :: Expr -> JType
 
-  type-from-expr : IntLit(_)      -> JInt()
-  type-from-expr : NewInstance(x) -> JTypeRef(Id(x))
+  java-type-from-expr : IntLit(_)      -> JInt()
+  java-type-from-expr : NewInstance(x) -> JTypeRef(Id(x))
 
 rules
-
-  append-id :: (Option(QId) * ID) -> QId
-  
-  append-id : (None(), x) -> Id(x)
-  append-id : (Some(x*), x) -> QId(x*, x)
 
   format-pkg :: Option(QId) -> JPkgDecl
   
@@ -237,26 +216,3 @@ rules
   format-file-name : (Some(x'), x) -> $[./[dir]/[x].java]
     with dir := <fold-id(id, { p, x: \ (p, x) -> $[[p]/[x]] \ })> x'
   
-rules
-
-  map-id(ID -> ID) :: QId -> QId
-
-  map-id(trans) = fold-id(
-                    {x   : \     x  -> Id(<trans> x)     \}, 
-                    {x, b: \ (b, x) -> QId(b, <trans> x) \}
-                  )
-
-  fold-id(ID -> b, Tuple(b, ID) -> b) :: QId -> b
-  
-  fold-id(init, agg) : Id(x) -> b
-    with b := <init> x
-  
-  fold-id(init, agg) : QId(x', x) -> b'
-    with b  := <fold-id(init, agg)> x'
-       ; b' := <agg> (b, x)
-  
-rules
-
-  failure(|string) :: a -> b
-
-  failure(|msg) = ppdebug(|msg); /* fail fast -> */ with(fail); fail /* <- required for typing */

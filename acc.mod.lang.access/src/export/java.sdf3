@@ -1,4 +1,4 @@
-module targets/java
+module export/java
 
 imports
   lib/lex
@@ -67,7 +67,7 @@ context-free sorts
 
 context-free syntax
 
-  JStatement.Expr = <<JExpr>;>
+  JStatement.Expr   = <<JExpr>;>
   JStatement.Assign = <<QId> = <JExpr>;>
   JStatement.Return = <return <JExpr>;>
 

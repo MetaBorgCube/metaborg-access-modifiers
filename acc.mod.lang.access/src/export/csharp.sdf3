@@ -1,0 +1,114 @@
+module export/csharp
+
+imports
+  lib/lex
+
+context-free start-symbols
+  CSStart
+
+context-free sorts
+  CSStart
+  CSNamespace
+  CSNamespaceDecl
+  CSUsing
+
+context-free syntax
+
+  CSStart.CompilationUnit = <
+    using System;
+    <{CSUsing "\n"}*>
+    
+    <CSNamespaceDecl>
+  >
+
+
+  CSNamespace.Namespace = <namespace <QId> {    
+    <{CSNamespaceDecl "\n\n"}*>
+  }>
+  
+  CSNamespaceDecl = CSNamespace
+
+
+  CSUsing.Using = <using <QId>;>
+  
+
+context-free sorts
+  CSClass
+  CSExtends
+  CSArg
+  
+context-free syntax
+  CSClass.ClassDecl = <
+    public class <ID> <CSExtends> {
+      <{CSClassMember "\n\n"}*>
+    }
+  >
+  
+  CSExtends.NoExtends = <>
+  CSExtends.Extends   = <: <QId>>
+  
+  CSNamespaceDecl = CSClass
+
+
+context-free sorts
+  CSClassMember
+  CSOverride
+
+context-free syntax
+  CSClassMember.Property = <<CSAccMod> <CSType> <ID> { get; set; } = <CSExpr>;>
+  CSClassMember.Method   = <
+    <CSAccMod> <CSOverride> <CSType> <ID>(<{CSArg ","}*>) {
+      <{CSStatement "\n"}*>
+    }
+  >
+  
+  CSArg.Arg = <<CSType> <ID>>
+
+  CSOverride.NoOverride = <>
+  CSOverride.Override   = <override>
+  CSOverride.New        = <new>
+
+
+context-free sorts
+  CSAccMod
+
+context-free syntax
+
+  CSAccMod.Public            = <public>
+  CSAccMod.ProtectedInternal = <protected internal>
+  CSAccMod.Protected         = <protected>
+  CSAccMod.Internal          = <internal>
+  CSAccMod.PrivateProtected  = <private protected>
+  CSAccMod.Private           = <private>
+
+
+context-free sorts
+  CSStatement
+
+context-free syntax
+
+  CSStatement.Expr   = <<CSExpr>;>
+  CSStatement.Assign = <<QId> = <CSExpr>;>
+  CSStatement.Return = <return <CSExpr>;>
+
+context-free sorts
+  CSExpr
+
+context-free syntax
+
+  CSExpr.Var             = QId
+  CSExpr.NewInstance     = <new <ID>()>
+  CSExpr.Add             = <<CSExpr> + <CSExpr>>
+  CSExpr.Int             = INT
+  
+  CSExpr.Invoke  = <<ID>(<{CSExpr ", "}*>)>
+  CSExpr.QInvoke = <<CSExpr>.<ID>(<{CSExpr ", "}*>)>
+
+context-free sorts
+  CSType
+
+context-free syntax
+
+  CSType.CSInt     = <int>
+  CSType.CSTypeRef = <<QId>>
+

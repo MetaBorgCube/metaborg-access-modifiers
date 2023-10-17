@@ -1,0 +1,98 @@
+module export/base
+
+imports
+
+  strategolib
+  libspoofax/stratego/debug
+
+  statix/api
+  statix/runtime/analysis
+
+  signatures/-
+  signatures/lib/-
+
+signature
+
+  sorts Analysis
+
+  sorts TYPE constructors
+    METHOD : List(TYPE) * TYPE -> TYPE
+    INT    : TYPE
+    CLASS  : Term/* Scope */ -> TYPE
+
+  constructors
+    : blob -> SolverResult 
+  
+  sorts Compatible constructors
+    Compatible   :                 Compatible
+    Incompatible : List(string) -> Compatible
+
+  sorts TransformResult(*, *) constructors
+    TransformSuccess : a * pp   -> TransformResult(a, pp)
+    TransformFailure : List(string) -> TransformResult(a, pp)
+
+rules
+
+  transform-builder(Program -> Compatible, Program -> a, a -> pp) :: Program -> TransformResult(a, pp)
+
+  transform-builder(check, trans, pp) : program -> result
+    with switch check
+           case ?Incompatible(reason*) : !TransformFailure(reason*)
+           case ?Compatible()          :
+                ast := <trans> program
+              ; pp  := <pp> ast
+              ; !TransformSuccess(ast, pp)
+         end => result
+
+rules
+
+  extract-type(|SolverResult) :: ? -> ?  
+  extract-type(|a) = stx-get-ast-type(|a) 
+  
+  extract-type(|a) = failure(|"Cannot retrieve type ")
+
+rules
+
+  append-id :: (Option(QId) * ID) -> QId
+  
+  append-id : (None(), x) -> Id(x)
+  append-id : (Some(x*), x) -> QId(x*, x)
+
+rules
+
+  map-id(ID -> ID) :: QId -> QId
+
+  map-id(trans) = fold-id(
+                    {x   : \     x  -> Id(<trans> x)     \}, 
+                    {x, b: \ (b, x) -> QId(b, <trans> x) \}
+                  )
+
+  fold-id(ID -> b, Tuple(b, ID) -> b) :: QId -> b
+  
+  fold-id(init, agg) : Id(x) -> b
+    with b := <init> x
+  
+  fold-id(init, agg) : QId(x', x) -> b'
+    with b  := <fold-id(init, agg)> x'
+       ; b' := <agg> (b, x)
+
+rules
+
+  map-option(a -> b) :: Option(a) -> Option(b)
+  
+  map-option(trans): Some(x) -> Some(<trans> x)
+  map-option(trans): None()  -> None()
+  
+  option-or-else(a -> b|b) :: Option(a) -> b
+  
+  option-or-else(trans|b): Some(x) -> <trans> x
+  option-or-else(trans|b): None()  -> b
+  
+  option-or-else(|a) :: Option(a) -> a
+  option-or-else(|a) = option-or-else(id|a)
+
+rules
+
+  failure(|string) :: a -> b
+
+  failure(|msg) = ppdebug(|msg); /* fail fast -> */ with(fail); fail /* <- required for typing */

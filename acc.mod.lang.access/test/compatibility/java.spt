@@ -1,0 +1,14 @@
+module compatibility/java
+
+test simple[[
+module M1 {
+class A {
+  protected internal var x = 42
+}
+class B : public A {
+  public var a = new A()
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"

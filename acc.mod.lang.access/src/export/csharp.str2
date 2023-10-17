@@ -1,0 +1,211 @@
+module export/csharp
+
+imports
+
+  strategolib
+
+  libspoofax/analysis/constraint
+  libspoofax/stratego/debug
+
+  statix/api
+  statix/runtime/analysis
+  statix/runtime/ast
+
+  signatures/start-sig
+  signatures/lib/-
+  signatures/export/csharp-sig
+
+  pp/export/csharp-pp
+  pp
+
+  export/base
+
+
+signature
+
+  sorts CSFile constructors
+    CSFile: /* Project */string * /* Dependencies */List(Import) * CSStart -> CSFile
+
+  sorts CSFilePP constructors
+    CSFilePP: string * List(QId) * string -> CSFilePP
+
+rules
+
+  transform-to-csharp(|AnalysisResult) :: Program -> TransformResult(List(CSFile), List(CSFilePP))
+  transform-to-csharp(|fa) = where(!fa; ?FileAnalysis(_, a, _))
+                           ; transform-builder(check-aml-to-csharp, aml-to-csharp(|a), map(pp-csharp-files-list))
+
+  pp-csharp-files-list :: CSFile -> CSFilePP
+  pp-csharp-files-list: CSFile(prj, dep*, ast) -> CSFilePP(prj, dep'*, pp)
+    with dep'* := <map(?Import(<id>))> dep*
+       ; pp    := <pp-partial-accmodlangaccess-string(|"CSStart")> ast
+
+  csharp-test-transform :: Program -> List(CSFile)
+  csharp-test-transform : program -> result
+    with check-aml-to-csharp
+       ; switch id
+           case ?Incompatible(reason*) : <with(map(debug); fail); fail> reason*
+           case ?Compatible()          : a := <stx-get-ast-analysis> program
+							           ; <aml-to-csharp(|a)> program
+         end => result 
+
+rules // collect errors
+
+  check-aml-to-csharp :: Program -> Compatible
+  check-aml-to-csharp = switch collect-all(csharp-incompat)
+                          case ?[]   : !Compatible()
+                          case ?msg* : !Incompatible(msg*)
+                        end
+  
+  csharp-incompat :: ? -> string
+
+  // TODO: review options
+
+  // multiple inheritance
+  csharp-incompat = ?Extends(<id>); not(?[_]); !"C# does not support multiple inheritance."; debug
+  csharp-incompat = ?ExtendsClause(<id>, _); not(?Public()); !"C# does only support public inheritance."; debug
+
+
+  csharp-incompat = ?ProtectedInternal(<id>); not(?[Self()]); !"C# does not support 'protected internal' with custom modules."; debug
+  csharp-incompat = ?Internal(<id>); not(?[Self()]); !"C# does not support 'internal' with custom modules."; debug
+  csharp-incompat = ?PrivateProtected(<id>); not(?[Self()]); !"C# does not support 'private protected' with custom modules."; debug
+
+rules  
+
+  aml-to-csharp(|SolverResult) :: Start -> List(CSFile)
+  
+  aml-to-csharp(|a): Program(_, _, _, _, member*) -> result*
+    with result* := <aml-to-csharp-members(|a, None(), [])> member*
+    
+  aml-to-csharp-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(CSFile)
+  
+  aml-to-csharp-members(|a, x, import*) : member* -> result*
+    with imp*     := <collect-all(?Import(_))> member*
+       ; all-imp* := [import*, imp*]
+       ; result*  := <map(aml-to-csharp-member(|a, x, all-imp*)); flatten-list> member*
+
+  aml-to-csharp-member(|SolverResult, Option(QId), List(Import)) :: ModuleOrClassOrImport -> List(CSFile)
+
+  aml-to-csharp-member(|a, x*, imp*) : Import(_) -> []
+  
+  aml-to-csharp-member(|a, x*, imp*) : Module(x, member*) -> res*
+    with x'   := <(id, lower-case); append-id> (x*, x)
+       ; res* := <aml-to-csharp-members(|a, Some(x'), imp*)> member*
+
+  aml-to-csharp-member(|a, x*, imp*) : Class(x, ext, member*) -> [CSFile(prj-name, imp*, cu)]
+    with imp'*     := <map(format-csharp-using)> imp*
+       ; ext'      := <format-csharp-ext> ext
+       ; member'*  := <map(aml-to-csharp-cls-member(|a))> member*
+       ; cscls     := ClassDecl(
+                        x,
+                        ext',
+                        member'*
+                      )
+       ; root-decl := <map-option(wrap-in-namespace(|cscls)); option-or-else(|cscls)> x*
+       ; cu        := CompilationUnit(imp'*, root-decl)               
+       ; prj-name  := <option-or-else(|Id("Root")); format-prj-name> x*
+
+  wrap-in-namespace(|CSClass) :: QId -> CSNamespaceDecl
+  wrap-in-namespace(|cscls) = !Namespace(<id>, [cscls])
+
+
+  format-csharp-using: Import(x) -> Using(x)
+
+  format-csharp-ext :: Extends -> CSExtends
+  
+  format-csharp-ext : NoExtends() -> NoExtends()
+  format-csharp-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
+
+
+rules // class members
+
+  aml-to-csharp-cls-member(|SolverResult) :: MemberDecl -> CSClassMember
+  
+  aml-to-csharp-cls-member(|a) : Field(acc, x, e) -> Property(acc', tp, x, e')
+    with acc' := <aml-to-csharp-acc> acc
+       ; tp   := <get-csharp-type(|a)> (x, e)
+       ; e'   := <aml-to-csharp-expr> e
+  
+  aml-to-csharp-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> mthd
+    with acc'   := <aml-to-csharp-acc> acc
+       ; ovr    := <csharp-method-mod-to-override> mmod
+       ; tp     := <get-csharp-type(|a)> (x, ret)
+       ; arg'*  := <map(aml-to-csharp-formal-arg)> arg*
+       ; stmt'* := <map(aml-to-csharp-stmt)> stmt*
+       ; e'     := <aml-to-csharp-expr> ret
+       ; mthd   := Method(ovr, acc', tp, x, arg'*, [stmt'*, Return(e')])
+ 
+   aml-to-csharp-formal-arg :: Arg -> CSArg
+   
+   aml-to-csharp-formal-arg : Arg(x, t) -> Arg(t', x)
+     with t' := <aml-to-csharp-type> t
+
+   aml-to-csharp-type :: Type -> CSType
+   aml-to-csharp-type : IntT() -> CSInt()
+   aml-to-csharp-type : RefT(x) -> CSTypeRef(Id(x))
+
+rules
+
+  csharp-method-mod-to-override :: MethodModifier -> CSOverride
+  
+  csharp-method-mod-to-override : NoMethodModifier() -> NoOverride()
+  csharp-method-mod-to-override : Override() -> Override()
+  csharp-method-mod-to-override : New() -> New()
+
+rules
+
+  aml-to-csharp-acc :: AccessModifier -> CSAccMod
+  aml-to-csharp-acc : Public() -> Public()
+  aml-to-csharp-acc : Protected() -> Protected()
+  aml-to-csharp-acc : ProtectedInternal([Self()]) -> ProtectedInternal()
+  aml-to-csharp-acc : Internal([Self()]) -> Internal()
+  aml-to-csharp-acc : PrivateProtected([Self()]) -> PrivateProtected()
+  aml-to-csharp-acc : Private() -> Private()
+  
+  aml-to-csharp-acc = failure(|"Unknown access modifier")
+
+rules // statements & expressions     
+
+  aml-to-csharp-stmt :: Stmt -> CSStatement
+  
+  aml-to-csharp-stmt : ExprStmt(e)  -> Expr(<aml-to-csharp-expr> e)  
+  aml-to-csharp-stmt : Assign(Var(x), e) -> Assign(x, <aml-to-csharp-expr> e)
+
+
+  aml-to-csharp-expr :: Expr -> CSExpr
+
+  aml-to-csharp-expr : Var(x) -> Var(x)
+  aml-to-csharp-expr : NewInstance(x) -> NewInstance(x)
+  aml-to-csharp-expr : Plus(e1, e2) -> Add(e1', e2')
+    with e1' := <aml-to-csharp-expr> e1
+       ; e2' := <aml-to-csharp-expr> e2
+  aml-to-csharp-expr : IntLit(i) -> Int(i)
+  aml-to-csharp-expr = Invoke(id, map(aml-to-csharp-expr))
+  aml-to-csharp-expr = QInvoke(aml-to-csharp-expr, id, map(aml-to-csharp-expr))
+
+  aml-to-csharp-expr = failure(|"Unknown expression")
+
+rules // types
+
+  get-csharp-type(|SolverResult) :: Tuple(ID, Expr) -> CSType
+  get-csharp-type(|a) = Snd; csharp-type-from-expr
+  get-csharp-type(|a) = Fst; extract-type(|a); format-csharp-type(|a)
+
+
+  format-csharp-type(|SolverResult) :: ? -> CSType
+  
+  format-csharp-type(|a) : INT()    -> CSInt()
+  format-csharp-type(|a) : CLASS(s) -> CSTypeRef(x)
+    with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s
+
+  format-csharp-type(|a) = failure(|"Cannot format type")
+
+  csharp-type-from-expr :: Expr -> CSType
+
+  csharp-type-from-expr : IntLit(_)      -> CSInt()
+  csharp-type-from-expr : NewInstance(x) -> CSTypeRef(Id(x))
+
+rules
+
+  format-prj-name :: QId -> string
+  format-prj-name = fold-id(id, { p, x: \ (p, x) -> $[[p].[x]] \ })
