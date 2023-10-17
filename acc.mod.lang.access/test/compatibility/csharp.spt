@@ -1,14 +1,17 @@
 module compatibility/csharp
 
-test simple[[
+test simple [[
 module M1 {
 class A {
-  protected internal var x = 42
+  protected internal var x = 43
 }
+}
+module M2 {
+import M1
 class B : public A {
   public var a = new A()
 }
 }
 ]]
 run csharp-test-transform
-// transform "Test C# Compatibility"
+transform "Test C# Compatibility"

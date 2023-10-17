@@ -47,7 +47,7 @@ rules
 rules
 
   extract-type(|SolverResult) :: ? -> ?  
-  extract-type(|a) = stx-get-ast-type(|a) 
+  extract-type(|a) = stx-get-ast-type(|a); try(?METHOD(_, <id>))
   
   extract-type(|a) = failure(|"Cannot retrieve type ")
 

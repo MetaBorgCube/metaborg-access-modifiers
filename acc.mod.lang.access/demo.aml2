@@ -4,7 +4,7 @@ class A {
   protected var x = 42
 }
 class B : public A {
-  public foo(a: B) {
-    return a.x
+  public foo(a: A) {
+    return a.x + 1
   }
 }

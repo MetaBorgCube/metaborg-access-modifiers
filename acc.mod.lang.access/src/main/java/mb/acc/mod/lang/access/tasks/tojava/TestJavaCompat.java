@@ -22,27 +22,67 @@ import mb.common.message.KeyedMessages;
 import mb.common.result.Result;
 import mb.common.util.ListView;
 import mb.pie.api.ExecContext;
-import mb.pie.api.TaskDef;
 import mb.pie.task.java.CompileJava;
 import mb.pie.task.java.jdk.JdkJavaCompiler;
 import mb.resource.ResourceService;
 import mb.resource.WritableResource;
 import mb.resource.hierarchical.HierarchicalResource;
 import mb.resource.hierarchical.ResourcePath;
-import mb.spoofax.core.language.command.CommandFeedback;
 
 
 @AccModLangAccessScope
-public class TestJavaCompat extends TestCompat implements TaskDef<TestJavaCompat.Args, CommandFeedback> {
+public class TestJavaCompat extends TestCompat {
 	
     @Inject
 	public TestJavaCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToJava transform, ResourceService resourceService) {
-    	super(parse, analyze, transform, resourceService);
+    	super(parse, analyze, transform, resourceService, "java");
+	}
+	
+	@Override
+	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args, IStrategoList javaFilesTerm) {
+		final HierarchicalResource normalizedProject = normalizeRoot(args.rootDirectory);
+		final String normalizedFile = normalizeFile(args.file, normalizedProject);
+		final Result<Collection<ResourcePath>, IOException> writeResult = writeJavaFiles(context, javaFilesTerm, normalizedFile, normalizedProject);
+		
+		if(writeResult.isErr()) {
+			return Result.ofErr(writeResult.getErr());
+		}
+		
+		final Collection<ResourcePath> javaResources = writeResult.get();
+		
+		// 3. Compile Java
+		final JdkJavaCompiler javaCompiler = new JdkJavaCompiler();
+		KeyedMessages compilerOutput;
+		try {
+			compilerOutput = javaCompiler.compile(
+					context,
+					ListView.of(CompileJava.Sources.builder()
+						.addAllSourceFiles(javaResources)
+						.build()), 
+					ListView.of(), 
+					ListView.of(), 
+					"11", 
+					buildRoot(normalizedProject)
+						.appendAsRelativePath("src-gen")
+						.appendAsRelativePath(normalizedFile)
+						.getPath(), 
+					buildRoot(normalizedProject)
+						.appendAsRelativePath("build")
+						.appendAsRelativePath(normalizedFile)
+						.getPath(),
+					false, 
+					false, 
+					ListView.of()
+			);
+		} catch (IOException e) {
+			return Result.ofErr(e);
+		}
+		
+		return Result.ofOk(compilerOutput);
 	}
 
-	Result<Collection<ResourcePath>, IOException> writeJavaFiles(ExecContext ctx, IStrategoList transformedPPedFiles, String file, HierarchicalResource project) {
-		final HierarchicalResource targetRoot = project
-				.appendAsRelativePath(relativeTargetDirRoot)
+	private Result<Collection<ResourcePath>, IOException> writeJavaFiles(ExecContext ctx, IStrategoList transformedPPedFiles, String file, HierarchicalResource project) {
+		final HierarchicalResource targetRoot = buildRoot(project)
 				.appendAsRelativePath("src")
 				.appendAsRelativePath(file);
 		final ArrayList<ResourcePath> javaFiles = new ArrayList<>();
@@ -76,54 +116,7 @@ public class TestJavaCompat extends TestCompat implements TaskDef<TestJavaCompat
 		
 		return Result.ofOk(Collections.unmodifiableList(javaFiles));
 	}
-	
-	@Override
-	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args, IStrategoTerm transformResultTerm) {
-		final IStrategoList javaFilesTerm = TermUtils.toListAt(transformResultTerm, 1);
-		final HierarchicalResource normalizedProject = normalizeRoot(args.rootDirectory);
-		final String normalizedFile = normalizeFile(args.file, normalizedProject);
-		final Result<Collection<ResourcePath>, IOException> writeResult = writeJavaFiles(context, javaFilesTerm, normalizedFile, normalizedProject);
-		
-		if(writeResult.isErr()) {
-			return Result.ofErr(writeResult.getErr());
-		}
-		
-		final Collection<ResourcePath> javaResources = writeResult.get();
-		
-		// 3. Compile Java
-		final JdkJavaCompiler javaCompiler = new JdkJavaCompiler();
-		KeyedMessages compilerOutput;
-		try {
-			compilerOutput = javaCompiler.compile(
-					context,
-					ListView.of(CompileJava.Sources.builder()
-						.addAllSourceFiles(javaResources)
-						.build()), 
-					ListView.of(), 
-					ListView.of(), 
-					"11", 
-					resourceService.getHierarchicalResource(args.rootDirectory)
-						.appendAsRelativePath(relativeTargetDirRoot)
-						.appendAsRelativePath("src-gen")
-						.appendAsRelativePath(normalizedFile)
-						.getPath(), 
-					resourceService.getHierarchicalResource(args.rootDirectory)
-						.appendAsRelativePath(relativeTargetDirRoot)
-						.appendAsRelativePath("build")
-						.appendAsRelativePath(normalizedFile)
-						.getPath(),
-					false, 
-					false, 
-					ListView.of()
-			);
-		} catch (IOException e) {
-			return Result.ofErr(e);
-		}
-		
-		return Result.ofOk(compilerOutput);
-	}
 
-	
 	@Override
 	public String getId() {
 		return TestJavaCompat.class.getCanonicalName();
