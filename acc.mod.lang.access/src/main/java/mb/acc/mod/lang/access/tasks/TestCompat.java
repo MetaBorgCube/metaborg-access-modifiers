@@ -1,8 +1,15 @@
 package mb.acc.mod.lang.access.tasks;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -177,6 +184,109 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		return project
 			.appendAsRelativePath(relativeTargetDirRoot)
 			.appendAsRelativePath(langName);
+	}
+	
+	
+	protected abstract class Command {
+
+		private List<String> cmd = new ArrayList<String>();
+		
+		private List<String> requires = new ArrayList<String>();
+		private List<String> provides = new ArrayList<String>();
+
+		protected Command(String subCommand) {
+			cmd.add("dotnet");
+			cmd.add(subCommand);
+		}
+
+		protected void addArgument(String option) {
+			cmd.add(option);
+		}
+
+		protected void addOption(String flag) {
+			cmd.add(String.format("--%s", flag));
+		}
+
+		protected void addOption(String flag, String value) {
+			cmd.add(String.format("--%s %s", flag, value));
+		}
+
+		protected void addParameter(String name, String value) {
+			cmd.add(String.format("%s %s", name, value));
+		}
+		
+		protected void require(String file) {
+			requires.add(file);
+		}
+		
+		protected void provide(String file) {
+			provides.add(file);
+		}
+
+		public void run(ExecContext context, ResourcePath workingDirectory) throws IOException {
+			run(context, workingDirectory, true);
+		}
+
+		public KeyedMessages run(ExecContext context, ResourcePath workingDirectory, boolean mustSucceed) throws IOException {
+			final Runtime rt = Runtime.getRuntime();
+			final String cmd = String.join(" ", this.cmd);
+			
+			context.require(workingDirectory);
+			for(String file: requires) {
+				context.require(workingDirectory.appendAsRelativePath(file));
+			}
+			final File pwdFile = resourceService.toLocalFile(workingDirectory);
+
+			context.logger().info("Running '{}' in {}", cmd, pwdFile);
+			final Process proc = rt.exec(cmd, /*inherit env*/null, pwdFile);
+			try {
+				proc.waitFor();
+			} catch (InterruptedException e) {
+				throw new IOException(e);
+			}
+
+			final KeyedMessagesBuilder kmb = new KeyedMessagesBuilder();
+
+			int exitValue = proc.exitValue();
+			if (exitValue != 0) {
+				final StringBuilder msg = new StringBuilder("Sub Process '" + cmd + "' terminated with non-zero error code");
+
+				try {
+					readAllLines(proc, line -> {
+						context.logger().error(line);
+						msg.append("\n").append("    ").append(line);
+					});
+				} catch (IOException e) {
+					throw new IOException("Error reading process output. Partial result:" + msg.toString(), e);
+				}
+				if (mustSucceed) {
+					throw new IOException(msg.toString());
+				} else {
+					kmb.addMessage(msg.toString(), Severity.Error);
+				}
+			} else {				
+				readAllLines(proc.getErrorStream(), line -> { kmb.addMessage(line, Severity.Warning, workingDirectory); });
+				readAllLines(proc.getInputStream(), line -> { kmb.addMessage(line, Severity.Info, workingDirectory); });
+			}
+
+			for(String file: provides) {
+				context.require(workingDirectory.appendAsRelativePath(file));
+			}
+
+			return kmb.build();
+		}
+		
+		private void readAllLines(Process proc, Consumer<String> consumer) throws IOException {			
+			readAllLines(proc.getInputStream(), consumer);	
+			readAllLines(proc.getErrorStream(), consumer);
+		}
+		
+		private void readAllLines(InputStream inputStream, Consumer<String> consumer) throws IOException {		
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+				reader.lines().forEach(consumer);
+			}
+		}
+
 	}
 
 }
