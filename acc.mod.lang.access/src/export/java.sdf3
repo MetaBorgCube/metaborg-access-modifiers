@@ -23,7 +23,6 @@ context-free syntax
     <{JClassDecl "\n"}+>
   >
 
-  JPkgDecl.NoPkgDecl = <>
   JPkgDecl.PkgDecl   = <package <QId>;>
 
   JImport.Import = <import <QId>.*;>

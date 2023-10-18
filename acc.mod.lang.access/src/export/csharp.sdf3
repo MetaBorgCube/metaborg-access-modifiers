@@ -30,6 +30,7 @@ context-free syntax
 
 
   CSUsing.Using = <using <QId>;>
+  CSUsing.ROOT  = <> // HACK: use as placeholder to dependency on root module.
   
 
 context-free sorts

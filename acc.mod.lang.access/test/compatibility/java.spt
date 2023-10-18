@@ -3,7 +3,7 @@ module compatibility/java
 test simple[[
 module M1 {
 class A {
-  protected internal var x = 42
+  protected internal var x = 43
 }
 }
 module M2 {
@@ -13,5 +13,36 @@ class B : public A {
 }
 }
 ]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test nested - refer to parent [[
+module M1 {
+  class A {
+    protected internal var x = 43
+  }
+  module M2 {
+    class B : public A {
+      public var a = new A()
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test nested - refer to root [[
+class A {
+  protected internal var x = 423
+}
+module M1 {
+  module M2 {
+    class B : public A {
+      public var a = new A()
+    }
+  }
+}
+]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"

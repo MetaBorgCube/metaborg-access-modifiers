@@ -75,8 +75,11 @@ rules // transform
   aml-to-java-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(JavaFile)
   
   aml-to-java-members(|a, x, import*) : member* -> result*
-    with imp*     := <collect-all(?Import(_))> member*
-       ; all-imp* := [import*, imp*]
+    with imp*     := <filter(?Import(_))> member*
+       ; has-clss := <filter(?Class(_, _, _)); ?[] < !None() + !Some(<id>)> member*
+       ; pkg-name := <option-or-else(|Id("root"))> x
+       ; self-imp := <map-option(!Import(pkg-name))> has-clss
+       ; all-imp* := <prepend-opt> (self-imp, [import*, imp*])
        ; result*  := <map(aml-to-java-member(|a, x, all-imp*)); flatten-list> member*
   
   
@@ -206,13 +209,13 @@ rules
 
   format-pkg :: Option(QId) -> JPkgDecl
   
-  format-pkg : None() -> NoPkgDecl()
+  format-pkg : None()       -> PkgDecl(Id("root"))
   format-pkg : Some(pkg-id) -> PkgDecl(<map-id(lower-case)> pkg-id)
 
 
   format-file-name :: (Option(QId) * ID) -> string
 
-  format-file-name : (None(), x) -> $[./[x].java]
+  format-file-name : (None(), x) -> $[./root/[x].java]
   format-file-name : (Some(x'), x) -> $[./[dir]/[x].java]
     with dir := <fold-id(id, { p, x: \ (p, x) -> $[[p]/[x]] \ })> x'
   

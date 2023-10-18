@@ -24,7 +24,7 @@ imports
 signature
 
   sorts CSFile constructors
-    CSFile: /* Project */string * /* Dependencies */List(Import) * CSStart -> CSFile
+    CSFile: /* Project */QId * /* Dependencies */List(Import) * CSStart -> CSFile
 
   sorts CSFilePP constructors
     CSFilePP: string * List(string) * string -> CSFilePP
@@ -36,8 +36,9 @@ rules
                            ; transform-builder(check-aml-to-csharp, aml-to-csharp(|a), map(pp-csharp-files-list))
 
   pp-csharp-files-list :: CSFile -> CSFilePP
-  pp-csharp-files-list: CSFile(prj, dep*, ast) -> CSFilePP(prj, dep'*, pp)
-    with dep'* := <map(?Import(<id>); format-prj-name)> dep*
+  pp-csharp-files-list: CSFile(prj, dep*, ast) -> CSFilePP(prj', dep'*, pp)
+    with prj'  := <format-prj-name> prj
+       ; dep'* := <map(?Import(<id>); format-prj-name)> dep*
        ; pp    := <pp-partial-accmodlangaccess-string(|"CSStart")> ast
 
   csharp-test-transform :: Program -> List(CSFile)
@@ -81,10 +82,12 @@ rules
   
   aml-to-csharp-members(|a, x, import*) : member* -> result*
     with imp*      := <filter(?Import(_))> member*
-       ; all-imp*  := [import*, imp*]
-       ; mod*      := <filter(?Module(_, _); aml-to-csharp-member(|a, x, all-imp*); flatten-list; is(List(CSFile)))> member*
-       ; cls*      := <filter(?Class(_, _, _); aml-to-csharp-class(|a)); aml-wrap-csharp-classes(|x, all-imp*)> member*
-       ; result*   := <flatten-list> [cls*, mod*]
+       ; all-imp*  := <flatten-list; is(List(Import))> [import*, imp*]
+       ; ns-opt    := <filter(?Class(_, _, _); aml-to-csharp-class(|a)); aml-wrap-csharp-classes(|x, all-imp*)> member*
+       ; self-imp  := <map-option(?CSFile(<id>, _, _); !Import(<id>))>
+       ; sub-imp*  := <prepend-opt> (self-imp, all-imp*)
+       ; mod*      := <filter(?Module(_, _); aml-to-csharp-member(|a, x, sub-imp*)); flatten-list; is(List(CSFile))> member*
+       ; result*   := <prepend-opt> (ns-opt, mod*)
 
 
   aml-to-csharp-member(|SolverResult, Option(QId), List(Import)) :: ModuleOrClassOrImport -> List(CSFile)
@@ -101,16 +104,18 @@ rules
        ; member'*  := <map(aml-to-csharp-cls-member(|a))> member*
 
 
-  aml-wrap-csharp-classes(|Option(QId), List(Import)) :: List(CSClass) -> List(CSFile)
+  aml-wrap-csharp-classes(|Option(QId), List(Import)) :: List(CSClass) -> Option(CSFile)
 
-  aml-wrap-csharp-classes(|x, import*) : [] -> []
-  aml-wrap-csharp-classes(|x, import*) : cls* -> [file]
+  aml-wrap-csharp-classes(|x, import*) : [] -> None()
+  aml-wrap-csharp-classes(|x, import*) : cls* -> Some(file)
     with root-decl := <map-option(![Namespace(<id>, cls*)]); is(Option(List(CSNamespaceDecl))); option-or-else(|cls*)> x
        ; imp'*     := <map(format-csharp-using)> import*
        ; cu        := CompilationUnit(imp'*, root-decl)               
-       ; prj-name  := <option-or-else(|Id("__Root")); format-prj-name> x
+       ; prj-name  := <option-or-else(|Id("__Root"))> x
        ; file      := CSFile(prj-name, import*, cu)
 
+  format-csharp-using :: Import -> CSUsing
+  format-csharp-using: Import(Id("__Root")) -> ROOT()
   format-csharp-using: Import(x) -> Using(x)
 
   format-csharp-ext :: Extends -> CSExtends

@@ -83,6 +83,7 @@ rules
   map-option(trans): Some(x) -> Some(<trans> x)
   map-option(trans): None()  -> None()
   
+  
   option-or-else(a -> b|b) :: Option(a) -> b
   
   option-or-else(trans|b): Some(x) -> <trans> x
@@ -90,6 +91,19 @@ rules
   
   option-or-else(|a) :: Option(a) -> a
   option-or-else(|a) = option-or-else(id|a)
+
+
+  option-and(Tuple(a, b) -> c) :: Tuple(Option(a), Option(b)) -> Option(c)
+  
+  option-and(merge) : (Some(a), Some(b)) -> Some(<merge> (a, b))
+  option-and(merge) : _                  -> None()
+
+rules
+
+  prepend-opt :: Tuple(Option(a), List(a)) -> List(a)
+
+  prepend-opt : (None(),  xs) -> xs
+  prepend-opt : (Some(x), xs) -> [x| xs]
 
 rules
 

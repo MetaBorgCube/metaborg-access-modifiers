@@ -244,6 +244,9 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			} catch (InterruptedException e) {
 				throw new IOException(e);
 			}
+			
+			// Executing a process can take a while, so check for cancellation.
+			context.cancelToken().throwIfCanceled();
 
 			final KeyedMessagesBuilder kmb = new KeyedMessagesBuilder();
 
