@@ -131,9 +131,11 @@ rules
   memberOk: scope * MemberDecl
   membersOk maps memberOk(*, list(*))
 
-  memberOk(s_cls, Field(acc, x, init)) :- {T}
-    typeOfExpr(s_cls, init) == T,
-    fieldDeclOk(s_cls, acc, x, T).
+  [D-Def]
+  memberOk(s_cls, Field(acc, x, e)) :- {T A}
+    typeOfExpr(s_cls, e) == T,
+    accessModifierToAccess(s_cls, acc) == A,
+    declareVar(s_cls, x, T, A).
 
   memberOk(s_cls, Method(acc, mth, x, args, stmts, ret_exp)) :- 
     {s_mthd Ts T_ret ACC}
@@ -152,12 +154,6 @@ rules
     
       methodDeclOk(s_cls, ACC, x, Ts, T_ret).
 
-rules
-
-  fieldDeclOk: scope * AccessModifier * ID * TYPE
-
-  fieldDeclOk(s, acc, x, T) :-
-    declareVar(s, x, T, accessModifierToAccess(s, acc)).
 
 rules
 

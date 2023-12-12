@@ -94,12 +94,13 @@ rules
   resolveModRefs maps resolveModRef(*, list(*)) = list(*)
   modRefOk: scope * scope * ExposureRange * QId
   
-  accessModifierToAccess(s, Public())                   = UNRESTRICTED().
+  
+  [A-Pub]  accessModifierToAccess(s, Public())                   = UNRESTRICTED().
   accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefs(s, modRefs)).
-  accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefs(s, modRefs)).
-  accessModifierToAccess(s, Protected())                = subclassOrModules([]).
+  [A-Int]  accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefs(s, modRefs)).
+  [A-Prot] accessModifierToAccess(s, Protected())                = subclassOrModules([]).
   accessModifierToAccess(s, PrivateProtected(modRefs))  = subclassInModules(resolveModRefs(s, modRefs)).
-  accessModifierToAccess(s, Private())                  = modules([]).
+  [A-Priv] accessModifierToAccess(s, Private())                  = modules([]).
 
   resolveModRef(s, Self()) = thisMod(s).
   resolveModRef(s, ModuleRef(qid)) = s_mod :-
@@ -107,11 +108,13 @@ rules
     modRefOk(s, s_mod, resolveExposureRange(s), qid).
 
   modRefOk(s, s_mod, All(), _).
+  
+  [A-Int'] // Additional condition only
   modRefOk(s, s_mod, Ancestors(), id) :-
     isEnclosingScope(s, s_mod)
     | error $[Not allowed to expose member to non-ancestor module [id].].
 
-rules
+rules // lexical target accessible
 
   lexicalAccessOk               : path * ACCESS
   lexProtectedInternalAccessOk  : PATH_LIST *     LexicalInternal * path * /* exposedModules */scope
@@ -153,6 +156,10 @@ rules
 
   lexInternalOk(DenyLexicalInternal(), _, _) :-
     false.
+
+rules // lexical access paths ok
+
+ // TODO: separate from section above
 
 rules // member access
 
@@ -234,6 +241,10 @@ rules // member access
   instanceOfCurrentOk(AllowMemberProtected(), _, _).
   instanceOfCurrentOk(IfInstanceOfCurrent(), s, p) :-
     nonEmpty(subClass(src(p), thisClass(s))).
+
+rules // member access paths ok
+
+  // TODO: separate from above
 
 rules
 

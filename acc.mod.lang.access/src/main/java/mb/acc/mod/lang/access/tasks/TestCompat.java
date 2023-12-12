@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -240,7 +241,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			context.logger().info("Running '{}' in {}", cmd, pwdFile);
 			final Process proc = rt.exec(cmd, /*inherit env*/null, pwdFile);
 			try {
-				proc.waitFor();
+				proc.waitFor(1, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
 				throw new IOException(e);
 			}
@@ -260,7 +261,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 						msg.append("\n").append("    ").append(line);
 					});
 				} catch (IOException e) {
-					throw new IOException("Error reading process output. Partial result:" + msg.toString(), e);
+					throw new IOException("Error reading process output. Partial result: " + msg.toString(), e);
 				}
 				if (mustSucceed) {
 					throw new IOException(msg.toString());
@@ -273,7 +274,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			}
 
 			for(String file: provides) {
-				context.require(workingDirectory.appendAsRelativePath(file));
+				context.provide(resourceService.getReadableResource(workingDirectory.appendAsRelativePath(file)));
 			}
 
 			return kmb.build();

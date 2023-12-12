@@ -38,6 +38,7 @@ rules
   resolveLexicalVar: scope * ID -> VAR_PATH
   resolveMemberVar: scope * ID -> VAR_PATH
 
+  [Q-Def]
   resolveLexicalVar(s, x) = (p, T) :- {x'}
     query var
       filter
@@ -56,6 +57,7 @@ rules
     @x.ref := x',
     @x.type := T.
 
+  [Q-Fld]
   resolveMemberVar(s, x) = (p, T) :- {x'}
     query var
       filter
@@ -74,13 +76,16 @@ rules
 rules
 
   resolveVar: scope * QId -> TYPE
+  
+  [T-Ref]
   resolveVar(s, Id(x)) = T :- {p ACC}
     (p, (T, ACC)) == resolveLexicalVar(s, x),
     lexicalAccessOk(p, ACC)
       | error $[Variable [x] is not visible.] @x.
 
+  [T-FAcc]
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
-    CLASS(s_cls) == resolveVar(s, qid),
-    (p, (T, ACC)) == resolveMemberVar(s_cls, x),
+    resolveVar(s, qid) == CLASS(s_cls),
+    resolveMemberVar(s_cls, x) == (p, (T, ACC)),
     memberAccessOk(s, p, ACC)
       | error $[Field [x] is not visible.] @x.
