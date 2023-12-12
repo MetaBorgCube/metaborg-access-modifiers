@@ -16,7 +16,7 @@ signature
 
   sorts ACCESS constructors
     LOCAL                   :          ACCESS
-    UNRESTRICTED            :          ACCESS
+    UNRESTRICTED            :          ACCESS // PUB in paper
     SUBCLASS_OR_MODULES     : scope -> ACCESS
     SUBCLASS_IN_MODULES     : scope -> ACCESS
     MODULES                 : scope -> ACCESS
@@ -156,10 +156,7 @@ rules // lexical target accessible
 
   lexInternalOk(DenyLexicalInternal(), _, _) :-
     false.
-
-rules // lexical access paths ok
-
- // TODO: separate from section above
+    
 
 rules // member access
 
