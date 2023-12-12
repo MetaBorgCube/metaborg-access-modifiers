@@ -47,11 +47,13 @@ rules
       and
         { x'' :- x'' == x }
       min
-        LEX < EXTEND,
-        LEX < EXTEND_PROT,
-        LEX < EXTEND_PRIV,
+        EXTEND < LEX,
+        EXTEND_PROT < LEX,
+        EXTEND_PRIV < LEX,
         
-        $ < LEX
+        $ < EXTEND,
+        $ < EXTEND_PROT,
+        $ < EXTEND_PRIV
       in s |-> [(p, (x', T))]
       | error $[Reference [x] is ambiguous.],
     @x.ref := x',

@@ -57,6 +57,8 @@ rules
 rules
 
   thisClass: scope -> scope
+  
+  [Enc-CI]
   thisClass(s) = s_cls :-
     query thisClass
       filter LEX*

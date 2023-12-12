@@ -64,6 +64,8 @@ rules
 rules
 
   thisMod: scope -> scope
+  
+  [Enc-MI]
   thisMod(s) = s_mod :-
     query thisMod
       filter LEX*
