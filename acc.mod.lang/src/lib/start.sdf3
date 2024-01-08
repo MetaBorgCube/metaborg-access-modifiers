@@ -12,11 +12,7 @@ context-free sorts
 context-free syntax
 
   Program.Program = <
-    <ExposureMode>
-    <ExposureRange>
-    <LexicalInternal>
-    <MemberProtected>
-    <MemberPrivate>
+    <Options>
 
     <{ModuleOrClassOrImport "\n"}*>
   >
@@ -24,6 +20,8 @@ context-free syntax
 // Type Checker Configuration
 
 context-free sorts
+
+  Options
 
   ExposureMode
   ExposureRange
@@ -33,6 +31,14 @@ context-free sorts
   MemberPrivate
 
 context-free syntax
+
+  Options.Options = <
+    <ExposureMode>
+    <ExposureRange>
+    <LexicalInternal>
+    <MemberProtected>
+    <MemberPrivate>
+  >
 
   ExposureMode.NoExposureMode    		= <>
   ExposureMode.IncludeSubmodules 		= <#exposure-mode: include-submodules>

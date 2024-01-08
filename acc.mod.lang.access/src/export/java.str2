@@ -69,7 +69,7 @@ rules // transform
 
   aml-to-java(|SolverResult) :: Start -> List(JavaFile)
   
-  aml-to-java(|a): Program(_, _, _, _, _, member*) -> result*
+  aml-to-java(|a): Program(_, member*) -> result*
     with result* := <aml-to-java-members(|a, None(), [])> member*
   
   aml-to-java-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(JavaFile)

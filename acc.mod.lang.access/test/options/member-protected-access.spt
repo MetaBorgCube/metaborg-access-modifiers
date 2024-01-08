@@ -56,7 +56,7 @@ test on inheritance modifier - instance of current - yes [[
 
 module p {
 class A {
-  internal var x = 42
+  public var x = 42
 }
 class B : protected A { }
 class C : public B {
@@ -68,12 +68,12 @@ class C : public B {
 ]]
 analysis succeeds
 
-test on inheritance modifier - instance of current - no [[
+test on inheritance modifier - allow [[
 #member-protected-access: allow
 
 module p {
 class A {
-  internal var x = 42
+  public var x = 42
 }
 class B : protected A { }
 class C : public B {

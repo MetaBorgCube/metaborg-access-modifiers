@@ -75,7 +75,7 @@ rules
 
   aml-to-csharp(|SolverResult) :: Start -> List(CSFile)
   
-  aml-to-csharp(|a): Program(_, _, _, _, _, member*) -> result*
+  aml-to-csharp(|a): Program(_, member*) -> result*
     with result* := <aml-to-csharp-members(|a, None(), [])> member*
     
   aml-to-csharp-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(CSFile)
@@ -99,9 +99,10 @@ rules
 
 
   aml-to-csharp-class(|SolverResult) :: Class -> CSClass
-  aml-to-csharp-class(|a) : Class(x, ext, member*) -> ClassDecl(x, ext', member'*)
-    with ext'      := <format-csharp-ext> ext
-       ; member'*  := <map(aml-to-csharp-cls-member(|a))> member*
+  aml-to-csharp-class(|a) : Class(x, ext, member*) -> ClassDecl(x, ext', [Constr(x, init'), member'*])
+    with ext'              := <format-csharp-ext> ext
+       ; (member'*, init)  := <map(aml-to-csharp-cls-member(|a)); unzip> member*
+       ; init'             := <filter(?Some(<id>))> init
 
 
   aml-wrap-csharp-classes(|Option(QId), List(Import)) :: List(CSClass) -> Option(CSFile)
@@ -126,14 +127,14 @@ rules
 
 rules // class members
 
-  aml-to-csharp-cls-member(|SolverResult) :: MemberDecl -> CSClassMember
+  aml-to-csharp-cls-member(|SolverResult) :: MemberDecl -> (CSClassMember * Option(CSInit))
   
-  aml-to-csharp-cls-member(|a) : Field(acc, x, e) -> Property(acc', tp, x, e')
+  aml-to-csharp-cls-member(|a) : Field(acc, x, e) -> (Property(acc', tp, x), Some(Init(x, e')))
     with acc' := <aml-to-csharp-acc> acc
        ; tp   := <get-csharp-type(|a)> (x, e)
        ; e'   := <aml-to-csharp-expr> e
   
-  aml-to-csharp-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> mthd
+  aml-to-csharp-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> (mthd, None())
     with acc'   := <aml-to-csharp-acc> acc
        ; ovr    := <csharp-method-mod-to-override> mmod
        ; tp     := <get-csharp-type(|a)> (x, ret)

@@ -13,7 +13,7 @@ rules
 
   // No injection explication for top-level sort `Start`.
   programOk : Program
-  programOk(Program(EM, ER, LI, MProt, MPriv, prog)) :- {s}
+  programOk(Program(Options(EM, ER, LI, MProt, MPriv), prog)) :- {s}
     new s,
     !thisMod[s] in s,
 

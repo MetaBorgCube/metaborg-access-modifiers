@@ -40,6 +40,8 @@ module p {
 }
 ]]
 analysis succeeds
+run java-test-transform
+transform "Test Java Compatibility"
 
 test other mod - private [[
 module p {
@@ -91,3 +93,7 @@ module q {
 }
 ]]
 analysis succeeds
+run java-test-transform
+transform "Test Java Compatibility"
+run csharp-test-transform
+transform "Test C# Compatibility"

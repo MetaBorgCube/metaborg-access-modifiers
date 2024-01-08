@@ -36,7 +36,6 @@ context-free syntax
 context-free sorts
   CSClass
   CSExtends
-  CSArg
   
 context-free syntax
   CSClass.ClassDecl = <
@@ -53,10 +52,17 @@ context-free syntax
 
 context-free sorts
   CSClassMember
+  CSInit
+  CSArg
   CSOverride
 
 context-free syntax
-  CSClassMember.Property = <<CSAccMod> <CSType> <ID> { get; set; } = <CSExpr>;>
+  CSClassMember.Property = <<CSAccMod> <CSType> <ID> { get; set; }>
+  CSClassMember.Constr   = <
+    public <ID>() {
+      <{CSInit "\n"}*>
+    }
+  >
   CSClassMember.Method   = <
     <CSAccMod> <CSOverride> <CSType> <ID>(<{CSArg ","}*>) {
       <{CSStatement "\n"}*>
@@ -64,6 +70,8 @@ context-free syntax
   >
   
   CSArg.Arg = <<CSType> <ID>>
+
+  CSInit.Init = <this.<ID> = <CSExpr>;>
 
   CSOverride.NoOverride = <>
   CSOverride.Override   = <override>
