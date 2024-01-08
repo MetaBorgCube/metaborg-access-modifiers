@@ -18,6 +18,7 @@ import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
+import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
 import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
 import mb.accmodlangaccess.task.AccModLangAccessParse;
 import mb.common.message.KeyedMessages;
@@ -28,6 +29,7 @@ import mb.constraint.pie.ConstraintAnalyzeTaskDef;
 import mb.pie.api.ExecContext;
 import mb.pie.api.Supplier;
 import mb.pie.api.TaskDef;
+import mb.pie.api.stamp.resource.ResourceStampers;
 import mb.resource.ResourceKey;
 import mb.resource.ResourceKeyString;
 import mb.resource.ResourceService;
@@ -72,6 +74,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 	protected static final String relativeTargetDirRoot = "build/test";
 	
+	protected final AccModLangAccessClassLoaderResources classLoaderResources;
 	protected final AccModLangAccessParse parse;
 	protected final AccModLangAccessAnalyze analyze;
 	protected final TransformWithAnalysis transform;
@@ -79,7 +82,8 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 	
 	private final String langName;
 
-	protected TestCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformWithAnalysis transform, ResourceService resourceService, String langDir) {
+	protected TestCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformWithAnalysis transform, ResourceService resourceService, String langDir) {
+		this.classLoaderResources = classLoaderResources;
 		this.parse = parse;
 		this.analyze = analyze;
 		this.transform = transform;
@@ -89,6 +93,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 	@Override
 	public CommandFeedback exec(ExecContext context, Args args) throws Exception {
+        context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
 		final ResourceKey file = args.file;
 		
 		// 0. Extract analysis result

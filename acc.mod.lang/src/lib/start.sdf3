@@ -16,6 +16,7 @@ context-free syntax
     <ExposureRange>
     <LexicalInternal>
     <MemberProtected>
+    <MemberPrivate>
 
     <{ModuleOrClassOrImport "\n"}*>
   >
@@ -29,6 +30,7 @@ context-free sorts
 
   LexicalInternal
   MemberProtected
+  MemberPrivate
 
 context-free syntax
 
@@ -49,6 +51,11 @@ context-free syntax
   MemberProtected.AllowMemberProtected  = <#member-protected-access: allow>
   MemberProtected.IfInstanceOfCurrent   = <#member-protected-access: if-instance-of-current>
   MemberProtected.DenyMemberProtected   = <#member-protected-access: deny>
+
+  MemberPrivate.NoMemberPrivate 	    = <>
+  MemberPrivate.IfExactType             = <#member-private-access: if-exact-type>
+  MemberPrivate.IfSubtypeOfCurrent      = <#member-private-access: if-instance-of-current>
+  MemberPrivate.DenyMemberPrivate       = <#member-private-access: deny>
 
 // Modules, Classes and Imports
 

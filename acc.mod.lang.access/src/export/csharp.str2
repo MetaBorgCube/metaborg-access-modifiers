@@ -75,7 +75,7 @@ rules
 
   aml-to-csharp(|SolverResult) :: Start -> List(CSFile)
   
-  aml-to-csharp(|a): Program(_, _, _, _, member*) -> result*
+  aml-to-csharp(|a): Program(_, _, _, _, _, member*) -> result*
     with result* := <aml-to-csharp-members(|a, None(), [])> member*
     
   aml-to-csharp-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(CSFile)

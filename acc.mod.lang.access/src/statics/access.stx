@@ -117,9 +117,9 @@ rules
 rules // lexical target accessible
 
   lexicalAccessOk               : path * ACCESS
-  lexProtectedInternalAccessOk  : PATH_LIST *     LexicalInternal * path * /* exposedModules */scope
-  lexInternalAccessOk           : scope * scope * LexicalInternal * path * /* exposedModules */scope
-  lexInternalOk					:                 LexicalInternal * path * /* exposedModules */scope
+  lexProtectedInternalAccessOk  : PATH_LIST       * path * /* exposedModules */scope
+  lexInternalAccessOk           : scope * scope   * path * /* exposedModules */scope
+  lexInternalOk					: LexicalInternal * path * /* exposedModules */scope
 
   lexicalAccessOk(p, LOCAL()).
   lexicalAccessOk(p, UNRESTRICTED()) :-
@@ -127,24 +127,31 @@ rules // lexical target accessible
     // If the inheritance chain restricts the visibility (i.e., makes it private), it is implicitly not `internal` anymore.
     lexicallyVisible(p).
 
-  lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :- {ps}
-    ps == lexicalPaths(src(p), dst(p)),
-    lexProtectedInternalAccessOk(ps, resolveLexicalInternal(src(p)), p, s_mods).
+  lexicalAccessOk(p, SUBCLASS_OR_MODULES(s_mods)) :- {p_lex}
+    p_lex == lexicalPaths(src(p), dst(p)), // resolve the paths through with the target declaration can be accessed lexically
+    lexProtectedInternalAccessOk(p_lex, p, s_mods).
 
   lexicalAccessOk(p, SUBCLASS_IN_MODULES(s_mods)) :-
+  	// accept is the access path is ok
     lexicallyVisible(p),
+    // ..., and the declaration is accessible along the access path
     allExposedTo(p, s_mods).
 
   lexicalAccessOk(p, MODULES(s_mods)) :-
-    lexInternalAccessOk(src(p), dst(p), resolveLexicalInternal(src(p)), p, s_mods).
+  	// accept if either
+  	// - access occurs in the same class
+  	// - access occurs from a module in `s_mods` 
+    lexInternalAccessOk(src(p), dst(p), p, s_mods).
 
 
-  lexProtectedInternalAccessOk([_|_], _, _, _).
-  lexProtectedInternalAccessOk([], LI, p, s_mods) :-
+  lexProtectedInternalAccessOk([_|_], _, _). // There are paths for which lexical access is permitted.
+  lexProtectedInternalAccessOk([], p, s_mods) :- {LI}
+    LI == resolveLexicalInternal(src(p)),
     lexInternalOk(LI, p, s_mods).
 
-  lexInternalAccessOk(s_cls, s_cls, _, _, _).
-  lexInternalAccessOk(_, _, LI, p, s_mods) :-
+  lexInternalAccessOk(s_cls, s_cls, _, _). // no path check required for access in same class.
+  lexInternalAccessOk(_, _, p, s_mods) :- {LI}
+    LI == resolveLexicalInternal(src(p)),
     lexInternalOk(LI, p, s_mods).
 
 
@@ -161,80 +168,92 @@ rules // lexical target accessible
 rules // member access
 
   memberAccessOk       : scope * path * ACCESS
-  unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
-  subclassOrModulesAccessOk  : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
-  subclassInModulesAccessOk  : MemberProtected * scope * path * /*modules*/scope
-  moduleMemberAccessOk       : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
-
-  privateMemberAccessOk   : scope * path
-  protectedMemberAccessOk : MemberProtected * scope * path
-  instanceOfCurrentOk     : MemberProtected * scope * path
 
   memberAccessOk(s, p, UNRESTRICTED()) :- {MPs}
     MPs == memberPaths(src(p), dst(p)),
     unrestrictedMemberAccessOk(MPs, resolveMemberProtected(s), s, p).
+      
+  	  unrestrictedMemberAccessOk : /* Member paths */PATH_LIST * MemberProtected * scope * path
+
+	  // Allow access if member is still public in its instance.
+	  unrestrictedMemberAccessOk([_|_], _, _, _).
+	
+	  unrestrictedMemberAccessOk(_, DenyMemberProtected(), _, _) :-
+	    false. // under this setting, protected members may not be accessed whatsoever
+	
+	  unrestrictedMemberAccessOk(_, MP, s, p) :-
+	  	// FIXME: what is the rationale behind this rule?
+	    instanceOfCurrentOk(MP, s, p),
+	    nonEmpty(lexicalPaths(s, dst(p))).
 
   memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :- {MPs W}
     MPs == memberPaths(src(p), dst(p)),
     W == exposedToModules(s, mods),
     subclassOrModulesAccessOk(MPs, W, resolveMemberProtected(s), s, p).
 
+  	  subclassOrModulesAccessOk  : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberProtected * scope * path
+
+	  // Accept if the variable is not protected by the instance
+	  // and the definition is exposed to the current module.
+	  subclassOrModulesAccessOk([_|_], [_|_], _, _, _).
+	
+	  // Member access is not allowed as `internal`, check if it can be accessed as `protected` instead.
+	  subclassOrModulesAccessOk(_, _, MP, s, p) :-
+	    protectedMemberAccessOk(MP, s, p).
+
   memberAccessOk(s, p, SUBCLASS_IN_MODULES(s_mods)) :-
     subclassInModulesAccessOk(resolveMemberProtected(s), s, p, s_mods).
+    
+  	  subclassInModulesAccessOk  : MemberProtected * scope * path * /*modules*/scope
+
+	  subclassInModulesAccessOk(DenyMemberProtected(), _, _, _) :-
+	    false.
+	
+	  subclassInModulesAccessOk(MP, s, p, s_mods) :- {p' LPs}
+	    instanceOfCurrentOk(MP, s, p),
+	    lexicalPaths(s, dst(p)) == [(p', _)|_],
+	    allExposedTo(p', s_mods).
 
   memberAccessOk(s, p, MODULES(mods)) :- {MPs W}
     MPs == memberPaths(src(p), dst(p)),
     W == exposedToModules(s, mods),
-    moduleMemberAccessOk(MPs, W, resolveMemberProtected(s), s, p).
+    moduleMemberAccessOk(MPs, W, resolveMemberPrivate(s), s, p).
+
+  	  moduleMemberAccessOk       : /* Member paths */PATH_LIST * /* Exposure paths */PATH_LIST * MemberPrivate * scope * path
+
+	  moduleMemberAccessOk([_|_], [_|_], _, _, _).
+	
+	  moduleMemberAccessOk(_, _, DenyMemberPrivate(), _, _) :-
+	    false.
+	
+	  // member is protected & not exposed.
+	  moduleMemberAccessOk(_, _, MP, s, p) :-
+	    privateMemberAccessOk(MP, s, p).
+
+  		  privateMemberAccessOk   : MemberPrivate * scope * path
+
+		  privateMemberAccessOk(DenyMemberPrivate(), s, p) :- false.
+
+		  privateMemberAccessOk(IfExactType(), s, _PathEmpty(s_cls)) :-
+		  	// not exposed to compatible module, so should be 'private' access: access from within the appropriate class.
+		    thisClass(s) == s_cls. // private access
+
+		  privateMemberAccessOk(IfSubtypeOfCurrent(), s, p) :-
+		  	// not exposed to compatible module, so should be 'private' access: access from within the appropriate class.
+		    thisClass(s) == dst(p). // private access
+	
 
 
-  unrestrictedMemberAccessOk([_|_], _, _, _).
-
-  unrestrictedMemberAccessOk(_, DenyMemberProtected(), _, _) :-
-    false.
-
-  unrestrictedMemberAccessOk(_, MP, s, p) :-
-    instanceOfCurrentOk(MP, s, p),
-    nonEmpty(lexicalPaths(s, dst(p))).
-
-
-  subclassOrModulesAccessOk([_|_], [_|_], _, _, _).
-
-  subclassOrModulesAccessOk(_, _, MP, s, p) :-
-    protectedMemberAccessOk(MP, s, p).
-
-
-  subclassInModulesAccessOk(DenyMemberProtected(), _, _, _) :-
-    false.
-
-  subclassInModulesAccessOk(MP, s, p, s_mods) :- {p' LPs}
-    instanceOfCurrentOk(MP, s, p),
-    lexicalPaths(s, dst(p)) == [(p', _)|_],
-    allExposedTo(p', s_mods).
-
-
-  moduleMemberAccessOk([_|_], [_|_], _, _, _).
-
-  moduleMemberAccessOk(_, _, DenyMemberProtected(), _, _) :-
-    false.
-
-  // member is protected & not exposed.
-  moduleMemberAccessOk(_, [], _, s, p) :-
-    privateMemberAccessOk(s, p).
-
-  moduleMemberAccessOk(_, _, MP, s, p) :-
-    protectedMemberAccessOk(MP, s, p).
-
-
-  privateMemberAccessOk(s, p) :-
-    // Implicitly, `src(p)` will be an instance of `s`, otherwise, no (member) path to `dst(p)` could have been found.
-    thisClass(s) == dst(p). // private access
-
+  protectedMemberAccessOk : MemberProtected * scope * path
+  
   protectedMemberAccessOk(DenyMemberProtected(), _, _) :- false.
   protectedMemberAccessOk(MP, s, p) :-
     instanceOfCurrentOk(MP, s, p),
     nonEmpty(lexicalPaths(s, dst(p))).
 
+
+  instanceOfCurrentOk     : MemberProtected * scope * path
+  
   instanceOfCurrentOk(AllowMemberProtected(), _, _).
   instanceOfCurrentOk(IfInstanceOfCurrent(), s, p) :-
     nonEmpty(subClass(src(p), thisClass(s))).

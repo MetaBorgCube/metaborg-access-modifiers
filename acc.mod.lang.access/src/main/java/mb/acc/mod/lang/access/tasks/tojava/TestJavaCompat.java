@@ -15,6 +15,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
 import mb.acc.mod.lang.access.tasks.TestCompat;
+import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
 import mb.accmodlangaccess.AccModLangAccessScope;
 import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
 import mb.accmodlangaccess.task.AccModLangAccessParse;
@@ -34,8 +35,8 @@ import mb.resource.hierarchical.ResourcePath;
 public class TestJavaCompat extends TestCompat {
 	
     @Inject
-	public TestJavaCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToJava transform, ResourceService resourceService) {
-    	super(parse, analyze, transform, resourceService, "java");
+	public TestJavaCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToJava transform, ResourceService resourceService) {
+    	super(classLoaderResources, parse, analyze, transform, resourceService, "java");
 	}
 	
 	@Override

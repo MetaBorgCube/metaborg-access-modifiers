@@ -1,12 +1,11 @@
-#member-protected-access: if-instance-of-current
+#member-private-access: if-exact-type
+
 module M1 {
-class A {
-  protected internal var x = 43
-}
-}
-module M2 {
-import M1
-class B : public A {
-  public var a = new A()
-}
+  class A {
+	private var x = 42
+	public accessX(b: A) {
+		return b.x
+	}
+  }
+  class B : public A { }
 }

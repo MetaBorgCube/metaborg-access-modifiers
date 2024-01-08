@@ -13,6 +13,7 @@ signature
     exposureRange   : ExposureRange
     lexicalInternal : LexicalInternal
     memberProtected : MemberProtected
+    memberPrivate   : MemberPrivate
 
 rules
 
@@ -97,5 +98,28 @@ rules
   resolveMemberProtected: scope -> MemberProtected
   resolveMemberProtected(s) = M :-
     query memberProtected
+      filter LEX*
+      in s |-> [(_, M) | _].
+
+rules
+
+  memberPrivateOk: scope * MemberPrivate
+
+  memberPrivateOk(s, DenyMemberPrivate()) :-
+    !memberPrivate[DenyMemberPrivate()] in s.
+
+  memberPrivateOk(s, IfExactType()) :-
+    !memberPrivate[IfExactType()] in s.
+
+  memberPrivateOk(s, IfSubtypeOfCurrent()) :-
+    !memberPrivate[IfSubtypeOfCurrent()] in s.
+
+  // default rule
+  memberPrivateOk(s, NoMemberPrivate()) :-
+    !memberPrivate[DenyMemberPrivate()] in s.
+
+  resolveMemberPrivate: scope -> MemberPrivate
+  resolveMemberPrivate(s) = M :-
+    query memberPrivate
       filter LEX*
       in s |-> [(_, M) | _].

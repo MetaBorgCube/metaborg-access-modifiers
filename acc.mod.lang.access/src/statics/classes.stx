@@ -57,12 +57,19 @@ rules
 rules
 
   thisClass: scope -> scope
+  outerClass: scope -> scope
   
   [Enc-CI]
   thisClass(s) = s_cls :-
     query thisClass
       filter LEX*
       min $ < LEX
+      in s |-> [(_, s_cls) | _].
+
+  outerClass(s) = s_cls :-
+    query thisClass
+      filter LEX*
+      min LEX < $
       in s |-> [(_, s_cls) | _].
 
 rules

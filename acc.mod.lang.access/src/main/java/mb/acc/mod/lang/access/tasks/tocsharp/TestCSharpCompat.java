@@ -13,6 +13,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
 import mb.acc.mod.lang.access.tasks.TestCompat;
+import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
 import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
 import mb.accmodlangaccess.task.AccModLangAccessParse;
 import mb.common.message.KeyedMessages;
@@ -25,9 +26,9 @@ import mb.resource.hierarchical.ResourcePath;
 public class TestCSharpCompat extends TestCompat {
 
 	@Inject
-	public TestCSharpCompat(AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToCSharp transform,
+	public TestCSharpCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToCSharp transform,
 			ResourceService resourceService) {
-		super(parse, analyze, transform, resourceService, "csharp");
+		super(classLoaderResources, parse, analyze, transform, resourceService, "csharp");
 	}
 
 	@Override
