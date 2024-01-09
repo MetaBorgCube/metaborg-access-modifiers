@@ -1,13 +1,13 @@
 module compatibility/csharp
 
 test simple [[
-module M1 {
+module p {
 class A {
-  protected internal var x = 42
+  protected internal var x = 43
 }
 }
-module M2 {
-import M1
+module q {
+import p
 class B : public A {
   public var a = new A()
 }
@@ -17,11 +17,11 @@ run csharp-test-transform
 transform "Test C# Compatibility"
 
 test nested - refer to parent [[
-module M1 {
+module p {
   class A {
     protected internal var x = 42
   }
-  module M2 {
+  module q {
     class B : public A {
       public var a = new A()
     }
@@ -35,12 +35,49 @@ test nested - refer to root [[
 class A {
   protected internal var x = 42
 }
-module M1 {
-  module M2 {
+module p {
+  module q {
     class B : public A {
       public var a = new A()
     }
   }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+test private protected access - no instance [[
+#member-protected-access: if-instance-of-current
+
+module p {
+class A {
+  private protected var x = 42
+}
+class B : public A { }
+class C : public B {
+  public foo(a: B) {
+    return a.x
+  }
+}
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test private protected access - instance [[
+#member-protected-access: if-instance-of-current
+
+module p {
+class A {
+  private protected var x = 42
+}
+class B : public A { }
+class C : public B {
+  public foo(a: C) {
+    return a.x
+  }
+}
 }
 ]]
 run csharp-test-transform

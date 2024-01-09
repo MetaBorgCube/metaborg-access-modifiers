@@ -16,6 +16,7 @@ module p {
   }
 }
 ]]
+// `A.x` is internal, and due to the setting it can be accessed lexically from a sub-class
 analysis succeeds
 
 test inside -- if-chain-in-module [[
@@ -30,6 +31,8 @@ module p {
   }
 }
 ]]
+// `A.x` is internal and `B` lives in the same package.
+// Due to the setting it can be accessed lexically from a sub-class
 analysis succeeds
 
 test inside -- deny [[
@@ -44,6 +47,7 @@ module p {
   }
 }
 ]]
+// `A.x` is internal, but due to the setting it cannot be accessed lexically from a sub-class
 analysis fails
 
 // Crossing module boundaries
@@ -66,6 +70,8 @@ module q {
   class B : public A { }
 }
 ]]
+// `A.x` is internal, and `C` lives in the same module
+// Due to the setting it can be accessed lexically from `C`
 analysis succeeds
 
 test outside -- if-chain-in-module [[
@@ -86,6 +92,8 @@ module q {
   class B : public A { }
 }
 ]]
+// `A.x` is internal, and `C` lives in the same module; but `B` does not
+// Due to the setting it cannot be accessed lexically from `C`
 analysis fails
 
 test outside -- deny [[
@@ -106,6 +114,8 @@ module q {
   class B : public A { }
 }
 ]]
+// `A.x` is internal
+// Due to the setting it cannot be accessed lexically from `C`
 analysis fails
 
 
@@ -125,6 +135,8 @@ module p {
   }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `C` by private inheritance in `B` 
+// Due to the setting it can be accessed lexically from `C` due to being internal.
 analysis succeeds
 
 test inside -- if-chain-in-module [[
@@ -140,6 +152,8 @@ module p {
   }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `C` by private inheritance in `B` 
+// Due to the setting (and all classes being in the same module) it can be accessed lexically from `C` due to being internal.
 analysis succeeds
 
 test inside -- deny [[
@@ -155,6 +169,8 @@ module p {
   }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `C` by private inheritance in `B` 
+// Due to the setting (and all classes being in the same module) it cannot be accessed lexically from `C` due to being internal.
 analysis fails
 
 // Crossing module boundaries
@@ -178,6 +194,8 @@ module q {
   class C : public B { }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `D` by private inheritance in `B`. Part of the inheritance chain is outside the module.
+// Due to the setting it can be accessed lexically from `D` due to being internal.
 analysis succeeds
 
 test outside -- if-chain-in-module [[
@@ -199,7 +217,32 @@ module q {
   class C : public B { }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `D` by private inheritance in `B`. Part of the inheritance chain is outside the module.
+// Due to the setting (and `C` being outside the module) it cannot be accessed lexically from `D` due to being internal.
 analysis fails
+
+test outside -- if-chain-in-module - protected [[
+#lexical-internal-access: if-chain-in-module
+
+module p {
+  import q
+  class A {
+    protected internal var x = 42
+  }
+  class B : public A { }
+  class D : public C {
+    private var y = x
+  }
+}
+
+module q {
+  import p
+  class C : public B { }
+}
+]]
+// `A.x` is protected (OR) internal. Part of the inheritance chain is outside the module.
+// It can be accessed lexically from `D` due to being protected.
+analysis succeeds
 
 test outside -- deny [[
 #lexical-internal-access: deny
@@ -220,5 +263,7 @@ module q {
   class C : public B { }
 }
 ]]
+// `A.x` is protected (OR) internal. It is hidden from `D` by private inheritance in `B`. Part of the inheritance chain is outside the module.
+// Due to the setting it cannot be accessed lexically from `D` due to being internal.
 analysis fails
 

@@ -12,7 +12,10 @@ class B : public A {
   }
 }
 ]]
+// `A.x` is protected.
+// Due to the setting, it can be accessed on an instance of `A` in a subclass.
 analysis succeeds
+
 test on member modifier - protected internal [[
 #member-protected-access: allow
 
@@ -30,6 +33,8 @@ module q {
   }
 }
 ]]
+// `A.x` is protected (OR) internal.
+// Due to the setting, it can be accessed on an instance of `A` in a subclass.
 analysis succeeds
 
 // inheritance modifier
@@ -39,7 +44,7 @@ test on inheritance modifier - instance of current - no [[
 
 module p {
 class A {
-  internal var x = 43
+  internal var x = 42
 }
 class B : protected A { }
 class C : public B {
@@ -49,7 +54,10 @@ class C : public B {
 }
 }
 ]]
+// `A.x` becomes protected AND internal in `B`.
+// Due to the setting, it can be accessed on an instance of `B` in a subclass.
 analysis fails
+
 
 test on inheritance modifier - instance of current - exact - yes [[
 #member-protected-access: if-instance-of-current
@@ -66,6 +74,8 @@ class C : public B {
 }
 }
 ]]
+// `A.x` becomes protected AND internal in `B`.
+// Due to the setting, it can be accessed on an instance of `C` in subclass `C`.
 analysis succeeds
 
 test on inheritance modifier - instance of current - sub - yes [[
@@ -83,24 +93,10 @@ class B : protected A {
 class C : public B {}
 }
 ]]
+// `A.x` becomes protected AND internal in `B`.
+// Due to the setting, it can be accessed on an instance of `C` in subclass `B`.
 analysis succeeds
 
-test on inheritance modifier - allow [[
-#member-protected-access: allow
-
-module p {
-class A {
-  public var x = 42
-}
-class B : protected A { }
-class C : public B {
-  public foo(a: B) {
-    return a.x
-  }
-}
-}
-]]
-analysis succeeds
 
 // private members
 
@@ -116,4 +112,6 @@ class B : public A {
   }
 }
 ]]
+// `A.x` is protected AND internal
+// Due to the setting, it can be accessed on an instance of `A` in subclass `B`.
 analysis succeeds

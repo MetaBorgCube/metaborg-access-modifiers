@@ -11,6 +11,7 @@ module p {
 
 module q { }
 ]]
+// Due to the setting, exposure to non-ancestor module `q` is allowed.
 analysis succeeds
 
 test ancestors [[
@@ -24,6 +25,7 @@ module p {
 
 module q { }
 ]]
+// Due to the setting, exposure to non-ancestor module `q` is not allowed.
 analysis fails
 
 test ancestors - point to ancestor [[
@@ -39,4 +41,5 @@ module p3 {
 }
 }
 ]]
+// Even in ancestor mode, exposure to an arbitrary non-ancestor module `p2` is allowed.
 analysis succeeds

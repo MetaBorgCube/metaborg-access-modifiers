@@ -16,6 +16,7 @@ module p {
   }
 }
 ]]
+// `a.x` is exposed in `p`. Due to the setting, it is accessible in `p.q`.
 analysis succeeds
 
 test direct child [[
@@ -34,6 +35,7 @@ module p {
   }
 }
 ]]
+// `a.x` is exposed in `p`. Due to the setting, it is not accessible in `p.q`.
 analysis fails
 
 test direct child - same module[[
@@ -50,4 +52,5 @@ module p {
   }
 }
 ]]
+// `a.x` is exposed in `p`. Even though it is not visible in sub-modules, it is accessible in `p` itself.
 analysis succeeds
