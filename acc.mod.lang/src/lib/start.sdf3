@@ -101,7 +101,7 @@ context-free syntax
   Extends.NoExtends 			= <>
   Extends.Extends 				= <: <{ExtendsClause ", "}+>>
 
-  ExtendsClause.ExtendsClause 	= <<AccessModifier> <ID>>
+  ExtendsClause.ExtendsClause 	= <<AccessModifier> <QId>>
 
 
 // Member decls

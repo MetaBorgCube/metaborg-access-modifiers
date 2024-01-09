@@ -178,7 +178,7 @@ rules // classes
   format-java-ext :: Extends -> JExtends
   
   format-java-ext : NoExtends() -> NoExtends()
-  format-java-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
+  format-java-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x) 
 
 
   aml-to-java-acc :: AccessModifier -> JAccMod
