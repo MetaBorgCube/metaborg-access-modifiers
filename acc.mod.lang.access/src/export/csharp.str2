@@ -137,7 +137,7 @@ rules
   format-csharp-ext :: Extends -> CSExtends
   
   format-csharp-ext : NoExtends() -> NoExtends()
-  format-csharp-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(Id(x)) 
+  format-csharp-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x) 
 
 
 rules // class members

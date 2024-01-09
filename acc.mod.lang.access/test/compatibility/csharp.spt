@@ -3,7 +3,7 @@ module compatibility/csharp
 test simple [[
 module p {
 class A {
-  protected internal var x = 43
+  protected internal var x = 42
 }
 }
 module q {
