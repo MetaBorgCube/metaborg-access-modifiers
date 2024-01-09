@@ -38,6 +38,7 @@ import mb.resource.hierarchical.ResourcePath;
 import mb.spoofax.core.language.command.CommandFeedback;
 import mb.spoofax.core.language.command.CommandFeedbackBuilder;
 import mb.spoofax.core.language.command.ShowFeedback;
+import mb.stratego.pie.AstStrategoTransformTaskDef;
 
 public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeedback>{
 
@@ -76,15 +77,25 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 	
 	protected final AccModLangAccessClassLoaderResources classLoaderResources;
 	protected final AccModLangAccessParse parse;
+	protected final AstStrategoTransformTaskDef insertSettings;
 	protected final AccModLangAccessAnalyze analyze;
 	protected final TransformWithAnalysis transform;
 	protected final ResourceService resourceService;
 	
 	private final String langName;
 
-	protected TestCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformWithAnalysis transform, ResourceService resourceService, String langDir) {
+	protected TestCompat(
+			AccModLangAccessClassLoaderResources classLoaderResources, 
+			AccModLangAccessParse parse,
+			AstStrategoTransformTaskDef insertSettings,
+			AccModLangAccessAnalyze analyze, 
+			TransformWithAnalysis transform, 
+			ResourceService resourceService, 
+			String langDir
+	) {
 		this.classLoaderResources = classLoaderResources;
 		this.parse = parse;
+		this.insertSettings = insertSettings;
 		this.analyze = analyze;
 		this.transform = transform;
 		this.resourceService = resourceService;
@@ -98,10 +109,11 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		
 		// 0. Extract analysis result
 		final Supplier<Result<ConstraintAnalyzeTaskDef.Output, ?>> analysisSupplier = analyze
-				.createSupplier(new ConstraintAnalyzeTaskDef.Input(file, parse
-						.inputBuilder()
-						.withFile(file)
-						.buildAstSupplier()));
+				.createSupplier(new ConstraintAnalyzeTaskDef.Input(file, 
+						insertSettings.createSupplier(parse
+								.inputBuilder()
+								.withFile(file)
+								.buildAstSupplier())));
 		final Result<ConstraintAnalyzeTaskDef.Output, ?> analysisTaskResult = context.require(analysisSupplier);
 		if(analysisTaskResult.isErr()) {
 			return CommandFeedback.ofTryExtractMessagesFrom(analysisTaskResult.getErr(), file);

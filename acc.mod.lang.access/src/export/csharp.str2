@@ -29,6 +29,21 @@ signature
   sorts CSFilePP constructors
     CSFilePP: string * List(string) * string -> CSFilePP
 
+rules // settings
+
+  csharp-settings :: ? -> Options
+  csharp-settings =
+  	!Options(
+  	  DirectChildOnly(),
+  	  Ancestors(),
+  	  IfChainInModule(),
+  	  IfInstanceOfCurrent(),
+  	  IfSubtypeOfCurrent() // NOTE: Different from Java
+  	)
+
+  insert-csharp-settings :: Program -> Program
+  insert-csharp-settings = Program(csharp-settings, id)
+
 rules
 
   transform-to-csharp(|AnalysisResult) :: Program -> TransformResult(List(CSFile), List(CSFilePP))

@@ -26,6 +26,21 @@ signature
   sorts JavaFile constructors
     JavaFile: string * JStart -> JavaFile
 
+rules // settings
+
+  java-settings :: ? -> Options
+  java-settings =
+  	!Options(
+  	  DirectChildOnly(),
+  	  Ancestors(),
+  	  IfChainInModule(),
+  	  IfInstanceOfCurrent(),
+  	  IfExactType() // NOTE: Different from C#
+  	)
+
+  insert-java-settings :: Program -> Program
+  insert-java-settings = Program(java-settings, id)
+
 rules // builder
 
   // prettyprint-accmodlangaccess-JStart

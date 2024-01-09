@@ -35,8 +35,15 @@ import mb.resource.hierarchical.ResourcePath;
 public class TestJavaCompat extends TestCompat {
 	
     @Inject
-	public TestJavaCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToJava transform, ResourceService resourceService) {
-    	super(classLoaderResources, parse, analyze, transform, resourceService, "java");
+	public TestJavaCompat(
+			AccModLangAccessClassLoaderResources classLoaderResources, 
+			AccModLangAccessParse parse,
+			InsertJavaSettings insertSettings,
+			AccModLangAccessAnalyze analyze, 
+			TransformToJava transform, 
+			ResourceService resourceService
+	) {
+    	super(classLoaderResources, parse, insertSettings, analyze, transform, resourceService, "java");
 	}
 	
 	@Override

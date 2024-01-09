@@ -26,9 +26,15 @@ import mb.resource.hierarchical.ResourcePath;
 public class TestCSharpCompat extends TestCompat {
 
 	@Inject
-	public TestCSharpCompat(AccModLangAccessClassLoaderResources classLoaderResources, AccModLangAccessParse parse, AccModLangAccessAnalyze analyze, TransformToCSharp transform,
-			ResourceService resourceService) {
-		super(classLoaderResources, parse, analyze, transform, resourceService, "csharp");
+	public TestCSharpCompat(
+			AccModLangAccessClassLoaderResources classLoaderResources, 
+			AccModLangAccessParse parse,
+			InsertCSharpSettings insertSettings,
+			AccModLangAccessAnalyze analyze, 
+			TransformToCSharp transform,
+			ResourceService resourceService
+	) {
+		super(classLoaderResources, parse, insertSettings, analyze, transform, resourceService, "csharp");
 	}
 
 	@Override
