@@ -1,4 +1,4 @@
-module compatibility/java/private
+module compatibility/java/public
 
 test private -- lex -- self [[
 class A {

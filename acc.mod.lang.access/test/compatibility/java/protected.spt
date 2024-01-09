@@ -1,6 +1,4 @@
-module x
-
-module compatibility/java/public
+module compatibility/java/protected
 
 test internal -- lex -- self [[
 class A {
