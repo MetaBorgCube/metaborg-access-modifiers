@@ -185,9 +185,7 @@ rules // lexical target accessible
     // ..., and the declaration is accessible along the access path
     allExposedTo(p, s_mods).
 
-  lexicalAccessOk(p, MODULES(s_mods)) :- {L}
-    pathLevel(p) == L,
-    nonEmpty(hasLexicalPaths(L)),
+  lexicalAccessOk(p, MODULES(s_mods)) :-
   	// accept if either
   	// - access occurs in the same class
   	// - access occurs from a module in `s_mods` 
@@ -270,7 +268,7 @@ rules // path validation
   
   memberPathLevelOk((_, _), s, p) :- {s_this}
     s_this == thisClass(s),
-    // must be private in this very class (not necessarily in reference class)
+    // must be private in this very class (not necessarily in instance class `src(p)`)
     privateInCurrent(s_this, dst(p)),
     privateMemberAccessOk(resolveMemberPrivate(s), s, s_this, p).
 	
@@ -283,7 +281,6 @@ rules // path validation
     nonEmpty(subClass(thisClass(s), dst(p))).
 
   protectedMemberAccessOk(IfInstanceOfCurrent(), s, p) :-
-    try { false } | note $[[s] |- [p]],
     nonEmpty(subClass(thisClass(s), dst(p))),
     nonEmpty(subClass(src(p), thisClass(s))).
 

@@ -1,9 +1,9 @@
-#member-private-access: if-exact-type
+#member-private-access: if-instance-of-current
 
 module M1 {
   class A {
 	private var x = 42
-	public accessX(b: A) {
+	public accessX(b: B) {
 		return b.x
 	}
   }
