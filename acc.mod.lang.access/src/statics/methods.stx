@@ -146,14 +146,16 @@ rules
 
   // Can always elevate to Public
   accessibilityElevationOk(s, s_tgt, UNRESTRICTED(), _).
-  accessibilityElevationOk(s, s_tgt, A_new, UNRESTRICTED()) :-
+  accessibilityElevationOk(s, s_tgt, A_new, UNRESTRICTED()) :- {L}
     // Only allowed if inheritance chain restricts visibility to `protected`.
-    memberPaths(s, s_tgt) == [].
+    lexicalPaths(s, s_tgt) == (_, L),
+    try { L != PUB() }.
 
-  accessibilityElevationOk(s, s_tgt, A_new, A_old) :- {MV UC new_mods old_mods}
+  accessibilityElevationOk(s, s_tgt, A_new, A_old) :- {MV PL UC new_mods old_mods}
     new_mods == modulesOfAccess(A_new),
     old_mods == modulesOfAccess(A_old),
-    memberPaths(s, s_tgt) == MV,
+    lexicalPaths(s, s_tgt) == (MV, PL),
+    // try { PL != PUB() },
     // condition: all modules in `old_mods` must be covered by `new_mods`.
     // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`
     query ()
@@ -161,7 +163,7 @@ rules
         and { m :- exposedToModules(m, new_mods) == [] }
       in old_mods |-> UC,
     // MV is empty OR UC is empty
-    try { (MV, UC) != ([_|_], [_|_]) }.
+    try { (MV, UC, PL) != ([_|_], [_|_], PUB()) }.
 
   // Reasoning behind `try { (a, b) != (c, d) }` patterns is that they are equivalent to
   //                  `try { a != c OR b != d }`, mimicing an OR-operator.
