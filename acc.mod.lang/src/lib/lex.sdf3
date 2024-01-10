@@ -64,4 +64,4 @@ lexical restrictions
 
 context-free restrictions
 
-  LAYOUT? -/- [\ \n\t\v\f\r]
+  LAYOUT? -/- [\ \n\t\v\f\r\/]
