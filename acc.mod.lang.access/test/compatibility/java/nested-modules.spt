@@ -1,0 +1,155 @@
+module compatibility/java/nested-modules
+
+test public -- mem -- decl -- other -- nested [[
+module p {
+  class A {
+    public var x = 42
+  }
+  module q {
+    class X {
+      private foo(a: A) {
+        return a.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test public -- mem -- sub -- other -- nested [[
+module p {
+  class A {
+    public var x = 42
+  }
+  module q {
+    class B : public A { }
+    module r {
+      class X {
+        private foo(b: B) {
+          return b.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test protected -- mem -- decl -- other -- nested [[
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  module q {
+  import p
+    class X {
+      private foo(a: A) {
+        return a.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test protected -- mem -- sub -- other -- nested [[
+module p {
+  class A {
+    protected internal var x = 42
+  }
+  module q {
+    class B : public A { }
+    module r {
+      class X {
+        private foo(b: B) {
+          return b.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test internal -- mem -- decl -- other -- nested [[
+module p {
+  class A {
+    internal var x = 42
+  }
+  module q {
+  import p
+    class X {
+      private foo(a: A) {
+        return a.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test internal -- mem -- sub -- other -- nested [[
+module p {
+  class A {
+    internal var x = 42
+  }
+  module q {
+    class B : public A { }
+    module r {
+      class X {
+        private foo(b: B) {
+          return b.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test private -- mem -- decl -- other -- nested [[
+module p {
+  class A {
+    private var x = 42
+  }
+  module q {
+  import p
+    class X {
+      private foo(a: A) {
+        return a.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test private -- mem -- sub -- other -- nested [[
+module p {
+  class A {
+    private var x = 42
+  }
+  module q {
+    class B : public A { }
+    module r {
+      class X {
+        private foo(b: B) {
+          return b.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
