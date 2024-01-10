@@ -1,9 +1,9 @@
-module compatibility/java/private
+module compatibility/java/private 
 
-test public -- lex -- self [[
+test private -- lex -- self [[
 class A {
-  public var x = 42
-  public foo() {
+  private var x = 42
+  private foo() {
     return x
   }
 }
@@ -11,12 +11,12 @@ class A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- lex -- sub [[
+test private -- lex -- sub [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {
-  public foo() {
+  private foo() {
     return x
   }
 }
@@ -25,13 +25,13 @@ run java-test-transform
 transform "Test Java Compatibility"
 
 
-test public -- lex -- subsub [[
+test private -- lex -- subsub [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {}
 class C : public B {
-  public foo() {
+  private foo() {
     return x
   }
 }
@@ -39,15 +39,15 @@ class C : public B {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- lex -- sub -- other module [[
+test private -- lex -- sub -- other module [[
 module p {
   class A {
-    public var x = 42
+    private var x = 42
   }
 }
 module q {
   class B : public p.A {
-    public foo() {
+    private foo() {
       return x
     }
   }
@@ -57,17 +57,17 @@ run java-test-transform
 transform "Test Java Compatibility"
 
 
-test public -- lex -- subsub -- other module [[
+test private -- lex -- subsub -- other module [[
 module p {
   class A {
-    public var x = 42
+    private var x = 42
   }
 }
 module q {
   import p
   class B : public A {}
   class C : public B {
-    public foo() {
+    private foo() {
       return x
     }
   }
@@ -78,10 +78,10 @@ transform "Test Java Compatibility"
 
 
 
-test public -- mem -- self [[
+test private -- mem -- self [[
 class A {
-  public var x = 42
-  public foo(a: A) {
+  private var x = 42
+  private foo(a: A) {
     return a.x
   }
 }
@@ -89,12 +89,12 @@ class A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- decl [[
+test private -- mem -- sub -- decl [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
@@ -102,12 +102,12 @@ class B : public A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- self [[
+test private -- mem -- sub -- self [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
@@ -115,12 +115,12 @@ class B : public A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- sub [[
+test private -- mem -- sub -- sub [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {
-  public foo(c: C) {
+  private foo(c: C) {
     return c.x
   }
 }
@@ -131,26 +131,26 @@ transform "Test Java Compatibility"
 
 
 
-test public -- mem -- subsub -- decl [[
+test private -- mem -- subsub -- decl [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {}
 class C : public B {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
 ]]
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- parent [[
+test private -- mem -- subsub -- parent [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {}
 class C : public B {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
@@ -158,13 +158,13 @@ class C : public B {
 
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- self [[
+test private -- mem -- subsub -- self [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {}
 class C : public B {
-  public foo(c: C) {
+  private foo(c: C) {
     return c.x
   }
 }
@@ -172,13 +172,13 @@ class C : public B {
 
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- sub [[
+test private -- mem -- subsub -- sub [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A {}
 class C : public B {
-  public foo(d: D) {
+  private foo(d: D) {
     return d.x
   }
 }
@@ -187,12 +187,12 @@ class D : public C { }
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- decl -- other [[
+test private -- mem -- decl -- other [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class X {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
@@ -202,13 +202,13 @@ transform "Test Java Compatibility"
 
 
 
-test public -- mem -- sub -- other [[
+test private -- mem -- sub -- other [[
 class A {
-  public var x = 42
+  private var x = 42
 }
 class B : public A { }
 class X {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
@@ -218,16 +218,16 @@ transform "Test Java Compatibility"
 
 
 
-test public -- mem -- sub -- decl -- other module [[
+test private -- mem -- sub -- decl -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
 import p
 class B : public A {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
@@ -236,16 +236,16 @@ class B : public A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- self -- other module [[
+test private -- mem -- sub -- self -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
 import p
 class B : public A {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
@@ -254,17 +254,17 @@ class B : public A {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- sub -- other module [[
+test private -- mem -- sub -- sub -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
 import p
 import r
 class B : public A {
-  public foo(c: C) {
+  private foo(c: C) {
     return c.x
   }
 }
@@ -279,10 +279,10 @@ transform "Test Java Compatibility"
 
 
 
-test public -- mem -- subsub -- decl -- other module [[
+test private -- mem -- subsub -- decl -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
@@ -293,7 +293,7 @@ module r {
 import p
 import q
 class C : public B {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
@@ -301,10 +301,11 @@ class C : public B {
 ]]
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- parent -- other module [[
+
+test private -- mem -- subsub -- parent -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
@@ -314,7 +315,7 @@ class B : public A {}
 module r {
 import q
 class C : public B {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
@@ -323,10 +324,10 @@ class C : public B {
 
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- self -- other module [[
+test private -- mem -- subsub -- self -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
@@ -336,7 +337,7 @@ class B : public A {}
 module r {
 import q
 class C : public B {
-  public foo(c: C) {
+  private foo(c: C) {
     return c.x
   }
 }
@@ -345,10 +346,10 @@ class C : public B {
 
 run java-test-transform
 transform "Test Java Compatibility"
-test public -- mem -- subsub -- sub -- other module [[
+test private -- mem -- subsub -- sub -- other module [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
@@ -359,7 +360,7 @@ module r {
 import q
 import o
 class C : public B {
-  public foo(d: D) {
+  private foo(d: D) {
     return d.x
   }
 }
@@ -373,16 +374,16 @@ run java-test-transform
 transform "Test Java Compatibility"
 
 
-test public -- mem -- decl -- other [[
+test private -- mem -- decl -- other [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
 import p
 class X {
-  public foo(a: A) {
+  private foo(a: A) {
     return a.x
   }
 }
@@ -391,10 +392,10 @@ class X {
 run java-test-transform
 transform "Test Java Compatibility"
 
-test public -- mem -- sub -- other [[
+test private -- mem -- sub -- other [[
 module p {
 class A {
-  public var x = 42
+  private var x = 42
 }
 }
 module q {
@@ -404,7 +405,7 @@ class B : public A { }
 module r {
 import q
 class X {
-  public foo(b: B) {
+  private foo(b: B) {
     return b.x
   }
 }
