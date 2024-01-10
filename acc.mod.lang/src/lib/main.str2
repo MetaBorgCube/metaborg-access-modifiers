@@ -8,6 +8,10 @@ imports
 
 rules
 
+  desugar :: TP
+
+  desugar = desugar-access-mod
+
   desugar-access-mod :: TP
 
   desugar-access-mod: ProtectedInternalSelf() 	-> ProtectedInternal([Self()])
@@ -21,4 +25,4 @@ rules
 
 
   desugar-all :: TP
-  desugar-all = topdown(try(preserve-annos(desugar-access-mod)))
+  desugar-all = topdown(try(preserve-annos(desugar)))

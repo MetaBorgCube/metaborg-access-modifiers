@@ -2,9 +2,12 @@ module main
 
 imports
 
+  strategolib
+
   statixruntime
   statix/api
   injections/lib/-
+  signatures/lib/start-sig
   signatures/start-sig
   pp
   completion
@@ -21,3 +24,8 @@ rules // Analysis
   editor-analyze = stx-editor-analyze(pre-analyze, post-analyze|"main", "programOk")
   editor-resolve = stx-editor-resolve
   editor-hover   = stx-editor-hover
+
+rules // desugar options
+
+  desugar = ?JavaOpt(); java-settings
+  desugar = ?CSharpOpt(); csharp-settings

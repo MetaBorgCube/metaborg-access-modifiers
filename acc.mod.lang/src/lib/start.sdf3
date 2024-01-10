@@ -32,6 +32,9 @@ context-free sorts
 
 context-free syntax
 
+  Options.JavaOpt   = <#java>
+  Options.CSharpOpt = <#csharp>
+
   Options.Options = <
     <ExposureMode>
     <ExposureRange>
