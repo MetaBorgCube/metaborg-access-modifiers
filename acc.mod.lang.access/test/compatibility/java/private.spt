@@ -438,10 +438,8 @@ module p {
     private var x = 42
   }
   module q {
-  import p
-  class B : public A { }
-  module r {
-    import p.q
+    class B : public A { }
+    module r {
       class X {
         private foo(b: B) {
           return b.x
