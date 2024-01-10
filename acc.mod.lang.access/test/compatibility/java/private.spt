@@ -412,3 +412,43 @@ class X {
 ]]
 run java-test-transform
 transform "Test Java Compatibility"
+
+test private -- mem -- decl -- other -- nested [[
+module p {
+  class A {
+    private var x = 42
+  }
+  module q {
+  import p
+    class X {
+      private foo(a: A) {
+        return a.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test private -- mem -- sub -- other -- nested [[
+module p {
+  class A {
+    private var x = 42
+  }
+  module q {
+  import p
+  class B : public A { }
+  module r {
+    import p.q
+      class X {
+        private foo(b: B) {
+          return b.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
