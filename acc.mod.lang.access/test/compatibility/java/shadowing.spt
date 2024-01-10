@@ -1,6 +1,8 @@
 module compatibility/java/shadowing
 
 test shadowing -- lex -- public [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -13,11 +15,14 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- protected [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -30,11 +35,14 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- internal [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -47,13 +55,16 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- private [[
+#java
+
 class A {
-  public var x = new A()
+  public var x = 1
 }
 class B : public A {
   private var x = 40
@@ -64,10 +75,13 @@ class C : public B {
   }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 test shadowing -- lex -- public -- other module [[
+#java
+
 module p {
 class A {
   public var x = new A()
@@ -88,11 +102,14 @@ class C : public B {
 }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- protected -- other module [[
+#java
+
 module p {
 class A {
   public var x = new A()
@@ -113,14 +130,17 @@ class C : public B {
 }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- internal -- other module [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -138,14 +158,17 @@ class C : public B {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- lex -- private -- other module [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -163,12 +186,15 @@ class C : public B {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 
 test shadowing -- mem -- public [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -181,11 +207,14 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- protected [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -198,11 +227,14 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- internal [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -215,13 +247,16 @@ class C : public B {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- private [[
+#java
+
 class A {
-  public var x = new A()
+  public var x = 1
 }
 class B : public A {
   private var x = 40
@@ -232,10 +267,13 @@ class C : public B {
   }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 test shadowing -- mem -- public -- other module [[
+#java
+
 module p {
 class A {
   public var x = new A()
@@ -256,14 +294,17 @@ class C : public B {
 }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- protected -- other module [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -281,14 +322,17 @@ class C : public B {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- internal -- other module [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -306,14 +350,17 @@ class C : public B {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- private -- other module [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -331,11 +378,14 @@ class C : public B {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- public -- unrelated [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -348,11 +398,14 @@ class C {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- protected -- unrelated [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -365,11 +418,14 @@ class C {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- internal -- unrelated [[
+#java
+
 class A {
   public var x = new A()
 }
@@ -382,13 +438,16 @@ class C {
   }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- private -- unrelated [[
+#java
+
 class A {
-  public var x = new A()
+  public var x = 1
 }
 class B : public A {
   private var x = 40
@@ -399,10 +458,13 @@ class C {
   }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 test shadowing -- mem -- public -- other module -- unrelated [[
+#java
+
 module p {
 class A {
   public var x = new A()
@@ -423,14 +485,17 @@ class C {
 }
 }
 ]]
+analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- protected -- other module -- unrelated [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -448,14 +513,17 @@ class C {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- internal -- other module -- unrelated [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -473,14 +541,17 @@ class C {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
 
 
 test shadowing -- mem -- private -- other module -- unrelated [[
+#java
+
 module p {
 class A {
-  public var x = new A()
+  public var x = 1
 }
 }
 module q {
@@ -498,5 +569,6 @@ class C {
 }
 }
 ]]
+analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
