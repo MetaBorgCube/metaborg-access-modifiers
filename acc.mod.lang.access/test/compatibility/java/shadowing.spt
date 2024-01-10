@@ -1,0 +1,502 @@
+module compatibility/java/shadowing
+
+test shadowing -- lex -- public [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  public var x = 40
+}
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- protected [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  protected internal var x = 40
+}
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- internal [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  internal var x = 40
+}
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- private [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  private var x = 40
+}
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test shadowing -- lex -- public -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  public var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- protected -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  protected internal var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- internal -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  internal var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- lex -- private -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  private var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo() {
+    return x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+
+test shadowing -- mem -- public [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  public var x = 40
+}
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- protected [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  protected internal var x = 40
+}
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- internal [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  internal var x = 40
+}
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- private [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  private var x = 40
+}
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test shadowing -- mem -- public -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  public var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- protected -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  protected internal var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- internal -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  internal var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- private -- other module [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  private var x = 40
+}
+}
+module r {
+import q
+class C : public B {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- public -- unrelated [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  public var x = 40
+}
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- protected -- unrelated [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  protected internal var x = 40
+}
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- internal -- unrelated [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  internal var x = 40
+}
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- private -- unrelated [[
+class A {
+  public var x = new A()
+}
+class B : public A {
+  private var x = 40
+}
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test shadowing -- mem -- public -- other module -- unrelated [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  public var x = 40
+}
+}
+module r {
+import q
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- protected -- other module -- unrelated [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  protected internal var x = 40
+}
+}
+module r {
+import q
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- internal -- other module -- unrelated [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  internal var x = 40
+}
+}
+module r {
+import q
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing -- mem -- private -- other module -- unrelated [[
+module p {
+class A {
+  public var x = new A()
+}
+}
+module q {
+import p
+class B : public A {
+  private var x = 40
+}
+}
+module r {
+import q
+class C {
+  public foo(b: B) {
+    return b.x + 2
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
