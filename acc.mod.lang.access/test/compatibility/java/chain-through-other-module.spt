@@ -1,0 +1,426 @@
+module chain-through-other-module
+
+test chain loop - internal - self [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test chain loop - internal - parent [[
+#java
+
+module p1 {
+import p2
+class A {
+  internal var x = 42
+}
+class C : public B {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test chain loop - internal - root [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public B {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test chain loop - protected - self [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test chain loop - protected - parent [[
+#java
+
+module p1 {
+import p2
+class A {
+  protected internal var x = 42
+}
+class C : public B {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test chain loop - protected - root [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public B {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - self -- external class [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - parent -- external class [[
+#java
+
+module p1 {
+import p2
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - root -- external class [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - self -- external class [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - parent -- external class [[
+#java
+
+module p1 {
+import p2
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - root -- external class [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+class X {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+module p2 {
+class B : public p1.A { }
+
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - self -- external module [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - parent -- external module [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - internal - root -- external module [[
+#java
+
+module p1 {
+class A {
+  internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - self -- external module [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(c: C) {
+  	return c.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - parent -- external module [[
+#java
+
+module p1 {
+import p2
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(b: B) {
+  	return b.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test chain loop - protected - root -- external module [[
+#java
+
+module p1 {
+class A {
+  protected internal var x = 42
+}
+class C : public p2.B {
+}
+}
+module p2 {
+import p1
+class B : public p1.A { }
+
+class X {
+  public foo(a: A) {
+  	return a.x
+  }
+}
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"

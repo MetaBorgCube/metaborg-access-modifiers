@@ -159,7 +159,7 @@ rules
 rules // lexical target accessible
 
   lexicalAccessOk : path * ACCESS
-  lexInternalOk	  : LexicalInternal * path * /* exposedModules */scope
+  lexInternalOk	  : path * /* exposedModules */scope
 
   lexicalAccessOk(p, LOCAL()).
   lexicalAccessOk(p, UNRESTRICTED()) :- {L}
@@ -174,9 +174,8 @@ rules // lexical target accessible
     
       lexProtectedInternalAccessOk  : PATH_LIST * path * /* exposedModules */scope
 	  lexProtectedInternalAccessOk([_|_], _, _). // There are paths for which lexical access is permitted.
-      lexProtectedInternalAccessOk([], p, s_mods) :- {LI}
-        LI == resolveLexicalInternal(src(p)),
-        lexInternalOk(LI, p, s_mods).
+      lexProtectedInternalAccessOk([], p, s_mods) :-
+        lexInternalOk(p, s_mods).
 
   lexicalAccessOk(p, SUBCLASS_IN_MODULES(s_mods)) :- {L}
   	// accept is the access path is ok
@@ -193,19 +192,21 @@ rules // lexical target accessible
 
       lexInternalAccessOk : scope * scope * path * /* exposedModules */scope
       lexInternalAccessOk(s_cls, s_cls, _, _). // no path check required for access in same class.
-      lexInternalAccessOk(_, _, p, s_mods) :- {LI}
-        LI == resolveLexicalInternal(src(p)),
-        lexInternalOk(LI, p, s_mods).
+      lexInternalAccessOk(_, _, p, s_mods) :-
+        lexInternalOk(p, s_mods).
 
+  lexInternalOk(p, s_mods) :-
+    nonEmpty(internalPathOk(resolveLexicalInternal(src(p)), p, s_mods)).
 
-  lexInternalOk(AllowLexicalInternal(), p, s_mods) :-
-    exposedTo(src(p), s_mods).
+  internalPathOk  : LexicalInternal * path * /* exposedModules */scope -> PATH_LIST
+  
+  internalPathOk(AllowLexicalInternal(), p, s_mods) = R :-
+    query () filter e and { s' :- exposedTo(src(p), s_mods) } in new |-> R.
+    
+  internalPathOk(IfChainInModule(), p, s_mods) = R :-
+    query () filter e and { s' :- allExposedTo(p, s_mods) } in new |-> R.
 
-  lexInternalOk(IfChainInModule(), p, s_mods) :-
-    allExposedTo(p, s_mods).
-
-  lexInternalOk(DenyLexicalInternal(), _, _) :-
-    false.
+  internalPathOk(DenyLexicalInternal(), _, _) = [].
     
 
 rules // member access
@@ -218,14 +219,14 @@ rules // member access
   	// the current level allows member access
   	memberPathLevelOk(L, s, p).
 
-  memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :- {L W}
-    exposedToModules(s, mods) == W,
+  memberAccessOk(s, p, SUBCLASS_OR_MODULES(mods)) :- {L REF_OK}
+    exposedToModules(s, mods) == REF_OK,
     // access is allowed with some level
   	pathLevel(p) == L,
 	memberPathLevelOk(L, s, p),
-    subclassOrModulesAccessOk(W, s, p).
+    subclassOrModulesAccessOk(REF_OK, s, p).
 
-  	  subclassOrModulesAccessOk  : /* Exposure paths */PATH_LIST * scope * path
+  	  subclassOrModulesAccessOk  : /* ref ok */PATH_LIST * scope * path
 
 	  // Accept if the variable is not protected by the instance
 	  // and the definition is exposed to the current module.
@@ -238,21 +239,23 @@ rules // member access
 
   memberAccessOk(s, p, SUBCLASS_IN_MODULES(mods)) :- {L W}
     exposedToModules(s, mods) != [],
+    internalPathOk(resolveLexicalInternal(s), p, mods) != [],
 	// member access of protected member should be allowed
 	protectedMemberAccessOk(resolveMemberProtected(s), s, p),
   	pathLevel(p) == L,
 	memberPathLevelOk(L, s, p).
 
-  memberAccessOk(s, p, MODULES(mods)) :- {L MDs}
+  memberAccessOk(s, p, MODULES(mods)) :- {L REF_OK PATH_OK}
     pathLevel(p) == L,
 	memberPathLevelOk(L, s, p),
-    exposedToModules(s, mods) == MDs,
-    modulesAccessOk(MDs, s, p).
+    exposedToModules(s, mods) == REF_OK,
+    internalPathOk(resolveLexicalInternal(s), p, mods) == PATH_OK,
+    modulesAccessOk(REF_OK, PATH_OK, s, p).
 
-      modulesAccessOk : PATH_LIST * scope * path
+      modulesAccessOk : PATH_LIST * PATH_LIST * scope * path
 
-      modulesAccessOk([_|_], _, _).
-      modulesAccessOk([], s, p) :-
+      modulesAccessOk([_|_], [_|_],_, _).
+      modulesAccessOk(_, _, s, p) :-
 	    // member access of 'private' member should be allowed
   	    privateMemberAccessOk(resolveMemberPrivate(s), s, /* private in declaration scope */ dst(p), p).
 
@@ -314,14 +317,17 @@ rules // path validation
 rules
 
   allExposedTo : path * scope
+  allExposedTo_ : path * scope
   exposedTo: /*s_src*/scope * /*modules*/scope
   exposedToModules: /*s_src*/scope * /*modules*/scope -> PATH_LIST
   isExposedTo: scope * scope * ExposureMode
 
   allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
-  allExposedTo(_PathStep(p, _, s), s_mods) :-
+  allExposedTo(p, s_mods) :- allExposedTo_(p, s_mods).
+  allExposedTo_(_PathEmpty(s), s_mods) :- exposedTo(s, s_mods).
+  allExposedTo_(_PathStep(p, _, s), s_mods) :-
     exposedTo(s, s_mods),
-    allExposedTo(p, s_mods).
+    allExposedTo_(p, s_mods).
 
   exposedTo(s, s_mods) :-
     nonEmpty(exposedToModules(s, s_mods)).
