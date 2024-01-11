@@ -104,6 +104,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 	@Override
 	public CommandFeedback exec(ExecContext context, Args args) throws Exception {
+		context.cancelToken().throwIfCanceled();
         context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
 		final ResourceKey file = args.file;
 		
@@ -122,6 +123,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		
 		// 1. Transform to Java
 		final Result<IStrategoTerm, ? extends Exception> transformResult = context.require(transform, analysisSupplier);
+		context.cancelToken().throwIfCanceled();
 		
 		// Exception in transformation
 		if(transformResult.isErr()) {
@@ -141,6 +143,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		
 		// 2. Compile
 		final Result<KeyedMessages, IOException> compilerOutput = compile(context, args, TermUtils.toListAt(transformResultTerm, 1));
+		context.cancelToken().throwIfCanceled();
 		if(compilerOutput.isErr()) {
 			return CommandFeedback.ofTryExtractMessagesFrom(compilerOutput.getErr(), file);
 		}
