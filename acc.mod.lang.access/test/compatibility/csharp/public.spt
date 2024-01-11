@@ -1,0 +1,363 @@
+module compatibility/csharp/public
+
+test public -- lex -- self [[
+class A {
+  public var x = 42
+  public foo() {
+    return x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- lex -- sub [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public foo() {
+    return x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+test public -- lex -- subsub [[
+class A {
+  public var x = 42
+}
+class B : public A {}
+class C : public B {
+  public foo() {
+    return x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- lex -- sub -- other module [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A {
+    public foo() {
+      return x
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+test public -- lex -- subsub -- other module [[
+module p {
+  class A {
+    public var x = 42
+  }
+}
+module q {
+  import p
+  class B : public A {}
+  class C : public B {
+    public foo() {
+      return x
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+
+test public -- mem -- self [[
+class A {
+  public var x = 42
+  public foo(a: A) {
+    return a.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- sub -- decl [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public foo(a: A) {
+    return a.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- sub -- self [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public foo(b: B) {
+    return b.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- sub -- sub [[
+class A {
+  public var x = 42
+}
+class B : public A {
+  public foo(c: C) {
+    return c.x
+  }
+}
+class C : public B { }
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+
+test public -- mem -- subsub -- decl [[
+class A {
+  public var x = 42
+}
+class B : public A {}
+class C : public B {
+  public foo(a: A) {
+    return a.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+test public -- mem -- subsub -- parent [[
+class A {
+  public var x = 42
+}
+class B : public A {}
+class C : public B {
+  public foo(b: B) {
+    return b.x
+  }
+}
+]]
+
+run csharp-test-transform
+transform "Test C# Compatibility"
+test public -- mem -- subsub -- self [[
+class A {
+  public var x = 42
+}
+class B : public A {}
+class C : public B {
+  public foo(c: C) {
+    return c.x
+  }
+}
+]]
+
+run csharp-test-transform
+transform "Test C# Compatibility"
+test public -- mem -- subsub -- sub [[
+class A {
+  public var x = 42
+}
+class B : public A {}
+class C : public B {
+  public foo(d: D) {
+    return d.x
+  }
+}
+class D : public C { }
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- decl -- other [[
+class A {
+  public var x = 42
+}
+class X {
+  public foo(a: A) {
+    return a.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+
+test public -- mem -- sub -- other [[
+class A {
+  public var x = 42
+}
+class B : public A { }
+class X {
+  public foo(b: B) {
+    return b.x
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+
+test public -- mem -- sub -- decl -- other module [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A {
+  public foo(a: A) {
+    return a.x
+  }
+}
+} 
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- sub -- self -- other module [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A {
+  public foo(b: B) {
+    return b.x
+  }
+}
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+test public -- mem -- subsub -- decl -- other module [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A {}
+}
+module r {
+import p
+import q
+class C : public B {
+  public foo(a: A) {
+    return a.x
+  }
+}
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+test public -- mem -- subsub -- parent -- other module [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A {}
+}
+module r {
+import q
+class C : public B {
+  public foo(b: B) {
+    return b.x
+  }
+}
+}
+]]
+
+run csharp-test-transform
+transform "Test C# Compatibility"
+test public -- mem -- subsub -- self -- other module [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A {}
+}
+module r {
+import q
+class C : public B {
+  public foo(c: C) {
+    return c.x
+  }
+}
+}
+]]
+
+
+test public -- mem -- decl -- other [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class X {
+  public foo(a: A) {
+    return a.x
+  }
+}
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test public -- mem -- sub -- other [[
+module p {
+class A {
+  public var x = 42
+}
+}
+module q {
+import p
+class B : public A { }
+}
+module r {
+import q
+class X {
+  public foo(b: B) {
+    return b.x
+  }
+}
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
