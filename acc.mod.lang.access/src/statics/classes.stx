@@ -176,7 +176,7 @@ rules
 
   argumentOk(s, Arg(x, t)) = T :-
     typeOfType(s, t) == T,
-    declareVar(s, x, T, LOCAL()).
+    declareVar(s, x, T, UNRESTRICTED()).
 
 rules
 
