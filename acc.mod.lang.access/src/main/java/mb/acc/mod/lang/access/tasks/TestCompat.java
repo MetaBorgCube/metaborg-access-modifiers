@@ -261,7 +261,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			context.logger().info("Running '{}' in {}", cmd, pwdFile);
 			final Process proc = rt.exec(cmd, /*inherit env*/null, pwdFile);
 			try {
-				proc.waitFor(1, TimeUnit.MINUTES);
+				proc.waitFor(10, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
 				throw new IOException(e);
 			}
