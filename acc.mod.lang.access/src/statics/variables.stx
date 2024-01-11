@@ -82,12 +82,10 @@ rules
   [T-Ref]
   resolveVar(s, Id(x)) = T :- {p ACC}
     (p, (T, ACC)) == resolveLexicalVar(s, x),
-    lexicalAccessOk(p, ACC)
-      | error $[Variable [x] is not visible.] @x.
+    accessOk(src(p), p, ACC) | error $[Variable [x] is not visible.] @x.
 
   [T-FAcc]
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
     resolveVar(s, qid) == CLASS(s_cls),
     resolveMemberVar(s_cls, x) == (p, (T, ACC)),
-    memberAccessOk(s, p, ACC)
-      | error $[Field [x] is not visible.] @x.
+    accessOk(s, p, ACC) | error $[Field [x] is not visible.] @x.

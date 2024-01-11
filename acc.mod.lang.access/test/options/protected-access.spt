@@ -1,7 +1,7 @@
 module options/member-protected-access
 
 test on member modifier - protected [[
-#member-protected-access: allow
+#protected-access: if-instance-of-defining
 
 class A {
   protected var x = 42
@@ -17,7 +17,7 @@ class B : public A {
 analysis succeeds
 
 test on member modifier - protected internal [[
-#member-protected-access: allow
+#protected-access: if-instance-of-defining
 
 module p {
   class A {
@@ -40,7 +40,7 @@ analysis succeeds
 // inheritance modifier
 
 test on inheritance modifier - instance of current - no [[
-#member-protected-access: if-instance-of-current
+#protected-access: if-instance-of-current
 
 module p {
 class A {
@@ -60,7 +60,7 @@ analysis fails
 
 
 test on inheritance modifier - instance of current - exact - yes [[
-#member-protected-access: if-instance-of-current
+#protected-access: if-instance-of-current
 
 module p {
 class A {
@@ -79,7 +79,7 @@ class C : public B {
 analysis succeeds
 
 test on inheritance modifier - instance of current - sub - yes [[
-#member-protected-access: if-instance-of-current
+#protected-access: if-instance-of-current
 
 module p {
 class A {
@@ -101,7 +101,7 @@ analysis succeeds
 // private members
 
 test private protected member access [[
-#member-protected-access: allow
+#protected-access: if-instance-of-defining
 
 class A {
   private protected var x = 42

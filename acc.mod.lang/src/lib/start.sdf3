@@ -26,9 +26,9 @@ context-free sorts
   ExposureMode
   ExposureRange
 
-  LexicalInternal
-  MemberProtected
-  MemberPrivate
+  InternalAccess
+  ProtectedAccess
+  PrivateAccess
 
 context-free syntax
 
@@ -38,9 +38,9 @@ context-free syntax
   Options.Options = <
     <ExposureMode>
     <ExposureRange>
-    <LexicalInternal>
-    <MemberProtected>
-    <MemberPrivate>
+    <InternalAccess>
+    <ProtectedAccess>
+    <PrivateAccess>
   >
 
   ExposureMode.NoExposureMode    		= <>
@@ -51,20 +51,17 @@ context-free syntax
   ExposureRange.All              		= <#exposure-range: all>
   ExposureRange.Ancestors        		= <#exposure-range: ancestors>
 
-  LexicalInternal.NoLexicalInternal 	= <>
-  LexicalInternal.AllowLexicalInternal  = <#lexical-internal-access: allow>
-  LexicalInternal.IfChainInModule       = <#lexical-internal-access: if-chain-in-module>
-  LexicalInternal.DenyLexicalInternal   = <#lexical-internal-access: deny>
+  InternalAccess.NoInternalAccess   	= <>
+  InternalAccess.AllowInternalAccess    = <#internal-access: allow>
+  InternalAccess.IfChainInModule        = <#internal-access: if-chain-in-module>
 
-  MemberProtected.NoMemberProtected 	= <>
-  MemberProtected.AllowMemberProtected  = <#member-protected-access: allow>
-  MemberProtected.IfInstanceOfCurrent   = <#member-protected-access: if-instance-of-current>
-  MemberProtected.DenyMemberProtected   = <#member-protected-access: deny>
+  ProtectedAccess.NoProtectedAccess 	= <>
+  ProtectedAccess.IfInstanceOfDefining  = <#protected-access: if-instance-of-defining>
+  ProtectedAccess.IfInstanceOfCurrent   = <#protected-access: if-instance-of-current>
 
-  MemberPrivate.NoMemberPrivate 	    = <>
-  MemberPrivate.IfExactType             = <#member-private-access: if-exact-type>
-  MemberPrivate.IfSubtypeOfCurrent      = <#member-private-access: if-instance-of-current>
-  MemberPrivate.DenyMemberPrivate       = <#member-private-access: deny>
+  PrivateAccess.NoPrivateAccess 	    = <>
+  PrivateAccess.IfExactType             = <#private-access: if-exact-type>
+  PrivateAccess.IfSubtypeOfCurrent      = <#private-access: if-instance-of-current>
 
 // Modules, Classes and Imports
 

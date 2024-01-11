@@ -190,4 +190,4 @@ module q {
   class B : public A { }
 }
 ]]
-analysis succeeds
+analysis fails

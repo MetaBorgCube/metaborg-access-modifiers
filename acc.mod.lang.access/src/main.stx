@@ -13,15 +13,15 @@ rules
 
   // No injection explication for top-level sort `Start`.
   programOk : Program
-  programOk(Program(Options(EM, ER, LI, MProt, MPriv), prog)) :- {s}
+  programOk(Program(Options(EM, ER, IntAcc, ProtAcc, PrivAcc), prog)) :- {s}
     new s,
     !thisMod[s] in s,
 
     exposureModeOk(s, EM),
     exposureRangeOk(s, ER),
 
-    lexicalInternalOk(s, LI),
-    memberProtectedOk(s, MProt),
-    memberPrivateOk(s, MPriv),
+    internalAccessSettingOk(s, IntAcc),
+    protectedAccessSettingOk(s, ProtAcc),
+    privateAccessSettingOk(s, PrivAcc),
 
     moduleElemsOk(s, prog).

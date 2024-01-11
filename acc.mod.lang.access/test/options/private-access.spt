@@ -1,7 +1,7 @@
-module options/member-private-access
+module options/private-access
 
 test on member modifier - private -- exact -- yes [[
-#member-private-access: if-exact-type
+#private-access: if-exact-type
 
 class A {
   private var x = 42
@@ -17,7 +17,7 @@ class B : public A {
 analysis succeeds
 
 test on member modifier - private -- exact -- no [[
-#member-private-access: if-exact-type
+#private-access: if-exact-type
 
 class A {
   private var x = 42
@@ -33,7 +33,7 @@ class B : public A {
 analysis fails
 
 test on member modifier - internal -- exact -- yes [[
-#member-private-access: if-exact-type
+#private-access: if-exact-type
 
 class A {
   internal(M) var x = 42
@@ -50,7 +50,7 @@ module M { }
 analysis succeeds
 
 test on member modifier - internal -- exact -- no [[
-#member-private-access: if-exact-type
+#private-access: if-exact-type
 
 class A {
   internal(M) var x = 42
@@ -69,7 +69,7 @@ analysis fails
 /*** if-instance-of-current ***/
 
 test on member modifier - private -- subtype [[
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 class A {
   private var x = 42
@@ -85,7 +85,7 @@ class B : public A {
 analysis succeeds
 
 test on member modifier - private -- subtype -- yes [[
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 class A {
   private var x = 42
@@ -102,7 +102,7 @@ analysis succeeds
 
 
 test on member modifier - internal -- subtype [[
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 class A {
   internal(M) var x = 42
@@ -120,7 +120,7 @@ analysis succeeds
 
 
 test on member modifier - internal -- subtype -- yes [[
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 class A {
   internal(M) var x = 42
@@ -139,8 +139,8 @@ analysis succeeds
 /*** inheritance modifier ***/
 
 test on inheritance modifier - instance of current - yes [[
-#member-protected-access: allow
-#member-private-access: if-instance-of-current
+#protected-access: if-instance-of-defining
+#private-access: if-instance-of-current
 
 module p {
 class A {
@@ -160,8 +160,8 @@ class C : public B {
 analysis succeeds
 
 test on inheritance modifier - exact-type - no [[
-#member-protected-access: allow
-#member-private-access: if-exact-type
+#protected-access: if-instance-of-defining
+#private-access: if-exact-type
 
 module p {
 class A {
@@ -181,8 +181,8 @@ class C : public B {
 analysis fails
 
 test on inheritance modifier - instance of current - yes [[
-#member-protected-access: allow
-#member-private-access: if-instance-of-current
+#protected-access: if-instance-of-defining
+#private-access: if-instance-of-current
 
 module p {
 class A {
@@ -202,7 +202,7 @@ class C : public B {
 analysis succeeds
 
 test on inheritance modifier - allow [[
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 module p {
 class A {

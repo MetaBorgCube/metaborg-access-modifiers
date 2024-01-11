@@ -11,9 +11,9 @@ signature
 
     exposureMode    : ExposureMode
     exposureRange   : ExposureRange
-    lexicalInternal : LexicalInternal
-    memberProtected : MemberProtected
-    memberPrivate   : MemberPrivate
+    internalAccess  : InternalAccess
+    protectedAccess : ProtectedAccess
+    privateAccess   : PrivateAccess
 
 rules
 
@@ -57,69 +57,60 @@ rules
 
 rules
 
-  lexicalInternalOk: scope * LexicalInternal
+  internalAccessSettingOk: scope * InternalAccess
 
-  lexicalInternalOk(s, AllowLexicalInternal()) :-
-    !lexicalInternal[AllowLexicalInternal()] in s.
+  internalAccessSettingOk(s, AllowInternalAccess()) :-
+    !internalAccess[AllowInternalAccess()] in s.
 
-  lexicalInternalOk(s, IfChainInModule()) :-
-    !lexicalInternal[IfChainInModule()] in s.
-
-  lexicalInternalOk(s, DenyLexicalInternal()) :-
-    !lexicalInternal[DenyLexicalInternal()] in s.
+  internalAccessSettingOk(s, IfChainInModule()) :-
+    !internalAccess[IfChainInModule()] in s.
 
   // default rule
-  lexicalInternalOk(s, NoLexicalInternal()) :-
-    !lexicalInternal[DenyLexicalInternal()] in s.
+  internalAccessSettingOk(s, NoInternalAccess()) :-
+    !internalAccess[IfChainInModule()] in s.
 
-  resolveLexicalInternal: scope -> LexicalInternal
-  resolveLexicalInternal(s) = M :-
-    query lexicalInternal
+  resolveInternalAccess: scope -> InternalAccess
+  resolveInternalAccess(s) = M :-
+    query internalAccess
       filter LEX*
       in s |-> [(_, M) | _].
 
 rules
 
-  memberProtectedOk: scope * MemberProtected
+  protectedAccessSettingOk: scope * ProtectedAccess
 
-  memberProtectedOk(s, AllowMemberProtected()) :-
-    !memberProtected[AllowMemberProtected()] in s.
+  protectedAccessSettingOk(s, IfInstanceOfDefining()) :-
+    !protectedAccess[IfInstanceOfDefining()] in s.
 
-  memberProtectedOk(s, DenyMemberProtected()) :-
-    !memberProtected[DenyMemberProtected()] in s.
-
-  memberProtectedOk(s, IfInstanceOfCurrent()) :-
-    !memberProtected[IfInstanceOfCurrent()] in s.
+  protectedAccessSettingOk(s, IfInstanceOfCurrent()) :-
+    !protectedAccess[IfInstanceOfCurrent()] in s.
 
   // default rule
-  memberProtectedOk(s, NoMemberProtected()) :-
-    !memberProtected[DenyMemberProtected()] in s.
+  protectedAccessSettingOk(s, NoProtectedAccess()) :-
+    !protectedAccess[IfInstanceOfCurrent()] in s.
 
-  resolveMemberProtected: scope -> MemberProtected
-  resolveMemberProtected(s) = M :-
-    query memberProtected
+  resolveProtectedAccess: scope -> ProtectedAccess
+  resolveProtectedAccess(s) = M :-
+    query protectedAccess
       filter LEX*
       in s |-> [(_, M) | _].
 
 rules
 
-  memberPrivateOk: scope * MemberPrivate
+  privateAccessSettingOk: scope * PrivateAccess
 
-  memberPrivateOk(s, DenyMemberPrivate()) :-
-    !memberPrivate[DenyMemberPrivate()] in s.
+  privateAccessSettingOk(s, IfExactType()) :-
+    !privateAccess[IfExactType()] in s.
 
-  memberPrivateOk(s, IfExactType()) :-
-    !memberPrivate[IfExactType()] in s.
-
-  memberPrivateOk(s, IfSubtypeOfCurrent()) :-
-    !memberPrivate[IfSubtypeOfCurrent()] in s.
+  privateAccessSettingOk(s, IfSubtypeOfCurrent()) :-
+    !privateAccess[IfSubtypeOfCurrent()] in s.
 
   // default rule
-  memberPrivateOk(s, NoMemberPrivate()) :-
-    !memberPrivate[DenyMemberPrivate()] in s.
+  privateAccessSettingOk(s, NoPrivateAccess()) :-
+    !privateAccess[IfExactType()] in s.
 
-  resolveMemberPrivate: scope -> MemberPrivate
-  resolveMemberPrivate(s) = M :-
-    query memberPrivate
+  resolvePrivateAccess: scope -> PrivateAccess
+  resolvePrivateAccess(s) = M :-
+    query privateAccess
       filter LEX*
       in s |-> [(_, M) | _].

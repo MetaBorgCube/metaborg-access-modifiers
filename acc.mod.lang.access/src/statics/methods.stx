@@ -59,8 +59,7 @@ rules // references (with/without) receivers
         $ < LEX
       in s |-> [(p, (x', (T, ACC)))]
       | error $[Reference to method [x] is ambiguous.],
-    lexicalAccessOk(p, ACC)
-      | error $[Method [x] is not visible.],
+    accessOk(s, p, ACC) | error $[Method [x] is not visible.],
     @x.ref := x',
     @x.type := T.
 
@@ -76,8 +75,7 @@ rules // references (with/without) receivers
         $ < EXTEND_PRIV
       in s |-> [(p, (x', (T, ACC))) | _]
       | error $[Reference to method [x] is ambiguous.],
-    memberAccessOk(s, p, ACC)
-      | error $[Method [x] is not visible.],
+    accessOk(s, p, ACC) | error $[Method [x] is not visible.],
     @x.ref := x',
     @x.type := T.
 
@@ -148,13 +146,13 @@ rules
   accessibilityElevationOk(s, s_tgt, UNRESTRICTED(), _).
   accessibilityElevationOk(s, s_tgt, A_new, UNRESTRICTED()) :- {L}
     // Only allowed if inheritance chain restricts visibility to `protected`.
-    lexicalPaths(s, s_tgt) == (_, L),
+    paths(s, s_tgt) == (_, L),
     try { L != PUB() }.
 
   accessibilityElevationOk(s, s_tgt, A_new, A_old) :- {MV PL UC new_mods old_mods}
     new_mods == modulesOfAccess(A_new),
     old_mods == modulesOfAccess(A_old),
-    lexicalPaths(s, s_tgt) == (MV, PL),
+    paths(s, s_tgt) == (MV, PL),
     // try { PL != PUB() },
     // condition: all modules in `old_mods` must be covered by `new_mods`.
     // we query for the inverse: find all modules that are in `old_mods`, but that do not have a parent in `new_mods`

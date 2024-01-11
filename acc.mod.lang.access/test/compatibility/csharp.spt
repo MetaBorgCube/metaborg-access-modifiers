@@ -1,9 +1,11 @@
 module compatibility/csharp
 
 test simple [[
+#csharp
+
 module p {
 class A {
-  protected internal var x = 42
+  protected internal var x = 2
 }
 }
 module q {
@@ -17,6 +19,8 @@ run csharp-test-transform
 transform "Test C# Compatibility"
 
 test nested - refer to parent [[
+#csharp
+
 module p {
   class A {
     protected internal var x = 42
@@ -32,6 +36,8 @@ run csharp-test-transform
 transform "Test C# Compatibility"
 
 test nested - refer to root [[
+#csharp
+
 class A {
   protected internal var x = 42
 }
@@ -48,7 +54,7 @@ transform "Test C# Compatibility"
 
 
 test private protected access - no instance [[
-#member-protected-access: if-instance-of-current
+#csharp
 
 module p {
 class A {
@@ -66,7 +72,7 @@ run csharp-test-transform
 transform "Test C# Compatibility"
 
 test private protected access - instance [[
-#member-protected-access: if-instance-of-current
+#csharp
 
 module p {
 class A {
