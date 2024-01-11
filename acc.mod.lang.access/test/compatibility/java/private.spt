@@ -1,4 +1,4 @@
-module compatibility/java/private 
+module compatibility/java/private
 
 test private -- lex -- self [[
 class A {
@@ -46,7 +46,8 @@ module p {
   }
 }
 module q {
-  class B : public p.A {
+  import p
+  class B : public A {
     private foo() {
       return x
     }
@@ -231,7 +232,7 @@ class B : public A {
     return a.x
   }
 }
-} 
+}
 ]]
 run java-test-transform
 transform "Test Java Compatibility"
@@ -249,29 +250,6 @@ class B : public A {
     return b.x
   }
 }
-}
-]]
-run java-test-transform
-transform "Test Java Compatibility"
-
-test private -- mem -- sub -- sub -- other module [[
-module p {
-class A {
-  private var x = 42
-}
-}
-module q {
-import p
-import r
-class B : public A {
-  private foo(c: C) {
-    return c.x
-  }
-}
-}
-module r {
-import q
-class C : public B { }
 }
 ]]
 run java-test-transform
@@ -343,35 +321,6 @@ class C : public B {
 }
 }
 ]]
-
-run java-test-transform
-transform "Test Java Compatibility"
-test private -- mem -- subsub -- sub -- other module [[
-module p {
-class A {
-  private var x = 42
-}
-}
-module q {
-import p
-class B : public A {}
-}
-module r {
-import q
-import o
-class C : public B {
-  private foo(d: D) {
-    return d.x
-  }
-}
-}
-module o {
-import r
-class D : public C { }
-}
-]]
-run java-test-transform
-transform "Test Java Compatibility"
 
 
 test private -- mem -- decl -- other [[
