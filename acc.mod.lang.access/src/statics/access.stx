@@ -168,6 +168,7 @@ rules // member access
   accessOk(s, p, SUBCLASS_OR_MODULES(mods)) :- {REF_OK}
     pathLevelOk(pathLevel(p), s, p),
     exposedToModules(s, mods) == REF_OK,
+    // Note: no `internalPathOk(...)` because inheritance happens regardless of module exposure
     subclassOrModulesAccessOk(REF_OK, s, p).
 
   	  subclassOrModulesAccessOk  : PATH_LIST * scope * path
@@ -181,12 +182,9 @@ rules // member access
 	    // member access of protected member should be allowed
 	    protectedAccessOk(resolveProtectedAccess(s), s, p).
 
-  accessOk(s, p, SUBCLASS_IN_MODULES(mods)) :- {W}
-    exposedToModules(s, mods) != [],
-    internalPathOk(resolveInternalAccess(s), p, mods) != [],
-	// Access of protected member should be allowed
-	protectedAccessOk(resolveProtectedAccess(s), s, p),
-	pathLevelOk(pathLevel(p), s, p).
+  accessOk(s, p, SUBCLASS_IN_MODULES(mods)) :- {W REF_OK PATH_OK}
+    accessOk(s, p, MODULES(mods)),
+	protectedAccessOk(resolveProtectedAccess(s), s, p).
 
   accessOk(s, p, MODULES(mods)) :- {L REF_OK PATH_OK}
     pathLevelOk(pathLevel(p), s, p),
@@ -261,7 +259,7 @@ rules
   isExposedTo: scope * scope * ExposureMode
 
   allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
-  allExposedTo(p, s_mods) :- allExposedTo_(p, s_mods).
+  allExposedTo(_PathStep(p, _, s), s_mods) :- allExposedTo_(p, s_mods).
   allExposedTo_(_PathEmpty(s), s_mods) :- exposedTo(s, s_mods).
   allExposedTo_(_PathStep(p, _, s), s_mods) :-
     exposedTo(s, s_mods),
