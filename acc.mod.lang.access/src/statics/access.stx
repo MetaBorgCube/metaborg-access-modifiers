@@ -125,17 +125,27 @@ rules
 rules
 
   accessModifierToAccess : scope * AccessModifier -> ACCESS
+  resolveModRefList: scope * ModuleRefList-Star -> list(scope)
+  resolveModRefListPlus: scope * ModuleRefList-Plus -> list(scope)
+  resolveModRefList_: int * scope * ModuleRefList-Plus -> list(scope)
   resolveModRef: scope * ModuleRef -> scope
   resolveModRefs maps resolveModRef(*, list(*)) = list(*)
   modRefOk: scope * scope * ExposureRange * QId
   
   
   [A-Pub]  accessModifierToAccess(s, Public())                   = UNRESTRICTED().
-  accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefs(s, modRefs)).
-  [A-Int]  accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefList(s, modRefs)).
+  [A-Int]  accessModifierToAccess(s, Internal(modRefs))          = modules(resolveModRefList(s, modRefs)).
   [A-Prot] accessModifierToAccess(s, Protected())                = subclassOrModules([]).
-  accessModifierToAccess(s, PrivateProtected(modRefs))  = subclassInModules(resolveModRefs(s, modRefs)).
+  accessModifierToAccess(s, PrivateProtected(modRefs))  = subclassInModules(resolveModRefList(s, modRefs)).
   [A-Priv] accessModifierToAccess(s, Private())                  = modules([]).
+
+  resolveModRefList(s, MRLEmpty()) = [].
+  resolveModRefList(s, MRLNonEmpty(mrl)) = resolveModRefListPlus(s, mrl).
+  resolveModRefListPlus(s, mrl) = resolveModRefList_(10, s, mrl).
+  resolveModRefList_(0, _, _) = [] :- false.
+  resolveModRefList_(n, s, MRLItem(mr)) = [resolveModRef(s, mr)] :- n #>= 0.
+  resolveModRefList_(n, s, MRLCons(mr, tl)) = [resolveModRef(s, mr) | resolveModRefList_(#(n - 1), s, tl)].
 
   resolveModRef(s, Self()) = thisMod(s).
   resolveModRef(s, ModuleRef(qid)) = s_mod :-

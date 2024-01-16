@@ -11,6 +11,7 @@ imports
   signatures/start-sig
   pp
   completion
+  cc
 
   lib/-
   
@@ -18,8 +19,8 @@ imports
 
 rules // Analysis
 
+ 
   pre-analyze  = desugar-all; explicate-injections-accmodlang-Program
-  post-analyze = implicate-injections-accmodlang-Program
 
   editor-analyze = stx-editor-analyze(pre-analyze, post-analyze|"main", "programOk")
   editor-resolve = stx-editor-resolve

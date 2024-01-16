@@ -184,8 +184,8 @@ rules // classes
   aml-to-java-acc :: AccessModifier -> JAccMod
   aml-to-java-acc : Public() -> Public()
   // 'protected in Java' is like 'protected | internal'
-  aml-to-java-acc : ProtectedInternal([Self()]) -> Protected()
-  aml-to-java-acc : Internal([Self()]) -> Default()
+  aml-to-java-acc : ProtectedInternal(MRLNonEmpty(MRLItem(Self()))) -> Protected()
+  aml-to-java-acc : Internal(MRLNonEmpty(MRLItem(Self()))) -> Default()
   aml-to-java-acc : Private() -> Private()
   
   aml-to-java-acc = failure(|"Unknown access modifier")

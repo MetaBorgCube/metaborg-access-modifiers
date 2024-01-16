@@ -173,25 +173,35 @@ context-free sorts
 
   AccessModifier
   ModuleRef
+  ModuleRefList-Star
+  ModuleRefList-Plus
 
 context-free syntax
 
-  AccessModifier.Public 				= <public>          						// Everywhere
-  AccessModifier.Protected 				= <protected>    							// All subclasses
+  AccessModifier.Public 				= <public>          							// Everywhere
+  AccessModifier.Protected 				= <protected>    								// All subclasses
 
-  AccessModifier.InternalSelf  			= <internal>     							// Own module only
-  AccessModifier.Internal  				= <internal(<{ModuleRef ","}*>)>     		// Exposed modules only
+  AccessModifier.InternalSelf  			= <internal>     								// Own module only
+  AccessModifier.Internal  				= <internal(<ModuleRefList-Star>)>     			// Exposed modules only
 
-  AccessModifier.ProtectedInternalSelf	= <protected internal> 						// Subclasses and classes in own module
-  AccessModifier.ProtectedInternal    	= <protected internal(<{ModuleRef ","}*>)> 	// Subclasses and classes in exposed modules
+  AccessModifier.ProtectedInternalSelf	= <protected internal> 							// Subclasses and classes in own module
+  AccessModifier.ProtectedInternal    	= <protected internal(<ModuleRefList-Star>)> 	// Subclasses and classes in exposed modules
 
-  AccessModifier.PrivateProtectedSelf	= <private protected> 						// Only subclasses in the own module
-  AccessModifier.PrivateProtected    	= <private protected(<{ModuleRef ","}*>)> 	// Only subclasses in the exposed modules
+  AccessModifier.PrivateProtectedSelf	= <private protected> 							// Only subclasses in the own module
+  AccessModifier.PrivateProtected    	= <private protected(<ModuleRefList-Star>)> 	// Only subclasses in the exposed modules
  
-  AccessModifier.Private        		= <private> 								// Only own class
+  AccessModifier.Private        		= <private> 									// Only own class
 
   ModuleRef.Self 		= <self>
   ModuleRef.ModuleRef 	= <<QId>>
+
+  
+  ModuleRefList-Star.MRLEmpty    = <>
+  ModuleRefList-Star.MRLNonEmpty = <<ModuleRefList-Plus>>
+  
+  
+  ModuleRefList-Plus.MRLItem  = <<ModuleRef>>
+  ModuleRefList-Plus.MRLCons  = <<ModuleRef>, <ModuleRefList-Plus>>
 
 // TODO: friends????
 

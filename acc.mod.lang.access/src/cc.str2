@@ -1,0 +1,35 @@
+module cc
+
+imports
+
+  strategolib
+
+  signatures/lib/start-sig
+  injections/lib/-
+  
+  pp
+
+  libspoofax/term/origin
+
+rules
+
+  post-analyze :: ? -> ?
+  post-analyze = debug(!"post-analyze: "); implicate-injections-accmodlang
+
+rules // Code Completion
+
+  downgrade-placeholders = downgrade-placeholders-accmodlang
+  upgrade-placeholders   = upgrade-placeholders-accmodlang
+  is-inj                 = is-accmodlang-inj-cons
+  pp-partial             = pp-partial-accmodlangaccess-string
+
+rules
+
+  accmod-to-placeholder = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); !AccessModifier-Plhdr()); debug
+  
+  covers(|offset) = where(
+  	debug; 
+  	origin-offset; ?(start, end); debug;
+  	!(start, offset); int-leq; debug(!"start-ok"); 
+  	!(end, offset); int-gt; debug(!"success")
+  )

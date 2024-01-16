@@ -180,9 +180,9 @@ rules
   aml-to-csharp-acc :: AccessModifier -> CSAccMod
   aml-to-csharp-acc : Public() -> Public()
   aml-to-csharp-acc : Protected() -> Protected()
-  aml-to-csharp-acc : ProtectedInternal([Self()]) -> ProtectedInternal()
-  aml-to-csharp-acc : Internal([Self()]) -> Internal()
-  aml-to-csharp-acc : PrivateProtected([Self()]) -> PrivateProtected()
+  aml-to-csharp-acc : ProtectedInternal(MRLNonEmpty(MRLItem(Self()))) -> ProtectedInternal()
+  aml-to-csharp-acc : Internal(MRLNonEmpty(MRLItem(Self()))) -> Internal()
+  aml-to-csharp-acc : PrivateProtected(MRLNonEmpty(MRLItem(Self()))) -> PrivateProtected()
   aml-to-csharp-acc : Private() -> Private()
   
   aml-to-csharp-acc = failure(|"Unknown access modifier")

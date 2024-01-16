@@ -1,11 +1,12 @@
-#member-private-access: if-instance-of-current
+#private-access: if-instance-of-current
 
 module M1 {
   class A {
-	private var x = 42
-	public accessX(b: B) {
+	internal(self) var x = 46
+  }
+  class B { 
+	public accessX(b: A) {
 		return b.x
 	}
   }
-  class B : public A { }
 }
