@@ -2,7 +2,7 @@ module code-completion/protected-internal
 
 test protected internal -- lex -- self [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
   public foo() {
     return x
   }
@@ -12,7 +12,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- lex -- sub [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {
   public foo() {
@@ -25,7 +25,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- lex -- subsub [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {}
 class C : public B {
@@ -39,7 +39,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- lex -- sub -- other module [[
 module p {
   class A {
-    [[public]] var x = 42
+    [[protected internal]] var x = 42
   }
 }
 module q {
@@ -57,7 +57,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- lex -- subsub -- other module [[
 module p {
   class A {
-    [[public]] var x = 42
+    [[protected internal]] var x = 42
   }
 }
 module q {
@@ -76,7 +76,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- self [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
   public foo(a: A) {
     return a.x
   }
@@ -86,7 +86,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- sub -- decl [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {
   public foo(a: A) {
@@ -98,7 +98,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- sub -- self [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {
   public foo(b: B) {
@@ -110,7 +110,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- sub -- sub [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {
   public foo(c: C) {
@@ -125,7 +125,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- subsub -- decl [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {}
 class C : public B {
@@ -137,7 +137,7 @@ class C : public B {
 transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- parent [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {}
 class C : public B {
@@ -150,7 +150,7 @@ class C : public B {
 transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- self [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {}
 class C : public B {
@@ -163,7 +163,7 @@ class C : public B {
 transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- sub [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A {}
 class C : public B {
@@ -177,7 +177,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- decl -- other [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class X {
   public foo(a: A) {
@@ -191,7 +191,7 @@ transform "Test Complete To Current" on #1
 
 test protected internal -- mem -- sub -- other [[
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 class B : public A { }
 class X {
@@ -207,7 +207,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- sub -- decl -- other module [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -224,7 +224,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- sub -- self -- other module [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -242,7 +242,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- decl -- other module [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -263,7 +263,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- parent -- other module [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -284,7 +284,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- subsub -- self -- other module [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -305,7 +305,7 @@ class C : public B {
 test protected internal -- mem -- decl -- other [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {
@@ -322,7 +322,7 @@ transform "Test Complete To Current" on #1
 test protected internal -- mem -- sub -- other [[
 module p {
 class A {
-  [[public]] var x = 42
+  [[protected internal]] var x = 42
 }
 }
 module q {

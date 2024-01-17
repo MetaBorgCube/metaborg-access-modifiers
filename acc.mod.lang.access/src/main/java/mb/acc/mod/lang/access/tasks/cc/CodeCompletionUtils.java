@@ -6,52 +6,25 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.imploder.ImploderAttachment;
 
-import mb.accmodlangaccess.task.AccModLangAccessParse;
 import mb.common.region.Region;
-import mb.common.result.Result;
 import mb.common.util.ListView;
-import mb.jsglr.common.JsglrParseException;
 import mb.nabl2.terms.ITerm;
 import mb.nabl2.terms.ITermVar;
 import mb.nabl2.terms.ListTerms;
 import mb.nabl2.terms.Terms;
 import mb.nabl2.terms.stratego.TermOrigin;
 import mb.nabl2.terms.stratego.TermPlaceholder;
-import mb.pie.api.ExecContext;
-import mb.pie.api.Function;
-import mb.pie.api.Supplier;
-import mb.statix.codecompletion.pie.CodeCompletionTaskDef;
 
 /**
  * Utility methods used by the code completion algorithm.
  */
 final class CodeCompletionUtils {
     private CodeCompletionUtils() { /* Cannot be instantiated. */ }
-    
-    public static Function<CodeCompletionTaskDef.Input, Result<IStrategoTerm, ?>> transformParseResult(AccModLangAccessParse parse,
-			AccModToPlaceHolder toPlaceHolder, PrependOffset prependOffset) {
-		return (ExecContext context, CodeCompletionTaskDef.Input input) -> {
-			int offset = input.primarySelection.getStartOffset();
-			final Supplier<Result<IStrategoTerm, JsglrParseException>> parseResultSupplier = parse.inputBuilder()
-				.withFile(input.file)
-	            .rootDirectoryHint(Optional.ofNullable(input.rootDirectoryHint))
-	            .buildRecoverableAstSupplier();
-			
-			final Supplier<Result<IStrategoTerm, ?>> transformInputSupplier = 
-					prependOffset.createSupplier(parseResultSupplier.map((ctx, parseResult) -> parseResult.map(ast -> {
-						return new PrependOffset.Args(offset, ast);
-					})));
-			
-			return context.require(toPlaceHolder, transformInputSupplier);
-		};
-	}
 
     /**
      * Replaces all strings of layout (newlines, spaces) with a single space.
@@ -86,16 +59,16 @@ final class CodeCompletionUtils {
      * @param caretOffset the caret location
      * @return the placeholder; or {@code null} if not found
      */
-    public static @Nullable ITermVar findPlaceholderAt(ITerm term, int caretOffset) {
-        if (!termContainsCaret(term, caretOffset)) return null;
+    public static @Nullable ITermVar findPlaceholderAt(ITerm term, Region selection) {
+        if (!termContainsCaret(term, selection)) return null;
         // Recurse into the term
         return term.match(Terms.cases(
-            (appl) -> appl.getArgs().stream().map(a -> findPlaceholderAt(a, caretOffset)).filter(Objects::nonNull).findFirst().orElse(null),
+            (appl) -> appl.getArgs().stream().map(a -> findPlaceholderAt(a, selection)).filter(Objects::nonNull).findFirst().orElse(null),
             (list) -> list.match(ListTerms.cases(
                 (cons) -> {
-                    @Nullable final ITermVar headMatch = findPlaceholderAt(cons.getHead(), caretOffset);
+                    @Nullable final ITermVar headMatch = findPlaceholderAt(cons.getHead(), selection);
                     if (headMatch != null) return headMatch;
-                    return findPlaceholderAt(cons.getTail(), caretOffset);
+                    return findPlaceholderAt(cons.getTail(), selection);
                 },
                 (nil) -> null,
                 (var) -> null
@@ -115,17 +88,17 @@ final class CodeCompletionUtils {
      * @return {@code true} when the term contains the caret offset;
      * otherwise, {@code false}.
      */
-    public static boolean termContainsCaret(ITerm term, int caretOffset) {
+    public static boolean termContainsCaret(ITerm term, Region selection) {
         @Nullable Region region = tryGetRegion(term);
         if (region == null) {
             // One of the children must contain the caret
             return term.match(Terms.cases(
-                (appl) -> appl.getArgs().stream().anyMatch(a -> termContainsCaret(a, caretOffset)),
+                (appl) -> appl.getArgs().stream().anyMatch(a -> termContainsCaret(a, selection)),
                 (list) -> list.match(ListTerms.cases(
                     (cons) -> {
-                        final boolean headContains = termContainsCaret(cons.getHead(), caretOffset);
+                        final boolean headContains = termContainsCaret(cons.getHead(), selection);
                         if (headContains) return true;
-                        return termContainsCaret(cons.getTail(), caretOffset);
+                        return termContainsCaret(cons.getTail(), selection);
                     },
                     (nil) -> false,
                     (var) -> false
@@ -136,7 +109,7 @@ final class CodeCompletionUtils {
                 (var) -> false
             ));
         }
-        return region.contains(caretOffset);
+        return region.intersectsWith(selection);
     }
 
     /**

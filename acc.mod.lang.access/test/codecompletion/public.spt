@@ -135,6 +135,8 @@ class C : public B {
 }
 ]]
 transform "Test Complete To Current" on #1
+
+
 test public -- mem -- subsub -- parent [[
 class A {
   [[public]] var x = 42
@@ -148,6 +150,8 @@ class C : public B {
 ]]
 
 transform "Test Complete To Current" on #1
+
+
 test public -- mem -- subsub -- self [[
 class A {
   [[public]] var x = 42
@@ -260,6 +264,8 @@ class C : public B {
 }
 ]]
 transform "Test Complete To Current" on #1
+
+
 test public -- mem -- subsub -- parent -- other module [[
 module p {
 class A {
@@ -279,6 +285,7 @@ class C : public B {
 }
 }
 ]]
+transform "Test Complete To Current" on #1
 
 transform "Test Complete To Current" on #1
 test public -- mem -- subsub -- self -- other module [[
@@ -301,7 +308,6 @@ class C : public B {
 }
 ]]
 transform "Test Complete To Current" on #1
-
 
 test public -- mem -- decl -- other [[
 module p {

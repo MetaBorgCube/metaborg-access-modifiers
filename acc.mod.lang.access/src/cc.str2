@@ -30,14 +30,22 @@ rules // Code Completion
 
 rules
 
-  accmod-at-offset = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); ?mod); !mod
+  accmod-at-offset =
+  	(debug(!"region-start: "); ?region-start, debug(!"region-end: "); ?region-end, ?ast); Third
+	; oncebu(is(AccessModifier); covers(|region-start, region-end); ?mod)
+	; !mod
 
-  covers(|offset) = where(
+  covers(|region-start, region-end) = where(
   	debug; 
-  	origin-offset; ?(start, end); debug;
-  	!(start, offset); int-leq; debug(!"start-ok"); 
-  	!(end, offset); int-gt; debug(!"success")
+  	origin-offset; ?(term-start, term-end); debug;
+  	not(
+  		 !(term-start, region-end); int-gt; debug(!"term start beyond region end")
+  	  <+ !(term-end, region-start); int-lt; debug(!"term end before region start")
+  	)
+  	; !((region-start, region-end), (term-start, term-end)); debug(!"overlapping: ")
   )
+  
+  covers(|region-start, region-end) = !((region-start, region-end), <id>); debug(!"not overlapping: "); fail
 
 rules
 
@@ -46,12 +54,12 @@ rules
 rules
 
   accmod-to-placeholder = 
-  	?(offset, ast); (debug(!"offset: "), id); Snd;
-  	oncebu(is(AccessModifier); covers(|offset); !AccessModifier-Plhdr()); debug
+  	(debug(!"region-start: "); ?region-start, debug(!"region-end: "); ?region-end, ?ast); Third;
+  	oncebu(is(AccessModifier); covers(|region-start, region-end); !AccessModifier-Plhdr()); debug
     
   tail-to-placeholder =
-  	?(offset, ast); (debug(!"offset: "), id); Snd;
-  	oncebu(is(AccessModifier); ?acc-mod; covers(|offset); desugar-all; debug(!"desugared placeholder:"); oncebu(?MRLNil(); !acc-mod; origin-track-forced(!ModuleRefList-Plus-Plhdr())
+  	(debug(!"region-start: "); ?region-start, debug(!"region-end: "); ?region-end, ?ast); Third;
+  	oncebu(is(AccessModifier); ?acc-mod; covers(|region-start, region-end); desugar-all; debug(!"desugared placeholder:"); oncebu(?MRLNil(); !acc-mod; origin-track-forced(!ModuleRefList-Plus-Plhdr())
   		; where(origin-offset < debug(!"tail placeholder offset: ") + debug(!"tail placeholder has no offset"))
   	)); debug
 

@@ -131,7 +131,7 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
         
         // Create local variables to prevent unnecessary capture 
         // (if doesn't work, create task that prepends offset)
-        final int offset = args.selection.getStartOffset();
+        final Region region = args.selection;
         
         // Create some reusable suppliers
         final Supplier<Result<IStrategoTerm, JsglrParseException>> astSupplier = parse.inputBuilder()
@@ -140,7 +140,10 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
         		.buildRecoverableAstSupplier();
         
         final Supplier<Result<IStrategoTerm, ?>> astOffsetSupplier = prependOffset.createSupplier(
-        		astSupplier.map((ctx, parseResult) -> parseResult.map(ast -> new PrependOffset.Args(offset, ast))));    
+        		astSupplier.map((ctx, parseResult) -> parseResult.map(ast -> {
+        			ctx.logger().debug("prepend-offset-input: {, {}}", region, ast);
+        			return new PrependOffset.Args(region, ast);
+        		})));    
         
         final Supplier<Result<IStrategoTerm, ?>> actualModifierSupplier = atOffset.createSupplier(astOffsetSupplier);
         final Supplier<Result<IStrategoTerm, ?>> accModPlaceHolderSupplier = accModToPlaceHolder.createSupplier(astOffsetSupplier);

@@ -473,7 +473,7 @@ public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.
          * @return the term variable of the placeholder being completed
          */
         private ITermVar getCompletionPlaceholder(ITerm ast) {
-            @Nullable ITermVar placeholderVar = findPlaceholderAt(ast, primarySelection.getStartOffset() /* TODO: Support the whole selection? */);
+            @Nullable ITermVar placeholderVar = findPlaceholderAt(ast, primarySelection);
             if (placeholderVar == null) {
                 throw new IllegalStateException("Completion failed: we don't know the placeholder.");
             }

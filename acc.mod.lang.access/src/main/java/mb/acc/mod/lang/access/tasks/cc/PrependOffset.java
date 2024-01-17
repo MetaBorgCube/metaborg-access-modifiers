@@ -1,5 +1,6 @@
 package mb.acc.mod.lang.access.tasks.cc;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -9,6 +10,7 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import mb.accmodlangaccess.AccModLangAccessScope;
 import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.common.region.Region;
 import mb.common.result.Result;
 import mb.common.util.ListView;
 import mb.pie.api.ExecContext;
@@ -17,20 +19,22 @@ import mb.stratego.pie.StrategoTransformTaskDef;
 @AccModLangAccessScope
 public class PrependOffset extends StrategoTransformTaskDef<PrependOffset.Args> {
 
-	public static class Args {
+	public static class Args implements Serializable {
 		
-		private final int offset;
+		private static final long serialVersionUID = 42L;
+
+		private final Region region;
 		
 		private final IStrategoTerm ast;
 		
-		public Args(int offset, IStrategoTerm ast) {
-			this.offset = offset;
+		public Args(Region region, IStrategoTerm ast) {
+			this.region = region;
 			this.ast = ast;
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(ast, offset);
+			return Objects.hash(ast, region);
 		}
 
 		@Override
@@ -45,12 +49,12 @@ public class PrependOffset extends StrategoTransformTaskDef<PrependOffset.Args> 
 				return false;
 			}
 			Args other = (Args) obj;
-			return Objects.equals(ast, other.ast) && offset == other.offset;
+			return Objects.equals(ast, other.ast) && region == other.region;
 		}
 
 		@Override
 		public String toString() {
-			return "Args [offset=" + offset + ", ast=" + ast + "]";
+			return "Args [region=" + region + ", ast=" + ast + "]";
 		}
 		
 	}
@@ -63,7 +67,11 @@ public class PrependOffset extends StrategoTransformTaskDef<PrependOffset.Args> 
 	@Override
 	protected Result<IStrategoTerm, ?> getAst(ExecContext context, Args args) {
 		final ITermFactory termFactory = getStrategoRuntime(context, args).getTermFactory();
-		return Result.ofOk(termFactory.makeTuple(termFactory.makeInt(args.offset), args.ast));
+		return Result.ofOk(termFactory.makeTuple(
+				termFactory.makeInt(args.region.getStartOffset()),
+				termFactory.makeInt(args.region.getEndOffset()),
+				args.ast
+		));
 	}
 
 	@Override
