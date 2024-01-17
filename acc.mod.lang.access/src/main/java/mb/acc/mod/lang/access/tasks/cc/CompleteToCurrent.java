@@ -12,6 +12,7 @@ import mb.common.region.Region;
 import mb.common.result.Result;
 import mb.pie.api.ExecContext;
 import mb.pie.api.TaskDef;
+import mb.pie.api.stamp.resource.ResourceStampers;
 import mb.resource.ResourceKey;
 import mb.resource.hierarchical.ResourcePath;
 import mb.spoofax.core.language.command.CommandFeedback;
@@ -72,17 +73,24 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
 	}
 	
 	private final CompleteTransformed complete;
+	private final mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources;
+
 	
 	@Inject
 	public CompleteToCurrent(
-			CompleteTransformed complete
+			CompleteTransformed complete, 
+			mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources
 	) {
 		this.complete = complete;
+		this.classLoaderResources = classLoaderResources;
 	}
 
 	@Override
 	public CommandFeedback exec(ExecContext context, Args args) throws Exception {
-		ParseTransformed.offsetHolder.set(args.selection.getStartOffset());		
+		context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
+        context.require(classLoaderResources.tryGetAsNativeResource(Args.class), ResourceStampers.hashFile());
+
+		
 		Result<CodeCompletionResult, ?> result = context.require(complete, args.toCodeCompletionInput());
 		context.logger().debug("cc-result: ", result);
 		

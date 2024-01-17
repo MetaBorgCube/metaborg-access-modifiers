@@ -6,6 +6,8 @@ import mb.common.result.Result;
 import mb.common.util.ListView;
 import mb.constraint.pie.ConstraintAnalyzeTaskDef.Output;
 import mb.pie.api.ExecContext;
+import mb.pie.api.Supplier;
+import mb.pie.api.stamp.resource.ResourceStampers;
 import mb.stratego.common.StrategoRuntime;
 import mb.stratego.common.Strategy;
 import mb.stratego.pie.GetStrategoRuntimeProvider;
@@ -14,10 +16,12 @@ import mb.stratego.pie.StrategoTransformTaskDef;
 public abstract class TransformWithAnalysis extends StrategoTransformTaskDef<Output> {
 
 	private final String strategyName;
+	private final mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources;
 
-	public TransformWithAnalysis(GetStrategoRuntimeProvider getStrategoRuntimeProvider, String strategyName) {
+	public TransformWithAnalysis(GetStrategoRuntimeProvider getStrategoRuntimeProvider, String strategyName, mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources) {
 		super(getStrategoRuntimeProvider, ListView.of());
 		this.strategyName = strategyName;
+		this.classLoaderResources = classLoaderResources;
 	}
 
 	@Override
@@ -33,6 +37,15 @@ public abstract class TransformWithAnalysis extends StrategoTransformTaskDef<Out
 	@Override
 	protected Result<IStrategoTerm, ?> getAst(ExecContext context, Output input) {
 	    return Result.ofOk(input.result.analyzedAst);
+	}
+	
+	@Override
+	public Result<IStrategoTerm, ?> exec(ExecContext context, Supplier<? extends Result<Output, ?>> supplier)
+			throws Exception {
+		context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
+	    context.require(classLoaderResources.tryGetAsNativeResource(Output.class), ResourceStampers.hashFile());
+	    
+		return super.exec(context, supplier);
 	}
 
 }

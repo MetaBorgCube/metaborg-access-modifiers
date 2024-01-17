@@ -3,6 +3,7 @@ package mb.acc.mod.lang.access.tasks.tocsharp;
 import javax.inject.Inject;
 
 import mb.acc.mod.lang.access.tasks.TransformWithAnalysis;
+import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
 import mb.accmodlangaccess.AccModLangAccessScope;
 import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
 
@@ -10,8 +11,9 @@ import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
 public class TransformToCSharp extends TransformWithAnalysis {
 
 	@Inject
-    public TransformToCSharp(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
-        super(getStrategoRuntimeProvider, "transform-to-csharp");
+    public TransformToCSharp(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider,
+    		AccModLangAccessClassLoaderResources classLoaderResources) {
+        super(getStrategoRuntimeProvider, "transform-to-csharp", classLoaderResources);
     }
 	
 	@Override

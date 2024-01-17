@@ -104,9 +104,11 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 	@Override
 	public CommandFeedback exec(ExecContext context, Args args) throws Exception {
-		context.cancelToken().throwIfCanceled();
-        context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
-		final ResourceKey file = args.file;
+		context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
+        context.require(classLoaderResources.tryGetAsNativeResource(Args.class), ResourceStampers.hashFile());
+        
+        context.cancelToken().throwIfCanceled();
+        final ResourceKey file = args.file;
 		
 		// 0. Extract analysis result
 		final Supplier<Result<ConstraintAnalyzeTaskDef.Output, ?>> analysisSupplier = analyze
