@@ -6,25 +6,52 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.imploder.ImploderAttachment;
 
+import mb.accmodlangaccess.task.AccModLangAccessParse;
 import mb.common.region.Region;
+import mb.common.result.Result;
 import mb.common.util.ListView;
+import mb.jsglr.common.JsglrParseException;
 import mb.nabl2.terms.ITerm;
 import mb.nabl2.terms.ITermVar;
 import mb.nabl2.terms.ListTerms;
 import mb.nabl2.terms.Terms;
 import mb.nabl2.terms.stratego.TermOrigin;
 import mb.nabl2.terms.stratego.TermPlaceholder;
+import mb.pie.api.ExecContext;
+import mb.pie.api.Function;
+import mb.pie.api.Supplier;
+import mb.statix.codecompletion.pie.CodeCompletionTaskDef;
 
 /**
  * Utility methods used by the code completion algorithm.
  */
 final class CodeCompletionUtils {
     private CodeCompletionUtils() { /* Cannot be instantiated. */ }
+    
+    public static Function<CodeCompletionTaskDef.Input, Result<IStrategoTerm, ?>> transformParseResult(AccModLangAccessParse parse,
+			AccModToPlaceHolder toPlaceHolder, PrependOffset prependOffset) {
+		return (ExecContext context, CodeCompletionTaskDef.Input input) -> {
+			int offset = input.primarySelection.getStartOffset();
+			final Supplier<Result<IStrategoTerm, JsglrParseException>> parseResultSupplier = parse.inputBuilder()
+				.withFile(input.file)
+	            .rootDirectoryHint(Optional.ofNullable(input.rootDirectoryHint))
+	            .buildRecoverableAstSupplier();
+			
+			final Supplier<Result<IStrategoTerm, ?>> transformInputSupplier = 
+					prependOffset.createSupplier(parseResultSupplier.map((ctx, parseResult) -> parseResult.map(ast -> {
+						return new PrependOffset.Args(offset, ast);
+					})));
+			
+			return context.require(toPlaceHolder, transformInputSupplier);
+		};
+	}
 
     /**
      * Replaces all strings of layout (newlines, spaces) with a single space.

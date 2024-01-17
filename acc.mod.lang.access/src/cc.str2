@@ -7,6 +7,9 @@ imports
   signatures/lib/start-sig
   injections/lib/-
   
+  statix/api
+  statix/runtime/-
+  
   pp
 
   libspoofax/term/origin
@@ -27,9 +30,13 @@ rules
 
   accmod-to-placeholder = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); !AccessModifier-Plhdr()); debug
   
+  accmod-at-offset = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); ?mod); !mod
+  
   covers(|offset) = where(
   	debug; 
   	origin-offset; ?(start, end); debug;
   	!(start, offset); int-leq; debug(!"start-ok"); 
   	!(end, offset); int-gt; debug(!"success")
   )
+  
+  analysis-has-errors = stx--get-analysis; stx-analysis-has-errors
