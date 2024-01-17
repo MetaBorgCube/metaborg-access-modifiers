@@ -140,10 +140,7 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
         		.buildRecoverableAstSupplier();
         
         final Supplier<Result<IStrategoTerm, ?>> astOffsetSupplier = prependOffset.createSupplier(
-        		astSupplier.map((ctx, parseResult) -> parseResult.map(ast -> {
-        			ctx.logger().debug("prepend-offset-input: {, {}}", region, ast);
-        			return new PrependOffset.Args(region, ast);
-        		})));    
+        		astSupplier.map((ctx, parseResult) -> parseResult.map(ast -> new PrependOffset.Args(region, ast))));    
         
         final Supplier<Result<IStrategoTerm, ?>> actualModifierSupplier = atOffset.createSupplier(astOffsetSupplier);
         final Supplier<Result<IStrategoTerm, ?>> accModPlaceHolderSupplier = accModToPlaceHolder.createSupplier(astOffsetSupplier);

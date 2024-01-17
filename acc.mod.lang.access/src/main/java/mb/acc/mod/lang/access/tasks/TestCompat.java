@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
@@ -144,7 +143,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		}
 		
 		// 2. Compile
-		final Result<KeyedMessages, IOException> compilerOutput = compile(context, args, TermUtils.toListAt(transformResultTerm, 1));
+		final Result<KeyedMessages, IOException> compilerOutput = compile(context, args, transformResultTerm.getSubterm(1));
 		context.cancelToken().throwIfCanceled();
 		if(compilerOutput.isErr()) {
 			return CommandFeedback.ofTryExtractMessagesFrom(compilerOutput.getErr(), file);
@@ -175,7 +174,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 	}
 
 	protected abstract Result<KeyedMessages, IOException> compile(ExecContext context, Args args,
-			IStrategoList transformResultTerm);
+			IStrategoTerm transformResultTerm);
 
 
 	protected HierarchicalResource normalizeRoot(ResourcePath rootDirectory) {
@@ -217,9 +216,8 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 		private List<String> requires = new ArrayList<String>();
 		private List<String> provides = new ArrayList<String>();
 
-		protected Command(String subCommand) {
-			cmd.add("dotnet");
-			cmd.add(subCommand);
+		protected Command(String command) {
+			cmd.add(command);
 		}
 
 		protected void addArgument(String option) {

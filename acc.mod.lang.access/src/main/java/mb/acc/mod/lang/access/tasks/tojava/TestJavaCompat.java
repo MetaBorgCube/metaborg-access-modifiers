@@ -47,7 +47,8 @@ public class TestJavaCompat extends TestCompat {
 	}
 	
 	@Override
-	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args, IStrategoList javaFilesTerm) {
+	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args, IStrategoTerm pp) {
+		final IStrategoList javaFilesTerm = TermUtils.toList(pp);
 		final HierarchicalResource normalizedProject = normalizeRoot(args.rootDirectory);
 		final String normalizedFile = normalizeFile(args.file, normalizedProject);
 		final Result<Collection<ResourcePath>, IOException> writeResult = writeJavaFiles(context, javaFilesTerm, normalizedFile, normalizedProject);

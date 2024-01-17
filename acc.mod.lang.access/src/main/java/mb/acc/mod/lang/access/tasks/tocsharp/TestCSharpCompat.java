@@ -43,8 +43,8 @@ public class TestCSharpCompat extends TestCompat {
 	}
 
 	@Override
-	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args,
-			IStrategoList csharpFilesTerm) {
+	protected Result<KeyedMessages, IOException> compile(ExecContext context, Args args, IStrategoTerm pp) {
+		final IStrategoList csharpFilesTerm = TermUtils.toList(pp);
 		try {
 			final HierarchicalResource root = normalizeRoot(args.rootDirectory);
 			final HierarchicalResource rootDir = buildRoot(root);
@@ -98,7 +98,7 @@ public class TestCSharpCompat extends TestCompat {
 	private abstract class CSCommand extends Command {
 		
 		protected CSCommand(String subCommand) {
-			super(subCommand);
+			super("dotnet " + subCommand);
 		}
 		
 		protected String solutionFile(String solutionName) {
@@ -165,7 +165,7 @@ public class TestCSharpCompat extends TestCompat {
 
 	}
 
-	private final class BuildCommand extends Command {
+	private final class BuildCommand extends CSCommand {
 
 		public BuildCommand() {
 			super("build");

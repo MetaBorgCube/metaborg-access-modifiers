@@ -10,6 +10,7 @@ imports
 
   signatures/-
   signatures/lib/-
+  signatures/start-sig
 
 signature
 
@@ -50,6 +51,13 @@ rules
   extract-type(|a) = stx-get-ast-type(|a); try(?METHOD(_, <id>))
   
   extract-type(|a) = failure(|"Cannot retrieve type ")
+  
+  
+
+  is-local(|SolverResult) :: ? -> ?  
+  is-local(|a) = stx-get-ast-property(|a, "local"); debug; ?()
+  
+  is-local(|a) = debug(|"Cannot retrieve @local prop ")
 
 rules
 

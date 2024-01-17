@@ -1,12 +1,21 @@
-#private-access: if-instance-of-current
+#rust
 
 module M1 {
   class A {
-	protected internal(self) var x = 42
+	internal(self) var x = 42
   }
-  class B { 
-	public accessX(b: A) {
-		return b.x
-	}
+  module M2 {
+  	class B {
+  	  public var a = new A()
+  	  public var y = 2
+  	}
+  }
+}
+
+module N {
+  import M1.M2
+  class C {
+  	public var b = new B()
+  	public var z = b.y
   }
 }

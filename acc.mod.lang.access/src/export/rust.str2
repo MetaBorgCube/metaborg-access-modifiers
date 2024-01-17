@@ -1,0 +1,183 @@
+module export/rust
+
+imports
+
+  strategolib
+
+  libspoofax/analysis/constraint
+
+  statix/api
+  statix/runtime/analysis
+  statix/runtime/ast
+
+  signatures/start-sig
+  signatures/lib/-
+  signatures/export/rust-sig
+
+  pp/export/rust-pp
+  pp
+
+  export/base
+  
+  main
+
+rules // settings
+
+  rust-settings :: ? -> Options
+  rust-settings =
+  	!Options(
+  	  IncludeSubmodules(),
+  	  Ancestors(),
+  	  // Note: settings below are irrelevant
+  	  IfChainInModule(),
+  	  IfInstanceOfCurrent(),
+  	  IfExactType()
+  	)
+
+  insert-rust-settings :: Program -> Program
+  insert-rust-settings = Program(rust-settings, id)
+
+rules // builder
+
+  // prettyprint-accmodlangaccess-RSStart
+
+  transform-to-rust(|AnalysisResult) :: Program -> TransformResult(RSStart, ?)
+  transform-to-rust(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-rust, aml-to-rust(|a), pp-partial-accmodlangaccess-string(|"RSStart"))
+  
+  rust-test-transform :: Program -> RSStart
+  rust-test-transform : program -> result
+    with check-aml-to-rust
+       ; switch id
+           case ?Incompatible(reason*) : <with(map(debug); fail); fail> reason*
+           case ?Compatible()          : a := <stx-get-ast-analysis> program
+							           ; <aml-to-rust(|a)> program
+         end => result
+
+rules // collect errors
+
+  check-aml-to-rust :: Program -> Compatible
+  check-aml-to-rust = switch collect-all(rust-incompat)
+                        case ?[]   : !Compatible()
+                        case ?msg* : !Incompatible(msg*)
+                      end
+  
+  rust-incompat :: ? -> string
+
+  rust-incompat = ?Extends(_); !"Rust does not support inheritance."; debug
+  rust-incompat = ?New(); !"Rust does not support 'new' modifier on methods."; debug
+  rust-incompat = ?Override(); !"Rust does not support 'override' modifier on methods."; debug
+  
+  rust-incompat = ?Protected(); !"Rust does not support 'protected' access modifier."; debug
+  rust-incompat = ?Private(); !"Rust does not support 'private' access modifier."; debug
+  rust-incompat = ?ProtectedInternal(_); !"Rust does not support 'protected internal'."; debug
+  rust-incompat = ?PrivateProtected(_); !"Rust does not support 'private protected' access modifier."; debug
+
+
+rules // transform
+
+  aml-to-rust(|SolverResult) :: Start -> RSStart
+  
+  aml-to-rust(|a): Program(_, member*) -> CompilationUnit(result*)
+    with result* := <map(aml-to-rust-member(|a))> member*
+
+  aml-to-rust-member(|SolverResult) :: ModuleOrClassOrImport -> RSModDecl
+
+  aml-to-rust-member(|a) : Import(x) -> UseGlob(<rs-qid-to-module-ref> x)
+  
+  aml-to-rust-member(|a) : Module(x, member*) -> Mod(x, member'*)
+    with member'* := <map(aml-to-rust-member(|a))> member*
+
+  aml-to-rust-member(|a) : Class(x, ext, member*) -> StructDecl(x, field*, x, init*, x, fun*)
+    with (field*, init*) := <filter(aml-to-rust-field(|a)); unzip> member*
+       ; fun*            := <filter(aml-to-rust-fun(|a))> member*
+
+  aml-to-rust-member(|a) = failure(|"Unknown module member ")
+
+
+  aml-to-rust-field(|SolverResult) :: MemberDecl -> (RSField * RSFieldInit)
+  
+  aml-to-rust-field(|a) : Field(acc, x, e) -> (Field(acc', x, tp), FInit(x, e'))
+    with acc' := <aml-to-rust-acc> acc
+       ; tp   := <get-rust-type(|a)> (x, e)
+       ; e'   := <aml-to-rust-expr(|a)> e
+  
+  
+  aml-to-rust-fun(|SolverResult) :: MemberDecl -> RSFun
+  
+  aml-to-rust-fun(|a) : Method(acc, NoMethodModifier(), x, arg*, stmt*, ret) -> mthd
+    with acc'   := <aml-to-rust-acc> acc
+       ; tp     := <get-rust-type(|a)> (x, ret)
+       ; arg'*  := <map(aml-to-rust-formal-arg)> arg*
+       ; stmt'* := <map(aml-to-rust-stmt(|a))> stmt*
+       ; e'     := <aml-to-rust-expr(|a)> ret
+       ; mthd   := Fun(acc', x, arg'*, tp, [stmt'*, Return(e')])
+ 
+   aml-to-rust-formal-arg :: Arg -> RSArg
+   
+   aml-to-rust-formal-arg : Arg(x, t) -> Arg(x, t')
+     with t' := <aml-to-rust-type> t
+
+   aml-to-rust-type :: Type -> RSType
+   aml-to-rust-type : IntT() -> RSInt()
+   aml-to-rust-type : RefT(x) -> RSTypeRef(Id(x))
+
+rules // statements & expressions     
+
+  aml-to-rust-stmt(|SolverResult) :: Stmt -> RSStatement
+  
+  aml-to-rust-stmt(|a) : ExprStmt(e)  -> Expr(<aml-to-rust-expr(|a)> e)  
+  aml-to-rust-stmt(|a) : Assign(Var(x), e) -> Assign(x, <aml-to-rust-expr(|a)> e)
+
+  aml-to-rust-expr(|SolverResult) :: Expr -> RSExpr
+
+  aml-to-rust-expr(|a) : Var(x) -> LocalVar(x)
+    where <is-local(|a)> x
+  aml-to-rust-expr(|a) : Var(x) -> Var(x)
+  aml-to-rust-expr(|a) : NewInstance(x) -> New(x)
+  aml-to-rust-expr(|a) : Plus(e1, e2) -> Add(e1', e2')
+    with e1' := <aml-to-rust-expr(|a)> e1
+       ; e2' := <aml-to-rust-expr(|a)> e2
+  aml-to-rust-expr(|a) : IntLit(i) -> Int(i)
+  aml-to-rust-expr(|a) = Invoke(id, map(aml-to-rust-expr(|a)))
+  aml-to-rust-expr(|a) = QInvoke(aml-to-rust-expr(|a), id, map(aml-to-rust-expr(|a)))
+
+  aml-to-rust-expr(|a) = failure(|"Unknown expression ")
+
+rules // module refs
+
+  rs-qid-to-module-ref :: QId -> RSModRef
+  rs-qid-to-module-ref = fold-id(!RSId(<id>), {l, r: \ (l,r) -> RSQId(l, r) \})
+
+  rs-convert-module-ref :: ModuleRef -> RSModRef
+  rs-convert-module-ref : Self() -> RSSelf()
+  rs-convert-module-ref = ?ModuleRef(<id>); rs-qid-to-module-ref
+
+rules // classes
+
+  aml-to-rust-acc :: AccessModifier -> RSAccMod
+  aml-to-rust-acc : Public() -> Pub()
+  aml-to-rust-acc : Internal(MRLNonEmpty(mod-ref, MRLNil())) -> PubIn(<rs-convert-module-ref> mod-ref) // FIXME
+  
+  aml-to-rust-acc = failure(|"Unknown access modifier")
+
+
+rules // types
+
+  get-rust-type(|SolverResult) :: Tuple(ID, Expr) -> RSType
+  get-rust-type(|a) = Snd; rust-type-from-expr
+  get-rust-type(|a) = Fst; extract-type(|a); format-rust-type(|a)
+
+
+  format-rust-type(|SolverResult) :: ? -> RSType
+  
+  format-rust-type(|a) : INT()    -> RSInt()
+
+  format-rust-type(|a) : CLASS(s) -> RSTypeRef(x)
+    with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s
+
+  format-rust-type(|a) = failure(|"Cannot format type")
+
+  rust-type-from-expr :: Expr -> RSType
+
+  rust-type-from-expr : IntLit(_)      -> RSInt()
+  rust-type-from-expr : NewInstance(x) -> RSTypeRef(Id(x))

@@ -175,6 +175,7 @@ rules
   argumentsOk maps argumentOk(*, list(*)) = list(*)
 
   argumentOk(s, Arg(x, t)) = T :-
+  	@x.local := (),
     typeOfType(s, t) == T,
     declareVar(s, x, T, UNRESTRICTED()).
 

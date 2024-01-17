@@ -1,0 +1,115 @@
+module export/rust
+
+imports
+  lib/lex
+
+
+context-free start-symbols
+  RSStart
+
+context-free sorts
+  RSStart
+  RSModDecl
+
+context-free syntax
+
+  RSStart.CompilationUnit = <    
+    <{RSModDecl "\n"}+>
+    
+    fn main() { }
+  >
+  
+  RSModDecl.Mod = <pub mod <ID> {    
+    use super::*;
+    <{RSModDecl "\n"}+>
+  }>
+  
+  RSModDecl.UseGlob = <use <RSModRef>::*;>
+  
+  RSModDecl.StructDecl = <
+    #[derive(Clone, Copy)]
+    pub struct <ID> {
+      <{RSField "\n"}*>
+    }
+    
+    impl Default for <ID> {
+      fn default() -\> Self {
+      	Self {
+      	  <{RSFieldInit "\n"}*>
+      	}
+      }
+    }
+    
+    impl <ID> {
+      <{RSFun "\n"}*>
+    }
+  >
+
+context-free sorts
+
+  RSModRef
+  RSAccMod
+  
+
+context-free syntax
+
+  RSModRef.RSSelf  = <self>
+  RSModRef.RSId    = ID
+  RSModRef.RSQId   = <<RSModRef>::<ID>>
+  
+  RSAccMod.Pub     = <pub>
+  RSAccMod.PubIn   = <pub(in <RSModRef>)>
+  
+
+context-free sorts
+
+  RSField
+  RSFieldInit
+  RSFun
+  RSArg
+
+context-free syntax
+
+  RSField.Field  = <<RSAccMod> <ID>: <RSType>,>
+  RSFun.Fun      = [[RSAccMod] fn [ID](self, [{RSArg ","}*]) -> [RSType] {
+    [{RSStatement "\n"}+]
+  }]
+  
+  RSFieldInit.FInit = <<ID>: <RSExpr>,>
+  
+  RSArg.Arg = <<ID>: <RSType>>
+
+context-free sorts
+  
+  RSStatement
+
+context-free syntax
+
+  RSStatement.Expr   = <<RSExpr>;>
+  RSStatement.Assign = <<QId> = <RSExpr>;>
+  RSStatement.Return = <return <RSExpr>;>
+
+context-free sorts
+ 
+  RSExpr
+
+context-free syntax
+
+  RSExpr.LocalVar = <<QId>>
+  RSExpr.Var      = <self.<QId>>
+  RSExpr.New      = <<ID>::default()>
+  RSExpr.Add      = <<RSExpr> + <RSExpr>>
+  RSExpr.Int      = INT
+  
+  RSExpr.Invoke   = <self.<ID>(<{RSExpr ", "}*>)>
+  RSExpr.QInvoke  = <<RSExpr>.<ID>(<{RSExpr ", "}*>)>
+
+
+context-free sorts
+ 
+  RSType
+
+context-free syntax
+
+  RSType.RSInt     = <usize>
+  RSType.RSTypeRef = <<QId>>

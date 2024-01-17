@@ -34,6 +34,7 @@ context-free syntax
 
   Options.JavaOpt   = <#java>
   Options.CSharpOpt = <#csharp>
+  Options.RustOpt   = <#rust>
 
   Options.Options = <
     <ExposureMode>
