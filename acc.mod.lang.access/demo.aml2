@@ -2,7 +2,7 @@
 
 module M1 {
   class A {
-	protected internal(M1, self) var x = 42
+	protected internal(self) var x = 42
   }
   class B { 
 	public accessX(b: A) {

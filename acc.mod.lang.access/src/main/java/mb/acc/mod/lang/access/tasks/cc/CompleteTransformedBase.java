@@ -30,7 +30,6 @@ import mb.nabl2.terms.stratego.PlaceholderVarMap;
 import mb.nabl2.terms.stratego.StrategoPlaceholders;
 import mb.nabl2.terms.stratego.StrategoTermIndices;
 import mb.pie.api.ExecContext;
-import mb.pie.api.Function;
 import mb.pie.api.None;
 import mb.pie.api.TaskDef;
 import mb.resource.ResourceKey;
@@ -56,6 +55,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.util.TermUtils;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,12 +77,70 @@ import static mb.tego.strategies.StrategyExt.pred;
 /**
  * Code completion task definition.
  */
-public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.Input, Result<CodeCompletionResult, ?>> {
+public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.Input, Result<CodeCompletionResult, ?>> {
 
+	
+	public static final class Input implements Serializable {
+		
+		private static final long serialVersionUID = 42L;
+
+		private final mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier;
+		
+		private final ResourceKey file;
+		
+		private final Region primarySelection;
+		
+		private final @javax.annotation.Nullable ResourcePath rootDirectoryHint;
+		
+		private final boolean completeDeterministic;
+		
+		public Input(
+				mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier, 
+				ResourceKey file,
+				Region primarySelection,
+				ResourcePath rootDirectoryHint, 
+				boolean expandDeterministic
+		) {
+			this.astSupplier = astSupplier;
+			this.file = file;
+			this.primarySelection = primarySelection;
+			this.rootDirectoryHint = rootDirectoryHint;
+			this.completeDeterministic = expandDeterministic;			
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(astSupplier, completeDeterministic, file, primarySelection, rootDirectoryHint);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			Input other = (Input) obj;
+			return Objects.equals(astSupplier, other.astSupplier)
+					&& completeDeterministic == other.completeDeterministic && Objects.equals(file, other.file)
+					&& Objects.equals(primarySelection, other.primarySelection)
+					&& Objects.equals(rootDirectoryHint, other.rootDirectoryHint);
+		}
+
+		@Override
+		public String toString() {
+			return "Input [astSupplier=" + astSupplier + ", file=" + file + ", primarySelection=" + primarySelection
+					+ ", rootDirectoryHint=" + rootDirectoryHint + ", completeDeterministic=" + completeDeterministic
+					+ "]";
+		}
+		
+	}
 
     private final Logger log;
-    private final Function<CodeCompletionTaskDef.Input, Result<IStrategoTerm, ?>> parse;
-    private final ConstraintAnalyzeFile analyzeFileTask;
     private final GetStrategoRuntimeProvider getStrategoRuntimeProviderTask;
     private final TegoRuntime tegoRuntime;
     private final StatixSpecTaskDef statixSpec;
@@ -90,7 +148,6 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
 
     private final String preAnalyzeStrategyName;
     private final String postAnalyzeStrategyName;
-    private final String upgradePlaceholdersStrategyName;
     private final String downgradePlaceholdersStrategyName;
     private final String isInjStrategyName;
     private final String ppPartialStrategyName;
@@ -121,7 +178,6 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
      * @param statixRootPredicateName the name of the single-analysis root predicate in the Statix spec
      */
     public CompleteTransformedBase(
-		Function<CodeCompletionTaskDef.Input, Result<IStrategoTerm, ?>> parse,
         ConstraintAnalyzeFile analyzeFileTask,
         GetStrategoRuntimeProvider getStrategoRuntimeProviderTask,
         TegoRuntime tegoRuntime,
@@ -140,8 +196,6 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
         String statixSecName,
         String statixRootPredicateName
     ) {
-        this.parse = parse;
-        this.analyzeFileTask = analyzeFileTask;
         this.getStrategoRuntimeProviderTask = getStrategoRuntimeProviderTask;
         this.tegoRuntime = tegoRuntime;
         this.statixSpec = statixSpec;
@@ -151,7 +205,6 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
 
         this.preAnalyzeStrategyName = preAnalyzeStrategyName;
         this.postAnalyzeStrategyName = postAnalyzeStrategyName;
-        this.upgradePlaceholdersStrategyName = upgradePlaceholdersStrategyName;
         this.downgradePlaceholdersStrategyName = downgradePlaceholdersStrategyName;
         this.isInjStrategyName = isInjStrategyName;
         this.ppPartialStrategyName = ppPartialStrategyName;
@@ -166,7 +219,7 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
     }
 
     @Override
-    public Result<CodeCompletionResult, ?> exec(ExecContext context, CodeCompletionTaskDef.Input input) throws Exception {
+    public Result<CodeCompletionResult, ?> exec(ExecContext context, CompleteTransformedBase.Input input) throws Exception {
         final StrategoRuntime strategoRuntime = context.require(getStrategoRuntimeProviderTask, None.instance).getValue().get();
         final Result<Spec, ?> specResult = context.require(statixSpec, None.instance);
         if (specResult.isErr()) return specResult.ignoreValueIfErr();
@@ -193,9 +246,8 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
         private final ExecContext context;
         private final StrategoRuntime strategoRuntime;
         private final ITermFactory termFactory;
-        private final CodeCompletionTaskDef.Input input;
-        /** The root directory of the project; or {@code null} when not specified. */
-        public final @Nullable ResourcePath rootDirectoryHint;
+        
+        public final mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier;
         /** The file being completed. */
         public final ResourceKey file;
         /** The primary selection at which to complete. */
@@ -215,7 +267,7 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
          */
         public Execution(
             ExecContext context,
-            CodeCompletionTaskDef.Input input,
+            Input input,
             StrategoRuntime strategoRuntime,
             Spec spec
         ) {
@@ -223,11 +275,10 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
             this.strategoRuntime = strategoRuntime;
             this.spec = spec;
             this.termFactory = strategoRuntime.getTermFactory();
-            this.input = input;
-            this.rootDirectoryHint = input.rootDirectoryHint;
+            this.astSupplier = input.astSupplier;
             this.file = input.file;
             this.primarySelection = input.primarySelection;
-            this.completeDeterministic = true;
+            this.completeDeterministic = input.completeDeterministic;
         }
 
         /**
@@ -305,7 +356,7 @@ public class CompleteTransformedBase implements TaskDef<CodeCompletionTaskDef.In
          * @return the AST of the file
          */
         private Result<IStrategoTerm, ?> parse() {
-            return context.require(parse, input);
+            return context.require(astSupplier);
         }
 
         /**

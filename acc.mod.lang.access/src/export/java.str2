@@ -77,7 +77,7 @@ rules // collect errors
   java-incompat = ?New(); !"Java does not support 'new' modifier on methods."; debug
   
   java-incompat = ?Protected(); !"Java does not support 'protected' access modifier; use 'protected internal' instead."; debug
-  java-incompat = ?ProtectedInternal(<id>); not(?[Self()]); !"Java does not support 'protected internal' with custom modules."; debug
+  java-incompat = ?ProtectedInternal(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"Java does not support 'protected internal' with custom modules."; debug
   java-incompat = ?PrivateProtected(_); !"Java does not support 'private protected' access modifier."; debug
 
 rules // transform
@@ -184,8 +184,8 @@ rules // classes
   aml-to-java-acc :: AccessModifier -> JAccMod
   aml-to-java-acc : Public() -> Public()
   // 'protected in Java' is like 'protected | internal'
-  aml-to-java-acc : ProtectedInternal(MRLNonEmpty(MRLItem(Self()))) -> Protected()
-  aml-to-java-acc : Internal(MRLNonEmpty(MRLItem(Self()))) -> Default()
+  aml-to-java-acc : ProtectedInternal(MRLNonEmpty(Self(), MRLNil())) -> Protected()
+  aml-to-java-acc : Internal(MRLNonEmpty(Self(), MRLNil())) -> Default()
   aml-to-java-acc : Private() -> Private()
   
   aml-to-java-acc = failure(|"Unknown access modifier")

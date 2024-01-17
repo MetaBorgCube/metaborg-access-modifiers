@@ -300,6 +300,7 @@ class C : public B {
 }
 }
 ]]
+transform "Test Complete To Current" on #1
 
 
 test public -- mem -- decl -- other [[

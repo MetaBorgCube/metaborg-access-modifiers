@@ -38,8 +38,7 @@ public class CompleteTransformed extends CompleteTransformedBase {
 			LoggerFactory loggerFactory,
 			AccModLangAccessClassLoaderResources classLoaderResources
 	) {
-		super(CodeCompletionUtils.transformParseResult(parse, toPlaceHolder, prependOffset), 
-				analyzeFileTask, 
+		super(analyzeFileTask, 
 				getStrategoRuntimeProviderTask, 
 				tegoRuntime, 
 				statixSpec, 
@@ -63,7 +62,7 @@ public class CompleteTransformed extends CompleteTransformedBase {
 
 
     @Override
-    public @Nullable Result<CodeCompletionResult, ?> exec(ExecContext context, CodeCompletionTaskDef.Input input) throws Exception {
+    public @Nullable Result<CodeCompletionResult, ?> exec(ExecContext context, CompleteTransformedBase.Input input) throws Exception {
         context.require(classLoaderResources.tryGetAsNativeResource(getClass()), ResourceStampers.hashFile());
         context.require(classLoaderResources.tryGetAsNativeResource(CodeCompletionTaskDef.Input.class), ResourceStampers.hashFile());
 

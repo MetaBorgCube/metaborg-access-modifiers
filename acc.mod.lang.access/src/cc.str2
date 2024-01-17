@@ -3,12 +3,14 @@ module cc
 imports
 
   strategolib
+  
+  statix/api
+  statix/runtime/-
 
   signatures/lib/start-sig
   injections/lib/-
   
-  statix/api
-  statix/runtime/-
+  lib/main
   
   pp
 
@@ -17,7 +19,7 @@ imports
 rules
 
   post-analyze :: ? -> ?
-  post-analyze = debug(!"post-analyze: "); implicate-injections-accmodlang
+  post-analyze = implicate-injections-accmodlang
 
 rules // Code Completion
 
@@ -28,15 +30,29 @@ rules // Code Completion
 
 rules
 
-  accmod-to-placeholder = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); !AccessModifier-Plhdr()); debug
-  
   accmod-at-offset = ?(offset, ast); (debug(!"offset: "), id); Snd; oncebu(is(AccessModifier); covers(|offset); ?mod); !mod
-  
+
   covers(|offset) = where(
   	debug; 
   	origin-offset; ?(start, end); debug;
   	!(start, offset); int-leq; debug(!"start-ok"); 
   	!(end, offset); int-gt; debug(!"success")
   )
-  
+
+rules
+
   analysis-has-errors = stx--get-analysis; stx-analysis-has-errors
+
+rules
+
+  accmod-to-placeholder = 
+  	?(offset, ast); (debug(!"offset: "), id); Snd;
+  	oncebu(is(AccessModifier); covers(|offset); !AccessModifier-Plhdr()); debug
+    
+  tail-to-placeholder =
+  	?(offset, ast); (debug(!"offset: "), id); Snd;
+  	oncebu(is(AccessModifier); ?acc-mod; covers(|offset); desugar-all; debug(!"desugared placeholder:"); oncebu(?MRLNil(); !acc-mod; origin-track-forced(!ModuleRefList-Plus-Plhdr())
+  		; where(origin-offset < debug(!"tail placeholder offset: ") + debug(!"tail placeholder has no offset"))
+  	)); debug
+
+  

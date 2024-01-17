@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.StrategoAppl;
 
 import mb.accmodlangaccess.AccModLangAccessScope;
 import mb.accmodlangaccess.task.AccModLangAccessAnalyzeFile;
@@ -19,6 +20,7 @@ import mb.common.message.Severity;
 import mb.common.region.Region;
 import mb.common.result.Result;
 import mb.constraint.pie.ConstraintAnalyzeFile;
+import mb.jsglr.common.JsglrParseException;
 import mb.pie.api.ExecContext;
 import mb.pie.api.Supplier;
 import mb.pie.api.TaskDef;
@@ -31,6 +33,8 @@ import mb.statix.codecompletion.pie.CodeCompletionTaskDef;
 
 @AccModLangAccessScope
 public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, CommandFeedback> {
+	
+	public static final boolean EXPAND_DETERMINISTIC = true;
 
 	public static final class Args implements Serializable {
 
@@ -87,6 +91,8 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
 	private final AccModLangAccessParse parse;
 	private final PrependOffset prependOffset;
 	private final DesugarAll desugarAll;
+	private final AccModToPlaceHolder accModToPlaceHolder;
+	private final TailToPlaceHolder tailToPlaceHolder;
 	private final AccModLangAccessAnalyzeFile analyze;
 	private final AnalysisHasErrors analysisHasErrors;
 	private final AccModAtOffset atOffset;
@@ -99,6 +105,8 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
 			AccModLangAccessParse parse,
 			PrependOffset prependOffset,
 			DesugarAll desugarAll,
+			AccModToPlaceHolder accModToPlaceHolder,
+			TailToPlaceHolder tailToPlaceHolder,
 			AccModLangAccessAnalyzeFile analyze,
 			AnalysisHasErrors analysisHasErrors,
 			AccModAtOffset atOffset,
@@ -108,6 +116,8 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
 		this.parse = parse;
 		this.prependOffset = prependOffset;
 		this.desugarAll = desugarAll;
+		this.accModToPlaceHolder = accModToPlaceHolder;
+		this.tailToPlaceHolder = tailToPlaceHolder;
 		this.analyze = analyze;
 		this.analysisHasErrors = analysisHasErrors;
 		this.atOffset = atOffset;
@@ -123,60 +133,137 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
         // (if doesn't work, create task that prepends offset)
         final int offset = args.selection.getStartOffset();
         
+        // Create some reusable suppliers
+        final Supplier<Result<IStrategoTerm, JsglrParseException>> astSupplier = parse.inputBuilder()
+        		.withFile(args.file)
+        		.rootDirectoryHintNullable(args.rootDirectoryHint)
+        		.buildRecoverableAstSupplier();
+        
+        final Supplier<Result<IStrategoTerm, ?>> astOffsetSupplier = prependOffset.createSupplier(
+        		astSupplier.map((ctx, parseResult) -> parseResult.map(ast -> new PrependOffset.Args(offset, ast))));    
+        
+        final Supplier<Result<IStrategoTerm, ?>> actualModifierSupplier = atOffset.createSupplier(astOffsetSupplier);
+        final Supplier<Result<IStrategoTerm, ?>> accModPlaceHolderSupplier = accModToPlaceHolder.createSupplier(astOffsetSupplier);
+        final Supplier<Result<IStrategoTerm, ?>> tailPlaceHolderSupplier = tailToPlaceHolder.createSupplier(astOffsetSupplier);
+        
+
         // Fetch actual modifier
-        final Supplier<Result<IStrategoTerm, ?>> actualModifierSupplier = atOffset.createSupplier(
-        		prependOffset.createSupplier(
-	        		parse.inputBuilder()
-		        		.withFile(args.file)
-		        		.rootDirectoryHintNullable(args.rootDirectoryHint)
-		        		.buildRecoverableAstSupplier()
-		        		.map((ctx, parseResult) -> parseResult.map(ast -> new PrependOffset.Args(offset, ast)))
-        		));
         final Result<IStrategoTerm, ?> actualModifierResult = context.require(desugarAll, actualModifierSupplier);
         if (actualModifierResult.isErr()) return CommandFeedback.of(actualModifierResult.unwrapErr());
-        final IStrategoAppl actualModifier = (IStrategoAppl) actualModifierResult.unwrapUnchecked();
+        final IStrategoAppl currentModifier = (IStrategoAppl) actualModifierResult.unwrapUnchecked();
         
         // Fetch analysis result
         final Supplier<Result<ConstraintAnalyzeFile.Output, ?>> analysisResultSupplier = analyze.createSupplier(new ConstraintAnalyzeFile.Input(args.rootDirectoryHint, args.file));
-        final boolean analysisFailed = context.require(analysisHasErrors, analysisResultSupplier)
-        		.mapOrElse(term -> true, err -> false);
+        final boolean analysisSucceeded = context.require(analysisHasErrors, analysisResultSupplier).isErr();
         
-		final Result<CodeCompletionResult, ?> ccResult = context.require(complete, args.toCodeCompletionInput());
-        if (ccResult.isErr()) return CommandFeedback.of(ccResult.unwrapErr());
-        final CodeCompletionResult codeCompletionResult = ccResult.unwrapUnchecked();
+        // Access Modifier Completion result
+        final CompleteTransformedBase.Input amccInput = 
+				new CompleteTransformedBase.Input(accModPlaceHolderSupplier, args.file, args.selection, args.rootDirectoryHint, EXPAND_DETERMINISTIC);
+		final Result<CodeCompletionResult, ?> amccResult = context.require(complete, amccInput);
+        if (amccResult.isErr()) return CommandFeedback.of(amccResult.unwrapErr());
+        final CodeCompletionResult accModCCResult = amccResult.unwrapUnchecked();
         
-        
-        if(!analysisFailed) {
-            // Assume no errors in analysis
-            for(CodeCompletionItem proposal: codeCompletionResult.getProposals()) {
-            	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
-            	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
-            	if(term.getConstructor().getName().equals(actualModifier.getConstructor().getName())) {
-            		return CommandFeedback.of();
-            	}
+        if(currentModifier.getSubtermCount() == 0) {        	
+    		if(analysisSucceeded) {
+        		return checkProposeCurrent(args, accModCCResult, currentModifier);
+        	} else {
+        		// Analysis failed: completion should not propose current modifier
+        		return checkNotProposeCurrent(args, accModCCResult, currentModifier);
+        	}
+        } else {
+        	final boolean containsCurrentModifierTemplate = 
+        			containsCurrentModifierTemplate(accModCCResult, currentModifier);
+        	
+        	if(!containsCurrentModifierTemplate && !analysisSucceeded) {
+        		// Not even suggesting current modifier, so we are fine
+        		return success();
+        	} else if (!containsCurrentModifierTemplate && analysisSucceeded) {
+        		// Analysis succeeded, but current modifier was not even suggested
+        		return error("Analysis succeeded, but " + currentModifier.getName() + " was not suggested", args);
+        	}
+
+            // Tail completion result
+            final CompleteTransformedBase.Input tailccInput = 
+    				new CompleteTransformedBase.Input(tailPlaceHolderSupplier, args.file, args.selection, args.rootDirectoryHint, EXPAND_DETERMINISTIC);
+    		final Result<CodeCompletionResult, ?> tailccResult = context.require(complete, tailccInput);
+            if (tailccResult.isErr()) return CommandFeedback.of(tailccResult.unwrapErr());
+            final CodeCompletionResult tailCompletionResult = tailccResult.unwrapUnchecked();
+
+            final boolean containsNil = containsNil(tailCompletionResult);
+            
+            if(containsNil && !analysisSucceeded) {
+            	return error("Despite failing analysis, current modifier was suggested", args);
+            } else if(containsNil && !analysisSucceeded) {
+            	return error("Despite succeeding analysis, current modifier was not suggested", args);
             }
             
-    		return CommandFeedback.of(new KeyedMessagesBuilder()
-    				.addMessage("No matching proposal found", Severity.Error, args.file, args.selection)
-    				.build()
-    		);
-        } else if(actualModifier.getSubtermCount() == 0) {
-            // Assume no errors in analysis
-            for(CodeCompletionItem proposal: codeCompletionResult.getProposals()) {
-            	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
-            	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
-            	if(term.getConstructor().getName().equals(actualModifier.getConstructor().getName())) {                    
-            		return CommandFeedback.of(new KeyedMessagesBuilder()
-            				.addMessage("Failing proposal should not be given", Severity.Error, args.file, args.selection)
-            				.build());
-            	}
-            }
-    		return CommandFeedback.of();
-        } else {
-    		return CommandFeedback.of(new KeyedMessagesBuilder()
-    				.addMessage("Argument comparison net yet implemented", Severity.Warning, args.file, args.selection)
-    				.build());
+            return success();            
         }
+	}
+	
+	private boolean containsCurrentModifierTemplate(CodeCompletionResult accModCCResult,
+			IStrategoAppl currentModifier) {
+		return accModCCResult.getProposals().stream().anyMatch(proposal -> {
+        	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
+        	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
+			return term.getConstructor().getName().equals(currentModifier.getConstructor().getName());
+		});
+	}
+	
+	private boolean containsNil(CodeCompletionResult accModCCResult) {
+		return accModCCResult.getProposals().stream().anyMatch(proposal -> {
+        	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
+        	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
+			return term.getConstructor().getName().equals("MRLNil");
+		});
+	}
+
+	private CommandFeedback checkProposeCurrent(
+		Args args,
+		CodeCompletionResult ccResult,
+		IStrategoAppl currentModifier		
+	) {
+        for(CodeCompletionItem proposal: ccResult.getProposals()) {
+        	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
+        	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
+        	if(stripAnnos(term).equals(currentModifier)) {
+        		return success();
+        	}
+        }
+        
+        return error("No matching proposal found", args);
+	}
+	
+
+	private CommandFeedback checkNotProposeCurrent(
+		Args args,
+		CodeCompletionResult ccResult,
+		IStrategoAppl currentModifier		
+	) {        
+		for(CodeCompletionItem proposal: ccResult.getProposals()) {
+        	final StrategoTermCodeCompletionItem termProposal = (StrategoTermCodeCompletionItem) proposal;
+        	final IStrategoAppl term = (IStrategoAppl) termProposal.getStrategoTerm();
+        	if(stripAnnos(term).equals(currentModifier)) {
+                return error("Failing proposal should not be given", args);
+        	}
+        }
+		
+		return success();
+	}
+	
+	private IStrategoAppl stripAnnos(IStrategoAppl term) {
+    	// Term factory only caches constructors, therefore discarding the annotations without term factory is safe.
+    	return new StrategoAppl(term.getConstructor(), term.getAllSubterms(), null);
+	}
+	
+	private CommandFeedback success() {
+		return CommandFeedback.of();
+	}
+ 	
+	private CommandFeedback error(String message, Args args) {
+		return CommandFeedback.of(new KeyedMessagesBuilder()
+				.addMessage(message, Severity.Error, args.file, args.selection)
+				.build());
 	}
 
 	@Override

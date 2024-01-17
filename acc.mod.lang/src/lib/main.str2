@@ -14,14 +14,14 @@ rules
 
   desugar-access-mod :: TP
 
-  desugar-access-mod: ProtectedInternalSelf()        -> ProtectedInternal(MRLNonEmpty(MRLItem(Self())))
-  desugar-access-mod: ProtectedInternal(MRLEmpty())  -> ProtectedInternal(MRLNonEmpty(MRLItem(Self())))
+  desugar-access-mod: ProtectedInternalSelf()        -> ProtectedInternal(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: ProtectedInternal(MRLEmpty())  -> ProtectedInternal(MRLNonEmpty(Self(), MRLNil()))
 
-  desugar-access-mod: PrivateProtectedSelf()         -> PrivateProtected(MRLNonEmpty(MRLItem(Self())))
-  desugar-access-mod: PrivateProtected(MRLEmpty())   -> PrivateProtected(MRLNonEmpty(MRLItem(Self())))
+  desugar-access-mod: PrivateProtectedSelf()         -> PrivateProtected(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: PrivateProtected(MRLEmpty())   -> PrivateProtected(MRLNonEmpty(Self(), MRLNil()))
 
-  desugar-access-mod: InternalSelf()                 -> Internal(MRLNonEmpty(MRLItem(Self())))
-  desugar-access-mod: Internal(MRLEmpty())           -> Internal(MRLNonEmpty(MRLItem(Self())))
+  desugar-access-mod: InternalSelf()                 -> Internal(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: Internal(MRLEmpty())           -> Internal(MRLNonEmpty(Self(), MRLNil()))
 
 
   desugar-all :: TP

@@ -7,15 +7,16 @@ import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
 @AccModLangAccessScope
-public class AccModAtOffset extends AstStrategoTransformTaskDef {
+public class TailToPlaceHolder extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public AccModAtOffset(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
-		super(getStrategoRuntimeProviders, "accmod-at-offset", "strip-annos");
+	public TailToPlaceHolder(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+		super(getStrategoRuntimeProviders, "tail-to-placeholder");
 	}
 
 	@Override
 	public String getId() {
-		return AccModAtOffset.class.getSimpleName();
+		return TailToPlaceHolder.class.getSimpleName();
 	}
+
 }

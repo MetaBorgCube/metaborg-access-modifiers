@@ -1,14 +1,10 @@
 module test
 test parse some program [[
-module A {
-  module B {
-    import C
-    class A : protected B, public C {
-      protected var x = 21
-    }
+class A {
+  [[public]] var x = 42
+  public foo() {
+    return x
   }
 }
-module C {
-
-}
-]] parse succeeds
+]]
+transform "Test Complete To Current" on #1

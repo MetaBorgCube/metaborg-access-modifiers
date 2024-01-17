@@ -141,10 +141,10 @@ rules
   [A-Priv] accessModifierToAccess(s, Private())                  = modules([]).
 
   resolveModRefList(s, MRLEmpty()) = [].
-  resolveModRefList(s, MRLNonEmpty(mrl)) = resolveModRefListPlus(s, mrl).
+  resolveModRefList(s, MRLNonEmpty(rm, tl)) = [resolveModRef(s, rm) | resolveModRefListPlus(s, tl)].
   resolveModRefListPlus(s, mrl) = resolveModRefList_(10, s, mrl).
   resolveModRefList_(0, _, _) = [] :- false.
-  resolveModRefList_(n, s, MRLItem(mr)) = [resolveModRef(s, mr)] :- n #>= 0.
+  resolveModRefList_(n, s, MRLNil()) = [] :- n #>= 0.
   resolveModRefList_(n, s, MRLCons(mr, tl)) = [resolveModRef(s, mr) | resolveModRefList_(#(n - 1), s, tl)].
 
   resolveModRef(s, Self()) = thisMod(s).

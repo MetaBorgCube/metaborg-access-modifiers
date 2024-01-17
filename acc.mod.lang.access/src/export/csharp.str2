@@ -82,9 +82,9 @@ rules // collect errors
   csharp-incompat = ?ExtendsClause(<id>, _); not(?Public()); !"C# does only support public inheritance."; debug
 
 
-  csharp-incompat = ?ProtectedInternal(<id>); not(?[Self()]); !"C# does not support 'protected internal' with custom modules."; debug
-  csharp-incompat = ?Internal(<id>); not(?[Self()]); !"C# does not support 'internal' with custom modules."; debug
-  csharp-incompat = ?PrivateProtected(<id>); not(?[Self()]); !"C# does not support 'private protected' with custom modules."; debug
+  csharp-incompat = ?ProtectedInternal(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"C# does not support 'protected internal' with custom modules."; debug
+  csharp-incompat = ?Internal(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"C# does not support 'internal' with custom modules."; debug
+  csharp-incompat = ?PrivateProtected(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"C# does not support 'private protected' with custom modules."; debug
 
 rules  
 
@@ -180,9 +180,9 @@ rules
   aml-to-csharp-acc :: AccessModifier -> CSAccMod
   aml-to-csharp-acc : Public() -> Public()
   aml-to-csharp-acc : Protected() -> Protected()
-  aml-to-csharp-acc : ProtectedInternal(MRLNonEmpty(MRLItem(Self()))) -> ProtectedInternal()
-  aml-to-csharp-acc : Internal(MRLNonEmpty(MRLItem(Self()))) -> Internal()
-  aml-to-csharp-acc : PrivateProtected(MRLNonEmpty(MRLItem(Self()))) -> PrivateProtected()
+  aml-to-csharp-acc : ProtectedInternal(MRLNonEmpty(Self(), MRLNil())) -> ProtectedInternal()
+  aml-to-csharp-acc : Internal(MRLNonEmpty(Self(), MRLNil())) -> Internal()
+  aml-to-csharp-acc : PrivateProtected(MRLNonEmpty(Self(), MRLNil())) -> PrivateProtected()
   aml-to-csharp-acc : Private() -> Private()
   
   aml-to-csharp-acc = failure(|"Unknown access modifier")

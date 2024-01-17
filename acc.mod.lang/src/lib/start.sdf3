@@ -197,13 +197,10 @@ context-free syntax
 
   
   ModuleRefList-Star.MRLEmpty    = <>
-  ModuleRefList-Star.MRLNonEmpty = <<ModuleRefList-Plus>>
-  
-  
-  ModuleRefList-Plus.MRLItem  = <<ModuleRef>>
-  ModuleRefList-Plus.MRLCons  = <<ModuleRef>, <ModuleRefList-Plus>>
+  ModuleRefList-Star.MRLNonEmpty = <<ModuleRef><ModuleRefList-Plus>>
 
-// TODO: friends????
+  ModuleRefList-Plus.MRLNil  = <>
+  ModuleRefList-Plus.MRLCons  = <, <ModuleRef><ModuleRefList-Plus>>
 
 
 template options
