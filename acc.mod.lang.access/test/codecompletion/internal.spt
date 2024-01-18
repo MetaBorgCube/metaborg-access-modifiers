@@ -73,7 +73,6 @@ module q {
 transform "Test Complete To Current" on #1
 
 
-
 test internal -- mem -- self [[
 class A {
   [[internal]] var x = 42
@@ -135,6 +134,7 @@ class C : public B {
 }
 ]]
 transform "Test Complete To Current" on #1
+
 test internal -- mem -- subsub -- parent [[
 class A {
   [[internal]] var x = 42
@@ -146,8 +146,8 @@ class C : public B {
   }
 }
 ]]
-
 transform "Test Complete To Current" on #1
+
 test internal -- mem -- subsub -- self [[
 class A {
   [[internal]] var x = 42
@@ -159,8 +159,8 @@ class C : public B {
   }
 }
 ]]
-
 transform "Test Complete To Current" on #1
+
 test internal -- mem -- subsub -- sub [[
 class A {
   [[internal]] var x = 42
@@ -187,8 +187,6 @@ class X {
 ]]
 transform "Test Complete To Current" on #1
 
-
-
 test internal -- mem -- sub -- other [[
 class A {
   [[internal]] var x = 42
@@ -201,8 +199,6 @@ class X {
 }
 ]]
 transform "Test Complete To Current" on #1
-
-
 
 test internal -- mem -- sub -- decl -- other module [[
 module p {
@@ -260,6 +256,7 @@ class C : public B {
 }
 ]]
 transform "Test Complete To Current" on #1
+
 test internal -- mem -- subsub -- parent -- other module [[
 module p {
 class A {
@@ -279,8 +276,8 @@ class C : public B {
 }
 }
 ]]
-
 transform "Test Complete To Current" on #1
+
 test internal -- mem -- subsub -- self -- other module [[
 module p {
 class A {
@@ -300,6 +297,7 @@ class C : public B {
 }
 }
 ]]
+transform "Test Complete To Current" on #1
 
 
 test internal -- mem -- decl -- other [[
