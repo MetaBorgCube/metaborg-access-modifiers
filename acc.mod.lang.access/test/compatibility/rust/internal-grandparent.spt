@@ -1,0 +1,173 @@
+module compatibility/rust/internal-grandparent
+
+
+test internal - grandparent - ancestor mod [[
+#rust
+
+module M1 {
+  module M2 {
+    module M3 {
+	  class A {
+	    [[internal(M1)]] var x = 42
+	  }
+    }
+  }
+  import M2.M3
+  class B {
+  	public var a = new A()
+  	public var y = a.x
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+
+test internal - grandparent - sibling mod - def sub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(Root)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    import M1.M2
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+test internal - grandparent - sibling mod - def subsub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(M1)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    import M1.M2.M3
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+test internal - grandparent - sibling mod - def sub -- ref sub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(Root)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1.M2
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+test internal - grandparent - sibling mod - def subsub -- ref sub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(M1)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1.M2.M3
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+test internal - grandparent - sibling mod - def sub -- ref subsub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(Root)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1.M2
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"
+
+test internal - grandparent - sibling mod - def subsub -- ref subsub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(M1)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1.M2.M3
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+transform "Test Rust Compatibility"

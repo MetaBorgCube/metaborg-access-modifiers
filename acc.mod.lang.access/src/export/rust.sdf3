@@ -34,9 +34,8 @@ context-free syntax
     
     impl Default for <ID> {
       fn default() -\> Self {
-      	Self {
-      	  <{RSFieldInit "\n"}*>
-      	}
+  	    <{RSFieldInit "\n"}*>
+      	Self { <{ID ", "}*> }
       }
     }
     
@@ -75,7 +74,7 @@ context-free syntax
     [{RSStatement "\n"}+]
   }]
   
-  RSFieldInit.FInit = <<ID>: <RSExpr>,>
+  RSFieldInit.FInit = <let <ID> = <RSExpr>;>
   
   RSArg.Arg = <<ID>: <RSType>>
 

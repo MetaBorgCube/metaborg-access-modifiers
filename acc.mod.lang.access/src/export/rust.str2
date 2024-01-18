@@ -87,9 +87,10 @@ rules // transform
   aml-to-rust-member(|a) : Module(x, member*) -> Mod(x, member'*)
     with member'* := <map(aml-to-rust-member(|a))> member*
 
-  aml-to-rust-member(|a) : Class(x, ext, member*) -> StructDecl(x, field*, x, init*, x, fun*)
-    with (field*, init*) := <filter(aml-to-rust-field(|a)); unzip> member*
-       ; fun*            := <filter(aml-to-rust-fun(|a))> member*
+  aml-to-rust-member(|a) : Class(x, ext, member*) -> StructDecl(x, field*, x, init*, fld-name*, x, fun*)
+    with (field*, init*)     := <filter(aml-to-rust-field(|a)); unzip> member*
+       ; fld-name*           := <map(?FInit(<id>, _))> init*
+       ; fun*                := <filter(aml-to-rust-fun(|a))> member*
 
   aml-to-rust-member(|a) = failure(|"Unknown module member ")
 
@@ -146,7 +147,7 @@ rules // statements & expressions
 rules // module refs
 
   rs-qid-to-module-ref :: QId -> RSModRef
-  rs-qid-to-module-ref = fold-id(!RSId(<id>), {l, r: \ (l,r) -> RSQId(l, r) \})
+  rs-qid-to-module-ref = fold-id(!RSQId(RSSelf(), <id>), {l, r: \ (l,r) -> RSQId(l, r) \})
 
   rs-convert-module-ref :: ModuleRef -> RSModRef
   rs-convert-module-ref : Self() -> RSSelf()

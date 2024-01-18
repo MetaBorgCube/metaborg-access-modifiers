@@ -263,6 +263,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			try {
 				proc.waitFor(10, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
+				context.logger().error("command time-out", e);
 				throw new IOException(e);
 			}
 			
@@ -281,6 +282,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 						msg.append("\n").append("    ").append(line);
 					});
 				} catch (IOException e) {
+					context.logger().error("Error reading process output", e);
 					throw new IOException("Error reading process output. Partial result: " + msg.toString(), e);
 				}
 				if (mustSucceed) {
