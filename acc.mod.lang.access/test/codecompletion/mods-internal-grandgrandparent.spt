@@ -1,0 +1,80 @@
+module compatibility/code-completion/mods-internal-grandgrandparent
+
+test mods-internal - grandgrandparent - sibling mod - def subsub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(Root)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    import M1.M2.M3
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test mods-internal - grandgrandparent - sibling mod - def subsub -- ref sub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(Root)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1.M2.M3
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test mods-internal - grandgrandparent - sibling mod - def subsub -- ref subsub [[
+#rust
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(Root)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1.M2.M3
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1

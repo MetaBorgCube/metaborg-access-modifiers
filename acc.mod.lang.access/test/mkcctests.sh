@@ -46,3 +46,50 @@ cp ./codecompletion/public.spt ./codecompletion/private.spt
 sed -i '' -e 's/test public/test private/g' ./codecompletion/private.spt
 sed -i '' -e 's/\[\[public\]\] var x/[[private]] var x/g' ./codecompletion/private.spt
 sed -i '' -e 's/\/public/\/private/g' ./codecompletion/private.spt
+
+
+
+### Copy Rust tests
+
+# Rust public
+cp ./compatibility/rust/public.spt ./codecompletion/mods-public.spt
+
+sed -i '' -e 's/\/rust\/public/\/code-completion\/mods-public/g' ./codecompletion/mods-public.spt
+sed -i '' -e 's/test public/test mods-public/g' ./codecompletion/mods-public.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-public.spt
+
+# Rust internal
+cp ./compatibility/rust/internal.spt ./codecompletion/mods-internal.spt
+
+sed -i '' -e 's/\/rust\/internal/\/code-completion\/mods-internal/g' ./codecompletion/mods-internal.spt
+sed -i '' -e 's/test internal/test mods-internal/g' ./codecompletion/mods-internal.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-internal.spt
+
+
+# Rust internal-self
+cp ./compatibility/rust/internal-self.spt ./codecompletion/mods-internal-self.spt
+
+sed -i '' -e 's/\/rust\/internal/\/code-completion\/mods-internal/g' ./codecompletion/mods-internal-self.spt
+sed -i '' -e 's/test internal/test mods-internal/g' ./codecompletion/mods-internal-self.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-internal-self.spt
+
+# Rust internal-parent
+cp ./compatibility/rust/internal-parent.spt ./codecompletion/mods-internal-parent.spt
+
+sed -i '' -e 's/\/rust\/internal/\/code-completion\/mods-internal/g' ./codecompletion/mods-internal-parent.spt
+sed -i '' -e 's/test internal/test mods-internal/g' ./codecompletion/mods-internal-parent.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-internal-parent.spt
+
+# Rust internal-grandparent
+cp ./compatibility/rust/internal-grandparent.spt ./codecompletion/mods-internal-grandparent.spt
+
+sed -i '' -e 's/\/rust\/internal/\/code-completion\/mods-internal/g' ./codecompletion/mods-internal-grandparent.spt
+sed -i '' -e 's/test internal/test mods-internal/g' ./codecompletion/mods-internal-grandparent.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-internal-grandparent.spt
+
+# Rust internal-grandgrandparent
+cp ./compatibility/rust/internal-grandgrandparent.spt ./codecompletion/mods-internal-grandgrandparent.spt
+
+sed -i '' -e 's/\/rust\/internal/\/code-completion\/mods-internal/g' ./codecompletion/mods-internal-grandgrandparent.spt
+sed -i '' -e 's/test internal/test mods-internal/g' ./codecompletion/mods-internal-grandgrandparent.spt
+sed -i '' -e 's/"Test Rust Compatibility"/"Test Complete To Current" on \#1/g' ./codecompletion/mods-internal-grandgrandparent.spt
