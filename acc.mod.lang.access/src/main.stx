@@ -9,6 +9,15 @@ imports
   statics/modules
   statics/options
 
+
+  // Enable concrete accessibility policies
+  statics/access/public
+  statics/access/protected-internal
+  statics/access/protected
+  statics/access/internal
+  statics/access/private-protected
+  statics/access/private
+
 rules
 
   // No injection explication for top-level sort `Start`.

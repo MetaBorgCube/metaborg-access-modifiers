@@ -10,9 +10,9 @@ import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessAnalyzeFile;
-import mb.accmodlangaccess.task.AccModLangAccessParse;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLAnalyzeFile;
+import mb.accmodlang.task.AMLParse;
 import mb.common.codecompletion.CodeCompletionItem;
 import mb.common.codecompletion.CodeCompletionResult;
 import mb.common.message.KeyedMessagesBuilder;
@@ -31,7 +31,7 @@ import mb.spoofax.core.language.command.CommandFeedback;
 import mb.statix.codecompletion.StrategoTermCodeCompletionItem;
 import mb.statix.codecompletion.pie.CodeCompletionTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, CommandFeedback> {
 	
 	public static final boolean EXPAND_DETERMINISTIC = true;
@@ -88,29 +88,29 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
 	}
 	
 	private final CompleteTransformed complete;
-	private final AccModLangAccessParse parse;
+	private final AMLParse parse;
 	private final PrependOffset prependOffset;
 	private final DesugarAll desugarAll;
 	private final AccModToPlaceHolder accModToPlaceHolder;
 	private final TailToPlaceHolder tailToPlaceHolder;
-	private final AccModLangAccessAnalyzeFile analyze;
+	private final AMLAnalyzeFile analyze;
 	private final AnalysisHasErrors analysisHasErrors;
 	private final AccModAtOffset atOffset;
-	private final mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources;
+	private final mb.accmodlang.AMLClassLoaderResources classLoaderResources;
 
 	
 	@Inject
 	public CompleteToCurrent(
 			CompleteTransformed complete,
-			AccModLangAccessParse parse,
+			AMLParse parse,
 			PrependOffset prependOffset,
 			DesugarAll desugarAll,
 			AccModToPlaceHolder accModToPlaceHolder,
 			TailToPlaceHolder tailToPlaceHolder,
-			AccModLangAccessAnalyzeFile analyze,
+			AMLAnalyzeFile analyze,
 			AnalysisHasErrors analysisHasErrors,
 			AccModAtOffset atOffset,
-			mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources
+			mb.accmodlang.AMLClassLoaderResources classLoaderResources
 	) {
 		this.complete = complete;
 		this.parse = parse;

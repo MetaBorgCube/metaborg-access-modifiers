@@ -4,12 +4,12 @@ import javax.inject.Inject;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessAnalyzeFile;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
-import mb.accmodlangaccess.task.AccModLangAccessParse;
-import mb.accmodlangaccess.task.AccModLangAccessStatixSpecTaskDef;
+import mb.accmodlang.AMLClassLoaderResources;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLAnalyzeFile;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
+import mb.accmodlang.task.AMLParse;
+import mb.accmodlang.task.AMLStatixSpecTaskDef;
 import mb.common.codecompletion.CodeCompletionResult;
 import mb.common.result.Result;
 import mb.log.api.LoggerFactory;
@@ -19,24 +19,24 @@ import mb.pie.api.stamp.resource.ResourceStampers;
 import mb.statix.codecompletion.pie.CodeCompletionTaskDef;
 import mb.tego.strategies.runtime.TegoRuntime;
 
-@AccModLangAccessScope
+@AMLScope
 public class CompleteTransformed extends CompleteTransformedBase {
 	
-	private final mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources;
+	private final mb.accmodlang.AMLClassLoaderResources classLoaderResources;
 
 
 	@Inject
 	public CompleteTransformed(
-			AccModLangAccessParse parse, 
+			AMLParse parse, 
 			AccModToPlaceHolder toPlaceHolder,
-			AccModLangAccessAnalyzeFile analyzeFileTask,
-			AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviderTask,
+			AMLAnalyzeFile analyzeFileTask,
+			AMLGetStrategoRuntimeProvider getStrategoRuntimeProviderTask,
 			PrependOffset prependOffset, 
 			TegoRuntime tegoRuntime,
-			AccModLangAccessStatixSpecTaskDef statixSpec, 
+			AMLStatixSpecTaskDef statixSpec, 
 			StrategoTerms strategoTerms, 
 			LoggerFactory loggerFactory,
-			AccModLangAccessClassLoaderResources classLoaderResources
+			AMLClassLoaderResources classLoaderResources
 	) {
 		super(analyzeFileTask, 
 				getStrategoRuntimeProviderTask, 

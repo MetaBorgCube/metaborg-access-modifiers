@@ -1,0 +1,19 @@
+module statics/access/public
+
+imports
+
+  statics/access/base
+
+signature
+  constructors
+    PUB : ACCESS
+
+rules
+
+  [A-Pub]
+  accessModifierToAccess(s, Public()) = PUB().
+
+rules
+
+  [AP-Pub]
+  accessOk(s, p, PUB()).

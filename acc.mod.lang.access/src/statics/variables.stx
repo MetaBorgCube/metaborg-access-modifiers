@@ -5,7 +5,7 @@ imports
   signatures/lib/start-sig
   
   statics/base
-  statics/access
+  statics/access/base
 
 signature
   
@@ -82,10 +82,12 @@ rules
   [T-Ref]
   resolveVar(s, Id(x)) = T :- {p ACC}
     (p, (T, ACC)) == resolveLexicalVar(s, x),
-    accessOk(src(p), p, ACC) | error $[Variable [x] is not visible.] @x.
+    accessOk(s, p, ACC) | error $[Variable [x] is not visible.] @x,
+    pathOk(s, p) | error $[Variable [x] is hidden by a subclass.].
 
   [T-FAcc]
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
     resolveVar(s, qid) == CLASS(s_cls),
     resolveMemberVar(s_cls, x) == (p, (T, ACC)),
-    accessOk(s, p, ACC) | error $[Field [x] is not visible.] @x.
+    accessOk(s, p, ACC) | error $[Field [x] is not visible.] @x,
+    pathOk(s, p) | error $[Field [x] is hidden by a subclass.].

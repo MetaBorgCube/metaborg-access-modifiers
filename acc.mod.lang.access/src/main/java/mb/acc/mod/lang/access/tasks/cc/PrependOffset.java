@@ -8,15 +8,15 @@ import javax.inject.Inject;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.common.region.Region;
 import mb.common.result.Result;
 import mb.common.util.ListView;
 import mb.pie.api.ExecContext;
 import mb.stratego.pie.StrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class PrependOffset extends StrategoTransformTaskDef<PrependOffset.Args> {
 
 	public static class Args implements Serializable {
@@ -60,7 +60,7 @@ public class PrependOffset extends StrategoTransformTaskDef<PrependOffset.Args> 
 	}
 	
 	@Inject
-	public PrependOffset(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+	public PrependOffset(AMLGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
 		super(getStrategoRuntimeProviders, ListView.of());
 	}
 

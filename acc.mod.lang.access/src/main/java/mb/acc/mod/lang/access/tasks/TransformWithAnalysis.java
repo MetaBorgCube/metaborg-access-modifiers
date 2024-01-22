@@ -16,9 +16,9 @@ import mb.stratego.pie.StrategoTransformTaskDef;
 public abstract class TransformWithAnalysis extends StrategoTransformTaskDef<Output> {
 
 	private final String strategyName;
-	private final mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources;
+	private final mb.accmodlang.AMLClassLoaderResources classLoaderResources;
 
-	public TransformWithAnalysis(GetStrategoRuntimeProvider getStrategoRuntimeProvider, String strategyName, mb.accmodlangaccess.AccModLangAccessClassLoaderResources classLoaderResources) {
+	public TransformWithAnalysis(GetStrategoRuntimeProvider getStrategoRuntimeProvider, String strategyName, mb.accmodlang.AMLClassLoaderResources classLoaderResources) {
 		super(getStrategoRuntimeProvider, ListView.of());
 		this.strategyName = strategyName;
 		this.classLoaderResources = classLoaderResources;

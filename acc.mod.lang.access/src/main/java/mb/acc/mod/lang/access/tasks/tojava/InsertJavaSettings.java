@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.tojava;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class InsertJavaSettings extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public InsertJavaSettings(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
+	public InsertJavaSettings(AMLGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
 		super(getStrategoRuntimeProvider, "insert-java-settings");
 	}
 

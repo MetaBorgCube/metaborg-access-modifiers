@@ -1,0 +1,26 @@
+module statics/access/private
+
+imports
+ 
+  statics/classes
+
+  statics/access/base
+  statics/access/auxiliary
+  statics/access/internal // To reduce `PRV` to `MOD []`.
+  
+rules
+ 
+  [A-Priv]
+  accessModifierToAccess(s, Private()) = modules([]).
+
+rules
+
+  privateAccessOk   : PrivateAccess * scope * scope * path
+
+  privateAccessOk(IfExactType(), s_ref, s_priv, p) :-
+    s_priv == thisClass(s_ref), 					// access must occur in the class in which the reference is private
+    s_priv == thisClass(src(p)).					// instance of var must be scope in which it is private 
+
+  privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p) :-
+    s_priv == thisClass(s_ref), 					// access must occur in the class in which the reference is private
+    nonEmpty(subClass(thisClass(src(p)), s_priv)).	// instance of var must be a subclass of the class in which the variable is private

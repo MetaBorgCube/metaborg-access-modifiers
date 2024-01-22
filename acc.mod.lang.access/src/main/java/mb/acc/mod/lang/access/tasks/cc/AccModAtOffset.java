@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.cc;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class AccModAtOffset extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public AccModAtOffset(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+	public AccModAtOffset(AMLGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
 		super(getStrategoRuntimeProviders, "accmod-at-offset", "strip-annos");
 	}
 

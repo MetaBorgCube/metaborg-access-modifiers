@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.cc;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class TailToPlaceHolder extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public TailToPlaceHolder(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+	public TailToPlaceHolder(AMLGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
 		super(getStrategoRuntimeProviders, "tail-to-placeholder");
 	}
 

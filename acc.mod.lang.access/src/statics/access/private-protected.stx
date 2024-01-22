@@ -1,0 +1,37 @@
+module statics/access/private-protected
+
+imports
+
+  statics/options
+
+  statics/access/base
+  statics/access/auxiliary
+  
+  statics/access/protected // To validate protected access access
+  statics/access/internal  // To validate internal access
+
+signature
+
+  constructors
+    SMC : scope -> ACCESS
+
+rules
+
+  [A-Priv-Prot]
+  accessModifierToAccess(s, PrivateProtected(modRefs))  = subclassInModules(resolveModRefList(s, modRefs)).
+
+  subclassInModules: list(scope) -> ACCESS
+  subclassInModules(mods) = SMC(s_mods) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+rules
+
+  [AP-SMC]
+  accessOk(s, p, SMC(mods)) :-
+    accessOk(s, p, MOD(mods)),
+	protectedAccessOk(resolveProtectedAccess(s), s, p).
+
+rules
+
+  modulesOfAccess(SMC(s)) = s.

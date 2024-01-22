@@ -11,6 +11,7 @@ imports
   statics/variables
   statics/methods
 
+
 rules
 
   typeOfLHS : scope * LHS  -> TYPE

@@ -13,9 +13,9 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
 import mb.acc.mod.lang.access.tasks.TestCompat;
-import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
-import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
-import mb.accmodlangaccess.task.AccModLangAccessParse;
+import mb.accmodlang.AMLClassLoaderResources;
+import mb.accmodlang.task.AMLAnalyze;
+import mb.accmodlang.task.AMLParse;
 import mb.common.message.KeyedMessages;
 import mb.common.result.Result;
 import mb.pie.api.ExecContext;
@@ -27,10 +27,10 @@ public class TestCSharpCompat extends TestCompat {
 
 	@Inject
 	public TestCSharpCompat(
-			AccModLangAccessClassLoaderResources classLoaderResources, 
-			AccModLangAccessParse parse,
+			AMLClassLoaderResources classLoaderResources, 
+			AMLParse parse,
 			InsertCSharpSettings insertSettings,
-			AccModLangAccessAnalyze analyze, 
+			AMLAnalyze analyze, 
 			TransformToCSharp transform,
 			ResourceService resourceService
 	) {

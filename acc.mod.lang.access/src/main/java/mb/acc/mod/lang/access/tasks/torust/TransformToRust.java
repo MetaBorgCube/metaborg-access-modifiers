@@ -3,17 +3,17 @@ package mb.acc.mod.lang.access.tasks.torust;
 import javax.inject.Inject;
 
 import mb.acc.mod.lang.access.tasks.TransformWithAnalysis;
-import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLClassLoaderResources;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 
-@AccModLangAccessScope
+@AMLScope
 public class TransformToRust extends TransformWithAnalysis {
 
 	@Inject
     public TransformToRust(
-    		AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider,
-    		AccModLangAccessClassLoaderResources classLoaderResources
+    		AMLGetStrategoRuntimeProvider getStrategoRuntimeProvider,
+    		AMLClassLoaderResources classLoaderResources
     ) {
         super(getStrategoRuntimeProvider, "transform-to-rust", classLoaderResources);
     }

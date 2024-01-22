@@ -54,7 +54,7 @@ rules
   pp-csharp-files-list: CSFile(prj, dep*, ast) -> CSFilePP(prj', dep'*, pp)
     with prj'  := <format-prj-name> prj
        ; dep'* := <map(?Import(<id>); format-prj-name)> dep*
-       ; pp    := <pp-partial-accmodlangaccess-string(|"CSStart")> ast
+       ; pp    := <pp-partial-accmodlang-string(|"CSStart")> ast
 
   csharp-test-transform :: Program -> List(CSFile)
   csharp-test-transform : program -> result

@@ -4,19 +4,19 @@ import javax.inject.Inject;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.common.result.Result;
 import mb.constraint.pie.ConstraintAnalyzeFile;
 import mb.constraint.pie.ConstraintAnalyzeFile.Output;
 import mb.pie.api.ExecContext;
 import mb.stratego.pie.StrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class AnalysisHasErrors extends StrategoTransformTaskDef<ConstraintAnalyzeFile.Output> {
 
 	@Inject
-	public AnalysisHasErrors(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+	public AnalysisHasErrors(AMLGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
 		super(getStrategoRuntimeProviders, "analysis-has-errors");
 	}
 

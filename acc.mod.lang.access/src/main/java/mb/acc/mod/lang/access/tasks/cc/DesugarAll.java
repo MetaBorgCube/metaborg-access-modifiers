@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.cc;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class DesugarAll extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public DesugarAll(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
+	public DesugarAll(AMLGetStrategoRuntimeProvider getStrategoRuntimeProviders) {
 		super(getStrategoRuntimeProviders, "desugar-all");
 	}
 

@@ -42,7 +42,7 @@ rules // builder
   // prettyprint-accmodlangaccess-RSStart
 
   transform-to-rust(|AnalysisResult) :: Program -> TransformResult(RSStart, ?)
-  transform-to-rust(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-rust, aml-to-rust(|a), pp-partial-accmodlangaccess-string(|"RSStart"))
+  transform-to-rust(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-rust, aml-to-rust(|a), pp-partial-accmodlang-string(|"RSStart"))
   
   rust-test-transform :: Program -> RSStart
   rust-test-transform : program -> result

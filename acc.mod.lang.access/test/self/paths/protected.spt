@@ -1,0 +1,114 @@
+module paths/protected
+
+test path - protected - current - lex [[
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var y = x
+}
+
+]]
+analysis succeeds
+
+test path - protected - parent - lex [[
+class A {
+  public var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public var y = x
+}
+
+]]
+analysis succeeds
+
+test path - protected - current - mem - self [[
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var b = new B()
+  public var y = b.x
+}
+
+]]
+analysis succeeds
+
+test path - protected - current - mem - parent [[
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var b = new A()
+  public var y = b.x
+}
+]]
+analysis succeeds
+
+test path - protected - current - mem - child [[
+#protected-access: if-instance-of-current
+
+class A {
+  public var x = 42
+}
+class B : protected A {
+  public var b = new C()
+  public var y = b.x
+}
+class C : public B { }
+]]
+analysis succeeds
+
+test path - protected - parent - mem - orig [[
+class A {
+  public var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public var b = new A()
+  public var y = b.x
+}
+
+]]
+analysis succeeds
+
+test path - protected - parent - mem - parent [[
+class A {
+  public var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public var b = new B()
+  public var y = b.x
+}
+
+]]
+analysis fails
+
+test path - protected - parent - mem - self [[
+class A {
+  public var x = 42
+}
+class B : protected A { }
+class C : public B {
+  public var b = new C()
+  public var y = b.x
+}
+
+]]
+analysis succeeds
+
+test path - protected - child - mem - child [[
+#protected-access: if-instance-of-current
+
+class A {
+  public var x = 42
+}
+class B : public A {
+  public var b = new C()
+  public var y = b.x
+}
+class C : protected B { }
+]]
+analysis succeeds

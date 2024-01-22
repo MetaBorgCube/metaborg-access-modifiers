@@ -17,9 +17,9 @@ import javax.annotation.Nullable;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
-import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
-import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
-import mb.accmodlangaccess.task.AccModLangAccessParse;
+import mb.accmodlang.AMLClassLoaderResources;
+import mb.accmodlang.task.AMLAnalyze;
+import mb.accmodlang.task.AMLParse;
 import mb.common.message.KeyedMessages;
 import mb.common.message.KeyedMessagesBuilder;
 import mb.common.message.Severity;
@@ -74,20 +74,20 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 	protected static final String relativeTargetDirRoot = "build/test";
 	
-	protected final AccModLangAccessClassLoaderResources classLoaderResources;
-	protected final AccModLangAccessParse parse;
+	protected final AMLClassLoaderResources classLoaderResources;
+	protected final AMLParse parse;
 	protected final AstStrategoTransformTaskDef insertSettings;
-	protected final AccModLangAccessAnalyze analyze;
+	protected final AMLAnalyze analyze;
 	protected final TransformWithAnalysis transform;
 	protected final ResourceService resourceService;
 	
 	private final String langName;
 
 	protected TestCompat(
-			AccModLangAccessClassLoaderResources classLoaderResources, 
-			AccModLangAccessParse parse,
+			AMLClassLoaderResources classLoaderResources, 
+			AMLParse parse,
 			AstStrategoTransformTaskDef insertSettings,
-			AccModLangAccessAnalyze analyze, 
+			AMLAnalyze analyze, 
 			TransformWithAnalysis transform, 
 			ResourceService resourceService, 
 			String langDir

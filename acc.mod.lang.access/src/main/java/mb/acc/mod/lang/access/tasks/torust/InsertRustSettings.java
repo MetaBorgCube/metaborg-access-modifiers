@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.torust;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class InsertRustSettings extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public InsertRustSettings(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
+	public InsertRustSettings(AMLGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
 		super(getStrategoRuntimeProvider, "insert-rust-settings");
 	}
 

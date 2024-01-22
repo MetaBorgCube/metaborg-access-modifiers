@@ -26,7 +26,7 @@ rules // Code Completion
   downgrade-placeholders = downgrade-placeholders-accmodlang
   upgrade-placeholders   = upgrade-placeholders-accmodlang
   is-inj                 = is-accmodlang-inj-cons
-  pp-partial             = pp-partial-accmodlangaccess-string
+  pp-partial             = pp-partial-accmodlang-string
 
 rules
 

@@ -1,0 +1,26 @@
+module statics/access/protected
+
+imports
+
+  statics/classes
+
+  statics/access/base
+  statics/access/auxiliary
+  statics/access/protected-internal // Current access policy is special case of protected-internal
+  
+rules
+
+  [A-Prot]
+  accessModifierToAccess(s, Protected()) = subclassOrModules([]).
+  
+
+rules
+
+  protectedAccessOk : ProtectedAccess * scope * path
+  
+  protectedAccessOk(IfInstanceOfDefining(), s, p) :-
+    nonEmpty(subClass(thisClass(s), dst(p))).
+
+  protectedAccessOk(IfInstanceOfCurrent(), s, p) :-
+    nonEmpty(subClass(thisClass(s), dst(p))),
+    nonEmpty(subClass(thisClass(src(p)), thisClass(s))).

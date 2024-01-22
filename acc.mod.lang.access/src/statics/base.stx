@@ -9,32 +9,3 @@ signature
 	  EXTEND				// extends
 	  EXTEND_PROT			// extends with protected visibility
 	  EXTEND_PRIV			// extends with private visibility
-
-rules
-
-  rootScope: scope -> scope
-  rootScope(s) = s_root :-
-    query ()
-      filter LEX*
-      min LEX < $
-      in s |-> [(_, s_root)]. 
-
-  isEnclosingScope: scope * scope
-  
-  [Prnt]
-  isEnclosingScope(s_inner, s_outer) :-
-    query ()
-      filter LEX*
-        and { s :- s == s_outer }
-      in s_inner |-> [_|_].
-
-rules // paths
-
-  dst: path -> scope
-  src: path -> scope
-  
-  dst(_PathEmpty(s)) = s.
-  dst(_PathStep(_, _, s)) = s.
-  
-  src(_PathEmpty(s)) = s.
-  src(_PathStep(p, _, _)) = src(p).

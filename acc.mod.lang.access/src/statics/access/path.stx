@@ -1,0 +1,116 @@
+module statics/access/path
+
+imports
+
+  statics/base
+  statics/options
+  statics/classes // For sub-class
+
+  statics/access/base
+  statics/access/auxiliary
+
+  statics/access/private    // Private inheritance level
+  statics/access/protected  // Protected inheritance level
+
+signature
+
+  sorts PATHLEVEL constructors
+    PRIV_PARENT  : PATHLEVEL
+    PRIV_CURRENT : PATHLEVEL
+    PROT         : PATHLEVEL
+    PUBLIC       : PATHLEVEL
+    
+rules
+  
+  pathOk(s, p) :-
+    pathLevelOk(pathLevel(p), s, p).
+
+rules
+
+  pathLevel : path -> PATHLEVEL
+  paths : scope * scope -> (PATH_LIST * PATHLEVEL)
+
+  pathLevel(p) = L :- {R}
+    (R, L) == paths(src(p), dst(p)),
+    nonEmpty(R).
+
+
+  paths(s, s_tgt) = paths_1(s, s_tgt, R) :-
+    query ()
+      // try public paths first 
+      filter
+        LEX*
+        EXTEND*
+      and
+        { s' :- s' == s_tgt }
+      in s |-> R.
+      
+    paths_1 : scope * scope * PATH_LIST -> (PATH_LIST * PATHLEVEL)
+    paths_2 : scope * scope * PATH_LIST -> (PATH_LIST * PATHLEVEL)
+    paths_3 : scope * scope * PATH_LIST -> (PATH_LIST * PATHLEVEL)
+    
+    paths_1(_, _, R@[_|_]) = (R, PUBLIC()).
+    paths_1(s, s_tgt, []/* <= no public paths */) = paths_2(s, s_tgt, R) :-
+      query () 
+      // try protected paths next 
+        filter
+          LEX*       
+          (EXTEND | EXTEND_PROT)*
+        and
+          { s' :- s' == s_tgt }
+        in s |-> R.
+    		
+    
+    paths_2(_, _, R@[_|_]) = (R, PROT()).
+    paths_2(s, s_tgt, []/* <= no protected paths*/) = paths_3(s, s_tgt, R) :-
+      // try private paths last
+      query () 
+        filter
+          LEX*
+          EXTEND_PRIV
+          (EXTEND | EXTEND_PROT)*
+        and
+          { s' :- s' == s_tgt }
+        in s |-> R.
+    
+
+    paths_3(_, _, R@[_|_]) = (R, PRIV_CURRENT()).
+    paths_3(s, s_tgt, []/* <= no current private paths*/) = (R, PRIV_PARENT()) :-
+      // try private paths last
+      query () 
+        filter
+          LEX*
+          (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+        and
+          { s' :- s' == s_tgt }
+        in s |-> R.
+
+
+rules // path validation
+
+  pathLevelOk: PATHLEVEL * /*s ref*/scope * path
+  
+  pathLevelOk(PUBLIC(), _, _).
+
+  pathLevelOk(PROT(), s, p) :-
+    protectedAccessOk(resolveProtectedAccess(s), s, p).
+  
+  pathLevelOk(_, s, p) :- {s_this}
+    s_this == thisClass(s),
+    // must be private in this very class (not necessarily in instance class `src(p)`)
+    privateInCurrent(s_this, dst(p)),
+    privateAccessOk(resolvePrivateAccess(s), s, s_this, p).
+	
+
+  privateInCurrent: scope * scope
+
+  privateInCurrent(s_inst, s_decl) :- {R}
+    query ()
+      filter
+        LEX*
+        EXTEND_PRIV
+        (EXTEND | EXTEND_PROT)*
+      and
+        { s' :- s' == s_decl }
+      in s_inst |-> R,
+    nonEmpty(R).

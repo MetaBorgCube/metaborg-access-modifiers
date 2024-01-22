@@ -1,0 +1,63 @@
+module statics/access/internal
+
+imports
+
+  statics/options
+
+  statics/access/base
+  statics/access/auxiliary
+  
+  statics/access/private // to use private access as fallback
+
+signature
+
+ constructors
+    MOD : scope -> ACCESS
+
+rules
+
+  [A-Int]
+  accessModifierToAccess(s, Internal(modRefs)) = modules(resolveModRefList(s, modRefs)).
+
+
+  modules: list(scope) -> ACCESS
+  modules(mods) = MOD(s_mods) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+
+  moduleAccessOk: scope * scope
+  moduleAccessesOk maps moduleAccessOk(*, list(*))
+
+  moduleAccessOk(s, s_mod) :-
+    s -MODULE-> s_mod.
+
+rules
+
+  [AP-Int]
+  accessOk(s, p, MOD(mods)) :- {L REF_OK PATH_OK}
+    exposedToModules(s, mods) == REF_OK,
+    internalPathOk(resolveInternalAccess(s), p, mods) == PATH_OK,
+    modulesAccessOk(REF_OK, PATH_OK, s, p).
+
+      modulesAccessOk : PATH_LIST * PATH_LIST * scope * path
+
+      modulesAccessOk([_|_], [_|_],_, _).
+      modulesAccessOk(_, _, s, p) :-
+	    // member access of 'private' member should be allowed
+  	    privateAccessOk(resolvePrivateAccess(s), s, /* private in declaration scope */ dst(p), p).
+
+rules
+
+  internalPathOk  : InternalAccess * path * /* exposedModules */scope -> PATH_LIST
+  
+  internalPathOk(AllowInternalAccess(), p, s_mods) = R :-
+    query () filter e and { s' :- exposedTo(src(p), s_mods) } in new |-> R.
+    
+  internalPathOk(IfChainInModule(), p, s_mods) = R :-
+    query () filter e and { s' :- allExposedTo(p, s_mods) } in new |-> R.
+
+rules
+
+  modulesOfAccess(MOD(s)) = s.
+  

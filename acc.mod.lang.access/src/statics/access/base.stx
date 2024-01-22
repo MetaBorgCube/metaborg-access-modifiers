@@ -1,0 +1,43 @@
+module statics/access/base
+
+imports
+
+  statics/base
+  statics/modules
+  statics/classes
+  statics/options
+
+// *********************************
+// *** Access Modifier Semantics ***
+// *********************************
+
+signature
+  sorts PATH_LIST = list((path * scope))
+
+  name-resolution
+    labels
+      MODULE                // module included in access
+
+  sorts ACCESS
+
+  // The scope parameter has MODULE-edges to the scopes of all modules
+  // This allows easy filtering in a set of modules using the query filter
+
+rules // templates, to be extended in other modules
+
+  // Judgment `s |- acc => A`
+  accessModifierToAccess : scope * AccessModifier -> ACCESS
+  
+  // Judgment `s |- p ! A`
+  accessOk       : scope * path * ACCESS
+
+
+
+// *********************************
+// *** Inheritance *****************
+// *********************************
+
+rules
+
+  // Judgment `s |- p ¡`
+  pathOk: scope * path

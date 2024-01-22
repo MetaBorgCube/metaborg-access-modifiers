@@ -1,0 +1,114 @@
+module paths/private
+
+test path - private - current - lex [[
+class A {
+  public var x = 42
+}
+class B : private A {
+  public var y = x
+}
+
+]]
+analysis succeeds
+
+test path - private - parent - lex [[
+class A {
+  public var x = 42
+}
+class B : private A { }
+class C : public B {
+  public var y = x
+}
+
+]]
+analysis fails
+
+test path - private - current - mem - self [[
+class A {
+  public var x = 42
+}
+class B : private A {
+  public var b = new B()
+  public var y = b.x
+}
+
+]]
+analysis succeeds
+
+test path - private - current - mem - parent [[
+class A {
+  public var x = 42
+}
+class B : private A {
+  public var b = new A()
+  public var y = b.x
+}
+]]
+analysis succeeds
+
+test path - private - current - mem - child [[
+#private-access: if-instance-of-current
+
+class A {
+  public var x = 42
+}
+class B : private A {
+  public var b = new C()
+  public var y = b.x
+}
+class C : public B { }
+]]
+analysis succeeds
+
+test path - private - parent - mem - orig [[
+class A {
+  public var x = 42
+}
+class B : private A { }
+class C : public B {
+  public var b = new A()
+  public var y = b.x
+}
+
+]]
+analysis succeeds
+
+test path - private - parent - mem - parent [[
+class A {
+  public var x = 42
+}
+class B : private A { }
+class C : public B {
+  public var b = new B()
+  public var y = b.x
+}
+
+]]
+analysis fails
+
+test path - private - parent - mem - self [[
+class A {
+  public var x = 42
+}
+class B : private A { }
+class C : public B {
+  public var b = new C()
+  public var y = b.x
+}
+
+]]
+analysis fails
+
+test path - private - child - mem - child [[
+#private-access: if-instance-of-current
+
+class A {
+  public var x = 42
+}
+class B : public A {
+  public var b = new C()
+  public var y = b.x
+}
+class C : private B { }
+]]
+analysis fails

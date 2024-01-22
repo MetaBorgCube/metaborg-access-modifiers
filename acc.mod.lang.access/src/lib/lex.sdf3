@@ -1,0 +1,67 @@
+module lib/lex
+
+// Identifiers
+
+lexical sorts
+
+  ID
+
+lexical syntax
+
+  ID = [a-zA-Z] [a-zA-Z0-9\_\']*
+
+  ID = "int" {reject}
+  ID = "self" {reject}
+
+lexical restrictions
+
+  ID -/- [a-zA-Z0-9\_\']
+
+// Composite IDs
+
+context-free sorts
+
+  QId
+
+context-free syntax
+
+  QId.Id  = ID
+  QId.QId = <<QId>.<ID>> 
+
+
+// Integers
+
+lexical sorts
+
+  INT
+
+lexical syntax
+
+  INT = [\-]? [1-9][0-9]* // ([e] [\-]? [1-9][0-9]*)?
+
+lexical restrictions
+
+  INT -/- [0-9]
+  
+
+// Layout
+// TODO: comments
+
+lexical sorts
+
+  LINE_COMMENT
+
+lexical syntax
+
+  LAYOUT = [\ \n\t\v\f\r]
+  LAYOUT = LINE_COMMENT
+
+  LINE_COMMENT = "//" ~[\r\n]*
+
+lexical restrictions
+
+  LINE_COMMENT -/- ~[\r\n]
+
+context-free restrictions
+
+  LAYOUT? -/- [\ \n\t\v\f\r\/]

@@ -48,7 +48,7 @@ rules // builder
   transform-to-java(|AnalysisResult) :: Program -> TransformResult(List(JavaFile), ?)
   transform-to-java(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-java, aml-to-java(|a), pp-java-files-list)
   
-  pp-java-files-list = map(JavaFile(id, pp-partial-accmodlangaccess-string(|"JStart")))
+  pp-java-files-list = map(JavaFile(id, pp-partial-accmodlang-string(|"JStart")))
 
   java-test-transform :: Program -> List(JavaFile)
   java-test-transform : program -> result

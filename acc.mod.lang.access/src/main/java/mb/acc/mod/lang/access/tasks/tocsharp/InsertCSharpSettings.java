@@ -2,15 +2,15 @@ package mb.acc.mod.lang.access.tasks.tocsharp;
 
 import javax.inject.Inject;
 
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessGetStrategoRuntimeProvider;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLGetStrategoRuntimeProvider;
 import mb.stratego.pie.AstStrategoTransformTaskDef;
 
-@AccModLangAccessScope
+@AMLScope
 public class InsertCSharpSettings extends AstStrategoTransformTaskDef {
 
 	@Inject
-	public InsertCSharpSettings(AccModLangAccessGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
+	public InsertCSharpSettings(AMLGetStrategoRuntimeProvider getStrategoRuntimeProvider) {
 		super(getStrategoRuntimeProvider, "insert-csharp-settings");
 	}
 

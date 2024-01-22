@@ -1,6 +1,6 @@
-shared.defaultArtifactId=accmodlangaccess
-shared.defaultClassPrefix=AccModLangAccess
+shared.defaultArtifactId=accmodlang
+shared.defaultClassPrefix=AML
 shared.defaultGroupId=org.metaborg
-shared.defaultPackageId=mb.accmodlangaccess
+shared.defaultPackageId=mb.accmodlang
 shared.defaultVersion=0.1.0
-stratego.source.files.languageStrategyAffix=accmodlangaccess
+stratego.source.files.languageStrategyAffix=accmodlang

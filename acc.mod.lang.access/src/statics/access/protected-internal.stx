@@ -1,0 +1,52 @@
+module statics/access/protected-internal
+
+imports
+
+  statics/options
+
+  statics/access/base
+  statics/access/auxiliary
+  statics/access/internal  // For module-related access
+  statics/access/protected // For protected access
+
+signature
+ constructors
+    SMD : scope -> ACCESS // SMD in paper
+
+rules
+
+  [A-Prot-Int]
+  accessModifierToAccess(s, ProtectedInternal(modRefs)) = subclassOrModules(resolveModRefList(s, modRefs)).
+
+rules
+
+  accessOk(s, p, SMD(mods)) :- {REF_OK}
+    exposedToModules(s, mods) == REF_OK,
+    // Note: no `internalPathOk(...)` because inheritance happens regardless of module exposure
+    subclassOrModulesAccessOk(REF_OK, s, p).
+
+  	  subclassOrModulesAccessOk  : PATH_LIST * scope * path
+
+	  // Accept if the variable is not protected by the instance
+	  // and the definition is exposed to the current module.
+	  [AP-SMD-Mod]
+	  subclassOrModulesAccessOk([_|_], _, _).
+	
+	  // Member access is not allowed as `internal`, check if it can be accessed as `protected` instead.
+	  [AP-SMD-Prot]
+	  subclassOrModulesAccessOk(_, s, p) :-
+	    // member access of protected member should be allowed
+	    protectedAccessOk(resolveProtectedAccess(s), s, p).
+
+rules
+
+  subclassOrModules: list(scope) -> ACCESS
+
+  subclassOrModules(mods) = SMD(s_mods) :-
+    new s_mods,
+    moduleAccessesOk(s_mods, mods).
+
+
+rules
+
+  modulesOfAccess(SMD(s)) = s.

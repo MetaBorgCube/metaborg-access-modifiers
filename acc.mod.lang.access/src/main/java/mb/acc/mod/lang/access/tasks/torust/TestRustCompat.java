@@ -11,10 +11,10 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
 
 import mb.acc.mod.lang.access.tasks.TestCompat;
-import mb.accmodlangaccess.AccModLangAccessClassLoaderResources;
-import mb.accmodlangaccess.AccModLangAccessScope;
-import mb.accmodlangaccess.task.AccModLangAccessAnalyze;
-import mb.accmodlangaccess.task.AccModLangAccessParse;
+import mb.accmodlang.AMLClassLoaderResources;
+import mb.accmodlang.AMLScope;
+import mb.accmodlang.task.AMLAnalyze;
+import mb.accmodlang.task.AMLParse;
 import mb.common.message.KeyedMessages;
 import mb.common.result.Result;
 import mb.pie.api.ExecContext;
@@ -24,17 +24,17 @@ import mb.resource.hierarchical.HierarchicalResource;
 import mb.resource.hierarchical.ResourcePath;
 
 
-@AccModLangAccessScope
+@AMLScope
 public class TestRustCompat extends TestCompat {
 	
     private static final String PROGRAM_FILE_NAME = "program.rs";
 
 	@Inject
 	public TestRustCompat(
-			AccModLangAccessClassLoaderResources classLoaderResources, 
-			AccModLangAccessParse parse,
+			AMLClassLoaderResources classLoaderResources, 
+			AMLParse parse,
 			InsertRustSettings insertSettings,
-			AccModLangAccessAnalyze analyze, 
+			AMLAnalyze analyze, 
 			TransformToRust transform, 
 			ResourceService resourceService
 	) {

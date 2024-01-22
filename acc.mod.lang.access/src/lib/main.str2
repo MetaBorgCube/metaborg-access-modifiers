@@ -1,0 +1,28 @@
+module lib/main
+
+imports
+
+  strategolib
+
+  signatures/lib/start-sig
+
+rules
+
+  desugar :: TP
+
+  desugar = desugar-access-mod
+
+  desugar-access-mod :: TP
+
+  desugar-access-mod: ProtectedInternalSelf()        -> ProtectedInternal(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: ProtectedInternal(MRLEmpty())  -> ProtectedInternal(MRLNonEmpty(Self(), MRLNil()))
+
+  desugar-access-mod: PrivateProtectedSelf()         -> PrivateProtected(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: PrivateProtected(MRLEmpty())   -> PrivateProtected(MRLNonEmpty(Self(), MRLNil()))
+
+  desugar-access-mod: InternalSelf()                 -> Internal(MRLNonEmpty(Self(), MRLNil()))
+  desugar-access-mod: Internal(MRLEmpty())           -> Internal(MRLNonEmpty(Self(), MRLNil()))
+
+
+  desugar-all :: TP
+  desugar-all = topdown(try(preserve-annos(desugar)))

@@ -1,0 +1,121 @@
+module statics/access/auxiliary
+
+imports
+
+  statics/base
+  statics/options
+  statics/modules
+  statics/access/base
+
+
+// ***************
+// *** Lexical ***
+// ***************
+
+rules // paths
+
+  dst: path -> scope
+  src: path -> scope
+  
+  dst(_PathEmpty(s)) = s.
+  dst(_PathStep(_, _, s)) = s.
+  
+  src(_PathEmpty(s)) = s.
+  src(_PathStep(p, _, _)) = src(p).
+
+
+rules
+
+  isEnclosingScope: scope * scope
+  
+  isEnclosingScope(s_inner, s_outer) :-
+    query ()
+      filter LEX*
+        and { s :- s == s_outer }
+      in s_inner |-> [_|_].
+
+  rootScope: scope -> scope
+  rootScope(s) = s_root :-
+    query ()
+      filter LEX*
+      min LEX < $
+      in s |-> [(_, s_root)]. 
+
+rules
+
+  nonEmpty : PATH_LIST
+  nonEmpty([_|_]).
+  nonEmpty([]) :- false.
+
+
+
+// ***************
+// *** Modules ***
+// ***************
+
+rules // module reference list to modules
+
+  resolveModRefList: scope * ModuleRefList-Star -> list(scope)
+  resolveModRefListPlus: scope * ModuleRefList-Plus -> list(scope)
+  resolveModRefList_: int * scope * ModuleRefList-Plus -> list(scope)
+  resolveModRef: scope * ModuleRef -> scope
+  resolveModRefs maps resolveModRef(*, list(*)) = list(*)
+  modRefOk: scope * scope * ExposureRange * QId
+  
+
+  resolveModRefList(s, MRLEmpty()) = [].
+  resolveModRefList(s, MRLNonEmpty(rm, tl)) = [resolveModRef(s, rm) | resolveModRefListPlus(s, tl)].
+  resolveModRefListPlus(s, mrl) = resolveModRefList_(10, s, mrl).
+  resolveModRefList_(0, _, _) = [] :- false.
+  resolveModRefList_(n, s, MRLNil()) = [] :- n #>= 0.
+  resolveModRefList_(n, s, MRLCons(mr, tl)) = [resolveModRef(s, mr) | resolveModRefList_(#(n - 1), s, tl)].
+
+  resolveModRef(s, Self()) = thisMod(s).
+  resolveModRef(s, ModuleRef(qid)) = s_mod :-
+    s_mod == resolveMod(s, qid),
+    modRefOk(s, s_mod, resolveExposureRange(s), qid).
+
+  modRefOk(s, s_mod, All(), _).
+  
+  [A-Int'] // Additional condition only
+  modRefOk(s, s_mod, Ancestors(), id) :-
+    isEnclosingScope(s, s_mod)
+    | error $[Not allowed to expose member to non-ancestor module [id].].
+
+rules // modules of access policy
+
+  modulesOfAccess: ACCESS -> scope
+
+rules // exposure
+
+  allExposedTo : path * scope
+  allExposedTo_ : path * scope
+  exposedTo: /*s_src*/scope * /*modules*/scope
+  exposedToModules: /*s_src*/scope * /*modules*/scope -> PATH_LIST
+  isExposedTo: scope * scope * ExposureMode
+
+  allExposedTo(_PathEmpty(_), _). /* same class visibility is always allowed */
+  allExposedTo(_PathStep(p, _, s), s_mods) :- allExposedTo_(p, s_mods).
+
+  allExposedTo_(_PathEmpty(s), s_mods) :- exposedTo(s, s_mods).
+  allExposedTo_(_PathStep(p, _, s), s_mods) :-
+    exposedTo(s, s_mods),
+    allExposedTo_(p, s_mods).
+
+  exposedTo(s, s_mods) :-
+    nonEmpty(exposedToModules(s, s_mods)).
+
+  exposedToModules(s, s_mods) = MS:- {M}
+    M == resolveExposureMode(s),
+
+    query ()
+      filter MODULE
+        and { m :- isExposedTo(s, m, M) }
+      in s_mods |-> MS.
+
+  isExposedTo(s, m, DirectChildOnly()) :-
+    thisMod(s) == m.
+
+  isExposedTo(s, m, IncludeSubmodules()) :-
+    isEnclosingScope(s, m).
+  

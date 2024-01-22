@@ -5,12 +5,14 @@ imports
   signatures/lib/start-sig
 
   statics/base
-  statics/access
   statics/types
   statics/variables
   statics/methods
   statics/expressions
   statics/modules
+
+  statics/access/base
+  statics/access/public
 
 signature
 
@@ -177,7 +179,7 @@ rules
   argumentOk(s, Arg(x, t)) = T :-
   	@x.local := (),
     typeOfType(s, t) == T,
-    declareVar(s, x, T, UNRESTRICTED()).
+    declareVar(s, x, T, PUB()).
 
 rules
 
