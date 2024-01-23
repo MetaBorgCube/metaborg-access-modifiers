@@ -79,33 +79,33 @@ import static mb.tego.strategies.StrategyExt.pred;
  */
 public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.Input, Result<CodeCompletionResult, ?>> {
 
-	
+
 	public static final class Input implements Serializable {
-		
+
 		private static final long serialVersionUID = 42L;
 
 		private final mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier;
-		
+
 		private final ResourceKey file;
-		
+
 		private final Region primarySelection;
-		
+
 		private final @javax.annotation.Nullable ResourcePath rootDirectoryHint;
-		
+
 		private final boolean completeDeterministic;
-		
+
 		public Input(
-				mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier, 
+				mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier,
 				ResourceKey file,
 				Region primarySelection,
-				ResourcePath rootDirectoryHint, 
+				ResourcePath rootDirectoryHint,
 				boolean expandDeterministic
 		) {
 			this.astSupplier = astSupplier;
 			this.file = file;
 			this.primarySelection = primarySelection;
 			this.rootDirectoryHint = rootDirectoryHint;
-			this.completeDeterministic = expandDeterministic;			
+			this.completeDeterministic = expandDeterministic;
 		}
 
 		@Override
@@ -137,7 +137,7 @@ public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.
 					+ ", rootDirectoryHint=" + rootDirectoryHint + ", completeDeterministic=" + completeDeterministic
 					+ "]";
 		}
-		
+
 	}
 
     private final Logger log;
@@ -159,9 +159,9 @@ public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.
     /**
      * Initializes a new instance of the {@link CodeCompletionTaskDef} class.
      *
-     * @param parseTask the parser task
      * @param analyzeFileTask the analysis task
      * @param getStrategoRuntimeProviderTask the Stratego runtime provider task
+     * @param tegoRuntime the Tego Runtime (used for lazy evaluation of code completion)
      * @param statixSpec the Statix spec task
      * @param strategoTerms the Stratego to NaBL terms utility class
      * @param loggerFactory the logger factory
@@ -246,7 +246,7 @@ public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.
         private final ExecContext context;
         private final StrategoRuntime strategoRuntime;
         private final ITermFactory termFactory;
-        
+
         public final mb.pie.api.Supplier<Result<IStrategoTerm, ?>> astSupplier;
         /** The file being completed. */
         public final ResourceKey file;
@@ -707,4 +707,3 @@ public class CompleteTransformedBase implements TaskDef<CompleteTransformedBase.
     }
 
 }
-
