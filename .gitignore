@@ -3,3 +3,6 @@ build/
 
 # Eclipse
 .settings/
+
+# Gradle
+.gradle/

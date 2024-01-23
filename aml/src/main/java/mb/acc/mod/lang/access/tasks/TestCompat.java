@@ -186,20 +186,25 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 	}
 
 	protected String normalizeFile(ResourceKey file, HierarchicalResource root) {
+		final ResourcePath baseResource;
 		if(file.getQualifier().equals("spt")) {
 			final String[] components = file.getIdAsString().split("!!");
 			final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), components[0]);
-			final ResourcePath baseResource = resourceService.getResourcePath(baseResourcePath);
 			if(components.length == 1) {
 				// no specific test case
-				return root.getPath().relativize(baseResource);
+				baseResource = resourceService.getResourcePath(baseResourcePath);
 			} else {
-				return root.getPath().relativize(baseResource.appendAsRelativePath(components[1]));
+				baseResource = resourceService.getResourcePath(baseResourcePath).appendAsRelativePath(components[1]);
 			}
+		} else {
+			final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), file.getIdAsString());
+			baseResource = resourceService.getResourcePath(baseResourcePath);
 		}
-		final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), file.getIdAsString());
-		final ResourcePath baseResource = resourceService.getResourcePath(baseResourcePath);
-		return root.getPath().relativize(baseResource);
+		if(baseResource.isAbsolute()) {
+			return root.getPath().relativize(baseResource);
+		} else {
+			return root.getPath().appendRelativePath(baseResource).asString();
+		}
 	}
 
 	protected HierarchicalResource buildRoot(HierarchicalResource project) {

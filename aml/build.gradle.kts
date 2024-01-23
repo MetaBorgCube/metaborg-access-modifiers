@@ -1,16 +1,13 @@
 import mb.spoofax.compiler.adapter.*
 
 plugins {
+  `java`
   `java-library`
-  id("org.metaborg.spoofax.compiler.gradle.language") version "999.9.9-refret-SNAPSHOT" apply false
-  id("org.metaborg.spoofax.compiler.gradle.adapter") version "999.9.9-refret-SNAPSHOT" apply false
-  id("org.metaborg.spoofax.lwb.compiler.gradle.language") version "999.9.9-refret-SNAPSHOT"
-}
-
-repositories {
-    mavenLocal()
-    maven("https://artifacts.metaborg.org/content/groups/public/")
-    mavenCentral()
+  // id("org.metaborg.gradle.config.java-library")
+  // id("org.metaborg.gradle.config.junit-testing")
+  id("org.metaborg.spoofax.compiler.gradle.language") apply false
+  id("org.metaborg.spoofax.compiler.gradle.adapter") apply false
+  id("org.metaborg.spoofax.lwb.compiler.gradle.language")
 }
 
 dependencies {
@@ -19,24 +16,8 @@ dependencies {
 
   // annotationProcessor("com.google.code.findbugs:jsr305:3.0.2")
 
-  // testImplementation("org.metaborg:spoofax.test:")
+  testImplementation("org.metaborg:spoofax.test:999.9.9-refret-SNAPSHOT")
   // testCompileOnly("org.checkerframework:checker-qual-android")
-}
-
-val javaVersion = JavaLanguageVersion.of(11)
-
-java {
-    toolchain {
-        languageVersion.set(javaVersion)
-        withSourcesJar()
-        withJavadocJar()
-    }
-}
-
-configure<JavaPluginExtension> {
-    toolchain.languageVersion.set(javaVersion)
-    withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.named("sourcesJar") {
@@ -45,11 +26,6 @@ tasks.named("sourcesJar") {
   mustRunAfter("compileLanguage")
 }
 
-val service = project.extensions.getByType<JavaToolchainService>()
-val customLauncher = service.launcherFor {
-    languageVersion.set(javaVersion)
-}
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
+tasks.named("processResources") {
+  mustRunAfter("compileLanguage")
 }

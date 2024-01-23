@@ -7,7 +7,7 @@ module p {
   class A {
     internal var x = 42
   }
-  
+
   module q {
     class B {
       private var a = new A()
@@ -26,7 +26,7 @@ module p {
   class A {
     internal var x = 42
   }
-  
+
   module q {
     class B {
       private var a = new A()
@@ -45,7 +45,7 @@ module p {
   class A {
     internal var x = 42
   }
-  
+
   class B {
     private var a = new A()
     private var y = a.x
