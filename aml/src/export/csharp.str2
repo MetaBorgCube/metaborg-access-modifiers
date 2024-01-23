@@ -47,7 +47,7 @@ rules // settings
 rules
 
   transform-to-csharp(|AnalysisResult) :: Program -> TransformResult(List(CSFile), List(CSFilePP))
-  transform-to-csharp(|fa) = where(!fa; ?FileAnalysis(_, a, _))
+  transform-to-csharp(|fa) = where(!fa; stx--get-analysis; ?a)
                            ; transform-builder(check-aml-to-csharp, aml-to-csharp(|a), map(pp-csharp-files-list))
 
   pp-csharp-files-list :: CSFile -> CSFilePP
@@ -63,7 +63,7 @@ rules
            case ?Incompatible(reason*) : <with(map(debug); fail); fail> reason*
            case ?Compatible()          : a := <stx-get-ast-analysis> program
 							           ; <aml-to-csharp(|a)> program
-         end => result 
+         end => result
 
 rules // collect errors
 
@@ -72,7 +72,7 @@ rules // collect errors
                           case ?[]   : !Compatible()
                           case ?msg* : !Incompatible(msg*)
                         end
-  
+
   csharp-incompat :: ? -> string
 
   // TODO: review options
@@ -86,15 +86,15 @@ rules // collect errors
   csharp-incompat = ?Internal(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"C# does not support 'internal' with custom modules."; debug
   csharp-incompat = ?PrivateProtected(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"C# does not support 'private protected' with custom modules."; debug
 
-rules  
+rules
 
   aml-to-csharp(|SolverResult) :: Start -> List(CSFile)
-  
+
   aml-to-csharp(|a): Program(_, member*) -> result*
     with result* := <aml-to-csharp-members(|a, None(), [])> member*
-    
+
   aml-to-csharp-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(CSFile)
-  
+
   aml-to-csharp-members(|a, x, import*) : member* -> result*
     with imp*      := <filter(?Import(_))> member*
        ; all-imp*  := <flatten-list; is(List(Import))> [import*, imp*]
@@ -107,7 +107,7 @@ rules
 
   aml-to-csharp-member(|SolverResult, Option(QId), List(Import)) :: ModuleOrClassOrImport -> List(CSFile)
 
-  aml-to-csharp-member(|a, x*, imp*) : Import(_) -> []  
+  aml-to-csharp-member(|a, x*, imp*) : Import(_) -> []
   aml-to-csharp-member(|a, x*, imp*) : Module(x, member*) -> res*
     with x'   := <append-id> (x*, x)
        ; res* := <aml-to-csharp-members(|a, Some(x'), imp*)> member*
@@ -126,7 +126,7 @@ rules
   aml-wrap-csharp-classes(|x, import*) : cls* -> Some(file)
     with root-decl := <map-option(![Namespace(<id>, cls*)]); is(Option(List(CSNamespaceDecl))); option-or-else(|cls*)> x
        ; imp'*     := <map(format-csharp-using)> import*
-       ; cu        := CompilationUnit(imp'*, root-decl)               
+       ; cu        := CompilationUnit(imp'*, root-decl)
        ; prj-name  := <option-or-else(|Id("__Root"))> x
        ; file      := CSFile(prj-name, import*, cu)
 
@@ -135,20 +135,20 @@ rules
   format-csharp-using: Import(x) -> Using(x)
 
   format-csharp-ext :: Extends -> CSExtends
-  
+
   format-csharp-ext : NoExtends() -> NoExtends()
-  format-csharp-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x) 
+  format-csharp-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x)
 
 
 rules // class members
 
   aml-to-csharp-cls-member(|SolverResult) :: MemberDecl -> (CSClassMember * Option(CSInit))
-  
+
   aml-to-csharp-cls-member(|a) : Field(acc, x, e) -> (Property(acc', tp, x), Some(Init(x, e')))
     with acc' := <aml-to-csharp-acc> acc
        ; tp   := <get-csharp-type(|a)> (x, e)
        ; e'   := <aml-to-csharp-expr> e
-  
+
   aml-to-csharp-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> (mthd, None())
     with acc'   := <aml-to-csharp-acc> acc
        ; ovr    := <csharp-method-mod-to-override> mmod
@@ -157,9 +157,9 @@ rules // class members
        ; stmt'* := <map(aml-to-csharp-stmt)> stmt*
        ; e'     := <aml-to-csharp-expr> ret
        ; mthd   := Method(acc', ovr, tp, x, arg'*, [stmt'*, Return(e')])
- 
+
    aml-to-csharp-formal-arg :: Arg -> CSArg
-   
+
    aml-to-csharp-formal-arg : Arg(x, t) -> Arg(t', x)
      with t' := <aml-to-csharp-type> t
 
@@ -170,7 +170,7 @@ rules // class members
 rules
 
   csharp-method-mod-to-override :: MethodModifier -> CSOverride
-  
+
   csharp-method-mod-to-override : NoMethodModifier() -> NoOverride()
   csharp-method-mod-to-override : Override() -> Override()
   csharp-method-mod-to-override : New() -> New()
@@ -184,14 +184,14 @@ rules
   aml-to-csharp-acc : Internal(MRLNonEmpty(Self(), MRLNil())) -> Internal()
   aml-to-csharp-acc : PrivateProtected(MRLNonEmpty(Self(), MRLNil())) -> PrivateProtected()
   aml-to-csharp-acc : Private() -> Private()
-  
+
   aml-to-csharp-acc = failure(|"Unknown access modifier")
 
-rules // statements & expressions     
+rules // statements & expressions
 
   aml-to-csharp-stmt :: Stmt -> CSStatement
-  
-  aml-to-csharp-stmt : ExprStmt(e)  -> Expr(<aml-to-csharp-expr> e)  
+
+  aml-to-csharp-stmt : ExprStmt(e)  -> Expr(<aml-to-csharp-expr> e)
   aml-to-csharp-stmt : Assign(Var(x), e) -> Assign(x, <aml-to-csharp-expr> e)
 
 
@@ -216,7 +216,7 @@ rules // types
 
 
   format-csharp-type(|SolverResult) :: ? -> CSType
-  
+
   format-csharp-type(|a) : INT()    -> CSInt()
   format-csharp-type(|a) : CLASS(s) -> CSTypeRef(x)
     with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s

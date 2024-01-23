@@ -18,7 +18,7 @@ imports
   pp
 
   export/base
-  
+
   main
 
 signature
@@ -46,8 +46,8 @@ rules // builder
   // prettyprint-accmodlangaccess-JStart
 
   transform-to-java(|AnalysisResult) :: Program -> TransformResult(List(JavaFile), ?)
-  transform-to-java(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-java, aml-to-java(|a), pp-java-files-list)
-  
+  transform-to-java(|fa) = where(!fa; stx--get-analysis; ?a); transform-builder(check-aml-to-java, aml-to-java(|a), pp-java-files-list)
+
   pp-java-files-list = map(JavaFile(id, pp-partial-accmodlang-string(|"JStart")))
 
   java-test-transform :: Program -> List(JavaFile)
@@ -66,7 +66,7 @@ rules // collect errors
                         case ?[]   : !Compatible()
                         case ?msg* : !Incompatible(msg*)
                       end
-  
+
   java-incompat :: ? -> string
 
   // TODO: review options
@@ -75,7 +75,7 @@ rules // collect errors
   java-incompat = ?Extends(<id>); not(?[_]); !"Java does not support multiple inheritance."; debug
   java-incompat = ?ExtendsClause(<id>, _); not(?Public()); !"Java does only support public inheritance."; debug
   java-incompat = ?New(); !"Java does not support 'new' modifier on methods."; debug
-  
+
   java-incompat = ?Protected(); !"Java does not support 'protected' access modifier; use 'protected internal' instead."; debug
   java-incompat = ?ProtectedInternal(<id>); not(?MRLNonEmpty(Self(), MRLNil())); !"Java does not support 'protected internal' with custom modules."; debug
   java-incompat = ?PrivateProtected(_); !"Java does not support 'private protected' access modifier."; debug
@@ -83,12 +83,12 @@ rules // collect errors
 rules // transform
 
   aml-to-java(|SolverResult) :: Start -> List(JavaFile)
-  
+
   aml-to-java(|a): Program(_, member*) -> result*
     with result* := <aml-to-java-members(|a, None(), [])> member*
-  
+
   aml-to-java-members(|SolverResult, Option(QId), List(Import)) :: List(ModuleOrClassOrImport) -> List(JavaFile)
-  
+
   aml-to-java-members(|a, x, import*) : member* -> result*
     with imp*     := <filter(?Import(_))> member*
        ; has-clss := <filter(?Class(_, _, _)); ?[] < !None() + !Some(<id>)> member*
@@ -96,8 +96,8 @@ rules // transform
        ; self-imp := <map-option(!Import(pkg-name))> has-clss
        ; all-imp* := <prepend-opt> (self-imp, [import*, imp*])
        ; result*  := <map(aml-to-java-member(|a, x, all-imp*)); flatten-list> member*
-  
-  
+
+
   aml-to-java-member(|SolverResult, Option(QId), List(Import)) :: ModuleOrClassOrImport -> List(JavaFile)
 
   aml-to-java-member(|a, x*, imp*) : Import(_) -> []
@@ -124,12 +124,12 @@ rules // transform
 
 
   aml-to-java-cls-member(|SolverResult) :: MemberDecl -> JClassMemberDecl
-  
+
   aml-to-java-cls-member(|a) : Field(acc, x, e) -> Field(acc', tp, x, e')
     with acc' := <aml-to-java-acc> acc
        ; tp   := <get-java-type(|a)> (x, e)
        ; e'   := <aml-to-java-expr> e
-  
+
   aml-to-java-cls-member(|a) : Method(acc, mmod, x, arg*, stmt*, ret) -> mthd
     with acc'   := <aml-to-java-acc> acc
        ; ovr    := <java-method-mod-to-override> mmod
@@ -138,9 +138,9 @@ rules // transform
        ; stmt'* := <map(aml-to-java-stmt)> stmt*
        ; e'     := <aml-to-java-expr> ret
        ; mthd   := Method(ovr, acc', tp, x, arg'*, [stmt'*, Return(e')])
- 
+
    aml-to-java-formal-arg :: Arg -> JArg
-   
+
    aml-to-java-formal-arg : Arg(x, t) -> Arg(t', x)
      with t' := <aml-to-java-type> t
 
@@ -148,11 +148,11 @@ rules // transform
    aml-to-java-type : IntT() -> JInt()
    aml-to-java-type : RefT(x) -> JTypeRef(Id(x))
 
-rules // statements & expressions     
+rules // statements & expressions
 
   aml-to-java-stmt :: Stmt -> JStatement
-  
-  aml-to-java-stmt : ExprStmt(e)  -> Expr(<aml-to-java-expr> e)  
+
+  aml-to-java-stmt : ExprStmt(e)  -> Expr(<aml-to-java-expr> e)
   aml-to-java-stmt : Assign(Var(x), e) -> Assign(x, <aml-to-java-expr> e)
 
 
@@ -176,9 +176,9 @@ rules // classes
 
 
   format-java-ext :: Extends -> JExtends
-  
+
   format-java-ext : NoExtends() -> NoExtends()
-  format-java-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x) 
+  format-java-ext: Extends([ExtendsClause(Public(), x)]) -> Extends(x)
 
 
   aml-to-java-acc :: AccessModifier -> JAccMod
@@ -187,14 +187,14 @@ rules // classes
   aml-to-java-acc : ProtectedInternal(MRLNonEmpty(Self(), MRLNil())) -> Protected()
   aml-to-java-acc : Internal(MRLNonEmpty(Self(), MRLNil())) -> Default()
   aml-to-java-acc : Private() -> Private()
-  
+
   aml-to-java-acc = failure(|"Unknown access modifier")
 
 rules // methods
 
   java-method-mod-to-override :: MethodModifier -> JOverride
-  
-  
+
+
   java-method-mod-to-override : NoMethodModifier() -> NoOverride()
   java-method-mod-to-override : Override() -> Override()
 
@@ -208,7 +208,7 @@ rules // types
 
 
   format-java-type(|SolverResult) :: ? -> JType
-  
+
   format-java-type(|a) : INT()    -> JInt()
   format-java-type(|a) : CLASS(s) -> JTypeRef(x)
     with x := <stx-get-scopegraph-data(|a, "statics/classes!thisName"); ?[<id>]; !Id(<id>)> s
@@ -223,7 +223,7 @@ rules // types
 rules
 
   format-pkg :: Option(QId) -> JPkgDecl
-  
+
   format-pkg : None()       -> PkgDecl(Id("root"))
   format-pkg : Some(pkg-id) -> PkgDecl(<map-id(lower-case)> pkg-id)
 
@@ -233,4 +233,3 @@ rules
   format-file-name : (None(), x) -> $[./root/[x].java]
   format-file-name : (Some(x'), x) -> $[./[dir]/[x].java]
     with dir := <fold-id(id, { p, x: \ (p, x) -> $[[p]/[x]] \ })> x'
-  

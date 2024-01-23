@@ -18,7 +18,7 @@ imports
   pp
 
   export/base
-  
+
   main
 
 rules // settings
@@ -42,8 +42,8 @@ rules // builder
   // prettyprint-accmodlangaccess-RSStart
 
   transform-to-rust(|AnalysisResult) :: Program -> TransformResult(RSStart, ?)
-  transform-to-rust(|fa) = where(!fa; ?FileAnalysis(_, a, _)); transform-builder(check-aml-to-rust, aml-to-rust(|a), pp-partial-accmodlang-string(|"RSStart"))
-  
+  transform-to-rust(|fa) = where(!fa; stx--get-analysis; ?a); transform-builder(check-aml-to-rust, aml-to-rust(|a), pp-partial-accmodlang-string(|"RSStart"))
+
   rust-test-transform :: Program -> RSStart
   rust-test-transform : program -> result
     with check-aml-to-rust
@@ -60,13 +60,13 @@ rules // collect errors
                         case ?[]   : !Compatible()
                         case ?msg* : !Incompatible(msg*)
                       end
-  
+
   rust-incompat :: ? -> string
 
   rust-incompat = ?Extends(_); !"Rust does not support inheritance."; debug
   rust-incompat = ?New(); !"Rust does not support 'new' modifier on methods."; debug
   rust-incompat = ?Override(); !"Rust does not support 'override' modifier on methods."; debug
-  
+
   rust-incompat = ?Protected(); !"Rust does not support 'protected' access modifier."; debug
   rust-incompat = ?Private(); !"Rust does not support 'private' access modifier."; debug
   rust-incompat = ?ProtectedInternal(_); !"Rust does not support 'protected internal'."; debug
@@ -76,14 +76,14 @@ rules // collect errors
 rules // transform
 
   aml-to-rust(|SolverResult) :: Start -> RSStart
-  
+
   aml-to-rust(|a): Program(_, member*) -> CompilationUnit(result*)
     with result* := <map(aml-to-rust-member(|a))> member*
 
   aml-to-rust-member(|SolverResult) :: ModuleOrClassOrImport -> RSModDecl
 
   aml-to-rust-member(|a) : Import(x) -> UseGlob(<rs-qid-to-module-ref> x)
-  
+
   aml-to-rust-member(|a) : Module(x, member*) -> Mod(x, member'*)
     with member'* := <map(aml-to-rust-member(|a))> member*
 
@@ -96,15 +96,15 @@ rules // transform
 
 
   aml-to-rust-field(|SolverResult) :: MemberDecl -> (RSField * RSFieldInit)
-  
+
   aml-to-rust-field(|a) : Field(acc, x, e) -> (Field(acc', x, tp), FInit(x, e'))
     with acc' := <aml-to-rust-acc> acc
        ; tp   := <get-rust-type(|a)> (x, e)
        ; e'   := <aml-to-rust-expr(|a)> e
-  
-  
+
+
   aml-to-rust-fun(|SolverResult) :: MemberDecl -> RSFun
-  
+
   aml-to-rust-fun(|a) : Method(acc, NoMethodModifier(), x, arg*, stmt*, ret) -> mthd
     with acc'   := <aml-to-rust-acc> acc
        ; tp     := <get-rust-type(|a)> (x, ret)
@@ -112,9 +112,9 @@ rules // transform
        ; stmt'* := <map(aml-to-rust-stmt(|a))> stmt*
        ; e'     := <aml-to-rust-expr(|a)> ret
        ; mthd   := Fun(acc', x, arg'*, tp, [stmt'*, Return(e')])
- 
+
    aml-to-rust-formal-arg :: Arg -> RSArg
-   
+
    aml-to-rust-formal-arg : Arg(x, t) -> Arg(x, t')
      with t' := <aml-to-rust-type> t
 
@@ -122,11 +122,11 @@ rules // transform
    aml-to-rust-type : IntT() -> RSInt()
    aml-to-rust-type : RefT(x) -> RSTypeRef(Id(x))
 
-rules // statements & expressions     
+rules // statements & expressions
 
   aml-to-rust-stmt(|SolverResult) :: Stmt -> RSStatement
-  
-  aml-to-rust-stmt(|a) : ExprStmt(e)  -> Expr(<aml-to-rust-expr(|a)> e)  
+
+  aml-to-rust-stmt(|a) : ExprStmt(e)  -> Expr(<aml-to-rust-expr(|a)> e)
   aml-to-rust-stmt(|a) : Assign(Var(x), e) -> Assign(x, <aml-to-rust-expr(|a)> e)
 
   aml-to-rust-expr(|SolverResult) :: Expr -> RSExpr
@@ -158,7 +158,7 @@ rules // classes
   aml-to-rust-acc :: AccessModifier -> RSAccMod
   aml-to-rust-acc : Public() -> Pub()
   aml-to-rust-acc : Internal(MRLNonEmpty(mod-ref, MRLNil())) -> PubIn(<rs-convert-module-ref> mod-ref) // FIXME
-  
+
   aml-to-rust-acc = failure(|"Unknown access modifier")
 
 
@@ -170,7 +170,7 @@ rules // types
 
 
   format-rust-type(|SolverResult) :: ? -> RSType
-  
+
   format-rust-type(|a) : INT()    -> RSInt()
 
   format-rust-type(|a) : CLASS(s) -> RSTypeRef(x)
