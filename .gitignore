@@ -6,3 +6,6 @@ build/
 
 # Gradle
 .gradle/
+
+.DS_Store
+*.tar

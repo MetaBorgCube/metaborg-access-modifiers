@@ -31,8 +31,6 @@ tasks.named("processResources") {
   mustRunAfter("compileLanguage")
 }
 
-// println(java.sourceSets["test"].runtimeClasspath.files)
-
 task<JavaExec>("runSpt") {
     main = "mb.aml.test.runner.AMLSptTestRunner"
     classpath = java.sourceSets["test"].runtimeClasspath
@@ -43,5 +41,5 @@ fun Project.runSptArgs(): List<String> {
   val hasProp = project.hasProperty("sptPath");
   val command = if (project.hasProperty("sptPath") && project.properties["sptPath"].toString().endsWith(".spt")) "runTestSuite" else "runTestSuites"
   val path = if (project.hasProperty("sptPath")) project.properties["sptPath"].toString() else "test/self/options"
-  return listOf(command, "${project.projectDir}/${project.relativePath(path)}")
+  return listOf(command, "${project.rootDir}/${project.relativePath(path)}")
 }

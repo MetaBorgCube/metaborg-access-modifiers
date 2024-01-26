@@ -1,0 +1,4 @@
+[submodule "spoofax3"]
+	path = spoofax3
+	url = https://github.com/metaborg/devenv/
+	branch = aml-release

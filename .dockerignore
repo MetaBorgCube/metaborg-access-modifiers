@@ -1,0 +1,7 @@
+tests/
+README.md
+.gitignore
+.gitattributes
+.DS_Store
+build/
+src-gen/
