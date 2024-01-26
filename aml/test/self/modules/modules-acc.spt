@@ -1,0 +1,314 @@
+module self/modules/modules-acc
+
+test modules - same mod [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module M {
+  class A {
+    [[internal]] var x = 42
+  }
+  class B {
+  	public var a = new A()
+  	public var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test modules - parent mod [[
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module M1 {
+  module M2 {
+	class A {
+	  [[internal(M1)]] var x = 42
+	}
+  }
+  import M2
+  class B {
+  	public var a = new A()
+  	public var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test modules - ancestor mod [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module M1 {
+  module M2 {
+    module M3 {
+	  class A {
+	    [[internal(M1)]] var x = 42
+	  }
+    }
+  }
+  import M2.M3
+  class B {
+  	public var a = new A()
+  	public var y = a.x
+  }
+}
+]]
+analysis succeeds
+
+test modules - descendant mod [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module M1 {
+  class A {
+   [[internal(M2.M3)]] var x = 42
+  }
+  module M2 {
+    module M3 {
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    class A {
+	  [[internal(N1)]] var x = 42
+    }
+  }
+  module N1 {
+    import M1
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def sub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(N1)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    import M1.M2
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def subsub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(N1)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    import M1.M2.M3
+    class B {
+  	  public var a = new A()
+  	  public var y = a.x
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod -- ref sub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    class A {
+	  [[internal(N1.N2)]] var x = 42
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def sub -- ref sub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(N1.N2)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1.M2
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def subsub -- ref sub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(N1.N2)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      import M1.M2.M3
+      class B {
+  	    public var a = new A()
+  	    public var y = a.x
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod -- ref subsub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    class A {
+	  [[internal(N1.N2.N3)]] var x = 42
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def sub -- ref subsub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      class A {
+        [[internal(N1.N2.N3)]] var x = 42
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1.M2
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+
+test modules - sibling mod - def subsub -- ref subsub [[
+
+#exposure-mode: direct-child-only
+#exposure-range: all
+
+module Root {
+  module M1 {
+    module M2 {
+      module M3 {
+        class A {
+          [[internal(N1.N2.N3)]] var x = 42
+        }
+      }
+    }
+  }
+  module N1 {
+    module N2 {
+      module N3 {
+        import M1.M2.M3
+        class B {
+  	      public var a = new A()
+  	      public var y = a.x
+        }
+      }
+    }
+  }
+}
+]]
+analysis succeeds
