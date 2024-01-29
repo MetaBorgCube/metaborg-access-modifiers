@@ -22,12 +22,12 @@ RUN apt-get update \
     bash \
     procps \
     nano \
+    gcc \
+    gcc-multilib \
     git \
     dotnet-sdk-7.0\
  && dotnet --version \
- && rm -rf /var/lib/apt/lists/* \
- && curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+ && rm -rf /var/lib/apt/lists/*
 
 # Install Gradle
 ENV GRADLE_HOME=/opt/gradle
@@ -66,18 +66,19 @@ RUN set -o errexit -o nounset \
 USER ${UNAME}
 WORKDIR ${UHOME}
 
-# Make Spoofax and AML available in image
-COPY --chown=${UNAME} . ${UHOME}
+# Install Rust compiler
+RUN curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="${UHOME}/.cargo/bin:${PATH}"
 
-# Build Spoofax3 plugins and AML language
-RUN cd spoofax3 \
- && ./gradlew -c repo.settings.gradle.kts checkout \
- && ./gradlew buildAll publishAllToMavenLocal
+# Make Spoofax available in image
+COPY --chown=${UNAME} . ${UHOME}
 
 RUN cd aml \
  && gradle build \
  && cd ../aml.test.runner \
  && gradle shadowJar \
+ && cd .. \
+ && gradle aml:runSpt -PsptPath=aml/test/test.spt \
  && echo "Build succeeded"
 
 # RUN echo "Run Tests" && exit 1

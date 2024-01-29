@@ -2,4 +2,4 @@
 
 set -eu
 
-gradle aml:runSpt -PsptPath=$1
+gradle aml:runSpt --offline -PsptPath=$1

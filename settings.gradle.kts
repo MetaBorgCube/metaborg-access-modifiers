@@ -3,7 +3,8 @@ rootProject.name = "aml-project"
 pluginManagement {
     repositories {
         maven("https://artifacts.metaborg.org/content/groups/public/")
-        mavenLocal()        
+        maven("https://plugins.gradle.org/m2/")
+        mavenLocal()
         gradlePluginPortal()
     }
 }
