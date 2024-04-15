@@ -70,18 +70,20 @@ WORKDIR ${UHOME}
 RUN curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="${UHOME}/.cargo/bin:${PATH}"
 
-# Make Spoofax available in image
+# Make AML and all require resources to build it available in image
 COPY --chown=${UNAME} . ${UHOME}
 
+# Build AML test runner
 RUN cd aml \
  && gradle build \
  && cd ../aml.test.runner \
  && gradle shadowJar \
  && cd .. \
- && gradle aml:runSpt -PsptPath=aml/test/test.spt \
- && echo "Build succeeded"
-
-# RUN echo "Run Tests" && exit 1
+ && cp aml.test.runner/build/libs/aml.test.runner-all.jar aml/aml-test-runner.jar \
+ && ./test aml/test/test.spt \
+ && echo "Build succeeded" \
+ && rm -r .gradle/ \
+ && rm -r .m2/
 
 # Run
 CMD [ "/bin/bash" ]

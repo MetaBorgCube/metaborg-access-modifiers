@@ -1,5 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+set -o noclobber
+set -o nounset
 
-set -eu
+FILE=${1:-aml/test}
+PWD=$(pwd)
+FULLPATH="$PWD/$FILE"
 
-gradle aml:runSpt --offline -PsptPath=$1
+if [[ -f "$FULLPATH" ]]; then
+  CMD="runTestSuite"
+elif [[ -d "$FULLPATH" ]]; then
+  CMD="runTestSuites"
+else
+  echo "Path '$FULLPATH' does not exist, or is not a proper test path."
+  exit -1
+fi
+
+echo "Executing test runner with command '$CMD' on file/path '$FULLPATH'."
+
+set +o errexit
+/usr/bin/java -jar aml/aml-test-runner.jar $CMD "$FULLPATH"
+EXIT=$?
+set -o errexit
+
+print_compiler_error_notice() {
+  echo
+  echo "Note that Java/C#/Rust compiler error messages can be printed"
+  echo "when tests from the 'aml/test/compatibility' directory are executed."
+  echo "This does not necessarily imply that the tests failed."
+  echo "Only the final message is indicative for the test result."
+  echo "See the README.md file for more information."
+}
+
+
+if [[ $EXIT -ne 0 ]]; then
+  echo
+  echo "Command exited with non-zero exit code: $EXIT."
+  echo "This indicates that one or more tests failed."
+  echo "Please consult the test output above for more information."
+  exit $EXIT
+else
+  echo
+  echo "Command exited with exit code 0"
+  echo "This indicates that all executed tests passed."
+  COMPAT="$PWD/aml/test/compatibility"
+  RELPATH="${FULLPATH##$COMPAT}"
+  if [[ "$RELPATH" != "$FULLPATH" ]]; then
+    print_compiler_error_notice
+  fi
+  RELPATH="${COMPAT##$FULLPATH}"
+  if [[ "$RELPATH" != "$COMPAT" ]]; then
+    print_compiler_error_notice
+  fi
+fi

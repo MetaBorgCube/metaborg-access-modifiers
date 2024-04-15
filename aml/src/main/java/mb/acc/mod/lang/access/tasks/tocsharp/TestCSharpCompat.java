@@ -98,7 +98,8 @@ public class TestCSharpCompat extends TestCompat {
 	private abstract class CSCommand extends Command {
 		
 		protected CSCommand(String subCommand) {
-			super("dotnet " + subCommand);
+			super("/usr/local/share/dotnet/dotnet");
+			addArgument(subCommand);
 		}
 		
 		protected String solutionFile(String solutionName) {

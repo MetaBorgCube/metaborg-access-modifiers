@@ -65,6 +65,7 @@ rules
 
   thisClass: scope -> scope
   outerClass: scope -> scope
+  isEnclosingClass: scope * scope
   
   [Enc-CI]
   thisClass(s) = s_cls :-
@@ -78,6 +79,11 @@ rules
       filter LEX*
       min LEX < $
       in s |-> [(_, s_cls) | _].
+
+  isEnclosingClass(s_inner, s_outer) :-
+    query thisClass
+      filter LEX* and { s :- s == s_outer }
+      in s_inner |-> [_|_].
 
 rules
 
@@ -170,6 +176,9 @@ rules
     
       methodDeclOk(s_cls, ACC, x, Ts, T_ret).
 
+
+  memberOk(s, Class2MemberDecl(cls)) :-
+    classOk(s, cls).
 
 rules
 

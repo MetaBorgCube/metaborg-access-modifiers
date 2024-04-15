@@ -8,16 +8,16 @@ rm -f archive.zip
 zip archive.zip README.md
 
 # Sources
-zip -r archive.zip spoofax3/
-zip -r archive.zip aml/
-zip -r archive.zip aml.test.runner/
+# zip -r archive.zip spoofax3/
+# zip -r archive.zip aml/
+# zip -r archive.zip aml.test.runner/
 
 # Build & run scripts
-zip -r archive.zip gradle/
-zip archive.zip gradlew
-zip archive.zip gradlew.bat
-zip archive.zip test
-zip archive.zip .gradle/gradle.properties
+# zip -r archive.zip gradle/
+# zip archive.zip gradlew
+# zip archive.zip gradlew.bat
+# zip archive.zip test
+# zip archive.zip .gradle/gradle.properties
 
 # Docker image
 zip archive.zip aml-docker-image.tar.gz

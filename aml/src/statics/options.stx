@@ -15,6 +15,7 @@ signature
     internalAccess  : InternalAccess
     protectedAccess : ProtectedAccess
     privateAccess   : PrivateAccess
+    privateScope    : PrivateScope
 
 rules
 
@@ -115,3 +116,23 @@ rules
     query privateAccess
       filter LEX*
       in s |-> [(_, M) | _].
+
+rules
+
+  privateScopeSettingOk: scope * PrivateScope
+  
+  privateScopeSettingOk(s, Innermost()) :-
+    !privateScope[Innermost()] in s.
+  
+  privateScopeSettingOk(s, Outermost()) :-
+    !privateScope[Outermost()] in s.
+
+  // default rule
+  privateScopeSettingOk(s, NoPrivateScope()) :-
+    !privateScope[Innermost()] in s.
+
+  resolvePrivateScope: scope -> PrivateScope
+  resolvePrivateScope(s) = S :-
+    query privateScope
+      filter LEX*
+      in s |-> [(_, S) | _].

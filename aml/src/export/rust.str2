@@ -31,7 +31,8 @@ rules // settings
   	  // Note: settings below are irrelevant
   	  IfChainInModule(),
   	  IfInstanceOfCurrent(),
-  	  IfExactType()
+  	  IfExactType(),
+  	  Innermost()
   	)
 
   insert-rust-settings :: Program -> Program

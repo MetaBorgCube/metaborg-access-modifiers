@@ -29,6 +29,7 @@ context-free sorts
   InternalAccess
   ProtectedAccess
   PrivateAccess
+  PrivateScope
 
 context-free syntax
 
@@ -42,6 +43,7 @@ context-free syntax
     <InternalAccess>
     <ProtectedAccess>
     <PrivateAccess>
+    <PrivateScope>
   >
 
   ExposureMode.NoExposureMode    		= <>
@@ -63,6 +65,10 @@ context-free syntax
   PrivateAccess.NoPrivateAccess 	    = <>
   PrivateAccess.IfExactType             = <#private-access: if-exact-type>
   PrivateAccess.IfSubtypeOfCurrent      = <#private-access: if-instance-of-current>
+
+  PrivateScope.NoPrivateScope			= <>
+  PrivateScope.Innermost				= <#private-scope: innermost>
+  PrivateScope.Outermost				= <#private-scope: outermost>
 
 // Modules, Classes and Imports
 
@@ -120,6 +126,7 @@ context-free syntax
     <{Stmt "\n"}*>
     return <Expr>
   }>
+  MemberDecl        = Class
  
 
   MethodModifier.NoMethodModifier	= <>

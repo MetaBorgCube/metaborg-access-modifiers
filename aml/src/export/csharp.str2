@@ -38,7 +38,8 @@ rules // settings
   	  Ancestors(),
   	  IfChainInModule(),
   	  IfInstanceOfCurrent(),
-  	  IfSubtypeOfCurrent() // NOTE: Different from Java
+  	  IfSubtypeOfCurrent(), // NOTE: Different from Java
+  	  Innermost() // NOTE: Different from Java
   	)
 
   insert-csharp-settings :: Program -> Program
@@ -158,14 +159,18 @@ rules // class members
        ; e'     := <aml-to-csharp-expr> ret
        ; mthd   := Method(acc', ovr, tp, x, arg'*, [stmt'*, Return(e')])
 
-   aml-to-csharp-formal-arg :: Arg -> CSArg
 
-   aml-to-csharp-formal-arg : Arg(x, t) -> Arg(t', x)
-     with t' := <aml-to-csharp-type> t
+  aml-to-csharp-cls-member(|a) : c@Class(_, _, _) -> (cls, None())
+    with cls := <aml-to-csharp-class(|a)> c
 
-   aml-to-csharp-type :: Type -> CSType
-   aml-to-csharp-type : IntT() -> CSInt()
-   aml-to-csharp-type : RefT(x) -> CSTypeRef(Id(x))
+  aml-to-csharp-formal-arg :: Arg -> CSArg
+
+  aml-to-csharp-formal-arg : Arg(x, t) -> Arg(t', x)
+    with t' := <aml-to-csharp-type> t
+
+  aml-to-csharp-type :: Type -> CSType
+  aml-to-csharp-type : IntT() -> CSInt()
+  aml-to-csharp-type : RefT(x) -> CSTypeRef(Id(x))
 
 rules
 

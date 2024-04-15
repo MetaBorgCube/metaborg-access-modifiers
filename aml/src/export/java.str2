@@ -35,7 +35,8 @@ rules // settings
   	  Ancestors(),
   	  IfChainInModule(),
   	  IfInstanceOfCurrent(),
-  	  IfExactType() // NOTE: Different from C#
+  	  IfExactType(), // NOTE: Different from C#
+  	  Outermost() // NOTE: Different from C#
   	)
 
   insert-java-settings :: Program -> Program
@@ -106,21 +107,24 @@ rules // transform
     with x'   := <(id, lower-case); append-id> (x*, x)
        ; res* := <aml-to-java-members(|a, Some(x'), imp*)> member*
 
-  aml-to-java-member(|a, x*, imp*) : Class(x, ext, member*) -> [JavaFile(file-name, jcls)]
+  aml-to-java-member(|a, x*, imp*) : c@Class(x, ext, member*) -> [JavaFile(file-name, jcls)]
     with pkg       := <format-pkg> x*
        ; file-name := <format-file-name> (x*, x)
        ; imp'*     := <map(format-java-imp)> imp*
        ; ext'      := <format-java-ext> ext
        ; member'*  := <map(aml-to-java-cls-member(|a))> member*
+       ; cls       := <aml-to-java-cls-decl(|a)> c
        ; jcls      := CompilationUnit(
                         pkg,
                         imp'*,
-                        [ClassDecl(
-                          x,
-                          ext',
-                          member'*
-                        )]
+                        [cls]
                       )
+
+  aml-to-java-cls-decl(|SolverResult) :: Class -> JClassDecl
+
+  aml-to-java-cls-decl(|a): Class(x, ext, member*) -> ClassDecl(x, ext', member'*)
+    with ext'      := <format-java-ext> ext
+       ; member'*  := <map(aml-to-java-cls-member(|a))> member*
 
 
   aml-to-java-cls-member(|SolverResult) :: MemberDecl -> JClassMemberDecl
@@ -138,6 +142,9 @@ rules // transform
        ; stmt'* := <map(aml-to-java-stmt)> stmt*
        ; e'     := <aml-to-java-expr> ret
        ; mthd   := Method(ovr, acc', tp, x, arg'*, [stmt'*, Return(e')])
+
+  aml-to-java-cls-member(|a) : c@Class(_, _, _) -> cls
+    with cls :=  <aml-to-java-cls-decl(|a)> c
 
    aml-to-java-formal-arg :: Arg -> JArg
 

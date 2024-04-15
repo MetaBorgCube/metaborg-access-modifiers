@@ -55,13 +55,13 @@
 	<classpathentry kind="lib" path="/Users/aronzwaan/.mavenize/eclipse_archive_cache/eclipse-committers-2021-03-R-macosx-cocoa-x86_64_dmg/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.ui.ide_3.18.100.v20210122-1536.jar"/>
 	<classpathentry kind="lib" path="/Users/aronzwaan/.mavenize/eclipse_archive_cache/eclipse-committers-2021-03-R-macosx-cocoa-x86_64_dmg/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.ui.workbench.texteditor_3.16.0.v20210120-0733.jar"/>
 	<classpathentry kind="lib" path="/Users/aronzwaan/.mavenize/eclipse_archive_cache/eclipse-committers-2021-03-R-macosx-cocoa-x86_64_dmg/Eclipse.app/Contents/Eclipse/plugins/org.eclipse.ui.workbench_3.122.100.v20210215-1525.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/spoofax.compiler.eclipsebundle/build/libs/spoofax.compiler.eclipsebundle-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/spoofax.eclipse/build/libs/spoofax.eclipse-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/tooling.eclipsebundle/build/libs/tooling.eclipsebundle-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb.distrib/lang/rv32im/rv32im.eclipse/build/libs/rv32im.eclipse-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb.distrib/spoofax.lwb.eclipse/build/libs/spoofax.lwb.eclipse-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb/metalib/gpp/gpp.eclipse/build/libs/gpp.eclipse-999.9.9-develop-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb/metalib/strategolib/strategolib.eclipse/build/libs/strategolib.eclipse-999.9.9-develop-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/spoofax.compiler.eclipsebundle/build/libs/spoofax.compiler.eclipsebundle-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/spoofax.eclipse/build/libs/spoofax.eclipse-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/core/tooling.eclipsebundle/build/libs/tooling.eclipsebundle-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb.distrib/lang/rv32im/rv32im.eclipse/build/libs/rv32im.eclipse-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb.distrib/spoofax.lwb.eclipse/build/libs/spoofax.lwb.eclipse-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb/metalib/gpp/gpp.eclipse/build/libs/gpp.eclipse-999.9.9-aml-release-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/aronzwaan/Dev/metaborg/devenv/spoofax.pie/lwb/metalib/strategolib/strategolib.eclipse/build/libs/strategolib.eclipse-999.9.9-aml-release-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="build/eclipseclasses"/>
 </classpath>

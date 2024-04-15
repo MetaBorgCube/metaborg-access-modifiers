@@ -1,7 +1,9 @@
-README.md
+*.md
+.git/
 **/.git/
 .gitignore
 .gitattributes
+.gitmodules
 .DS_Store
 .dockerignore
 Dockerfile
@@ -11,6 +13,7 @@ Dockerfile
 .gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/
 *.tar.gz
 build-archive
+archive.zip
 gradle/
 gradlew
 gradlew.bat

@@ -22,7 +22,7 @@ rules
 
   // No injection explication for top-level sort `Start`.
   programOk : Program
-  programOk(Program(Options(EM, ER, IntAcc, ProtAcc, PrivAcc), prog)) :- {s}
+  programOk(Program(Options(EM, ER, IntAcc, ProtAcc, PrivAcc, PrivScope), prog)) :- {s}
     new s,
     !thisMod[s] in s,
 
@@ -32,5 +32,6 @@ rules
     internalAccessSettingOk(s, IntAcc),
     protectedAccessSettingOk(s, ProtAcc),
     privateAccessSettingOk(s, PrivAcc),
+    privateScopeSettingOk(s, PrivScope),
 
     moduleElemsOk(s, prog).

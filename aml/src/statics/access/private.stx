@@ -2,7 +2,9 @@ module statics/access/private
 
 imports
  
+  statics/base
   statics/classes
+  statics/options
 
   statics/access/base
   statics/access/auxiliary
@@ -18,9 +20,23 @@ rules
   privateAccessOk   : PrivateAccess * scope * scope * path
 
   privateAccessOk(IfExactType(), s_ref, s_priv, p) :-
-    s_priv == thisClass(s_ref), 					// access must occur in the class in which the reference is private
-    s_priv == thisClass(src(p)).					// instance of var must be scope in which it is private 
+    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),	// access must occur in the class in which the reference is private
+//    s_priv == thisClass(src(p)).								// instance of var must be scope in which it is private
+	// FIXME: separate ranging over enclosing classes and DWF in separate settings?
+	query thisClass
+	  filter LEX* and { s_cls :- s_cls == s_priv }
+	  in src(p) |-> [_].
 
   privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p) :-
-    s_priv == thisClass(s_ref), 					// access must occur in the class in which the reference is private
-    nonEmpty(subClass(thisClass(src(p)), s_priv)).	// instance of var must be a subclass of the class in which the variable is private
+    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),	// access must occur in the class in which the reference is private
+    nonEmpty(subClass(thisClass(src(p)), s_priv)).        		// instance of var must be a subclass of the class in which the variable is private
+
+rules
+
+  privateScopeOk: PrivateScope * scope * scope
+
+  privateScopeOk(Innermost(), s_cls_ref, s_cls_decl) :-
+    isEnclosingClass(thisClass(s_cls_ref), s_cls_decl).
+
+  privateScopeOk(Outermost(), s_cls_ref, s_cls_decl) :-
+    outerClass(s_cls_ref) == outerClass(s_cls_decl).

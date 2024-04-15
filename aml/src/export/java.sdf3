@@ -49,6 +49,7 @@ context-free syntax
   JClassMemberDecl.Method = <<JOverride><JAccMod> <JType> <ID>(<{JArg ","}*>) {
     <{JStatement "\n"}+>
   }>
+  JClassMemberDecl        = JClassDecl
   
   JOverride.NoOverride = <>
   JOverride.Override   = [@Override\n]
