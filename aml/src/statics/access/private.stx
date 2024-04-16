@@ -35,11 +35,12 @@ rules // subclass check
 
   noSubclassInPath: path * scope * MODE
   
-  noSubclassInPath(p, s, LEX()) :-
+  noSubclassInPath(p, s, _) :-
     query thisClass
       filter LEX* and { s_cls :- s_cls == s }
       in src(p) |-> [_].
 
+  // FIXME: is MEM variant needed?
   noSubclassInPath(_PathEmpty(s), s_prnt, MEM()) :-
     noSubclass(s, s_prnt).
 

@@ -1,8 +1,17 @@
+#java 
+
 module M {
-class A {
-  protected internal var x = 42
-}
-class B : public A {
-  public var a = new A()
-}
+  class A {
+	  class Parent {
+	    private var x = 42  
+	  }
+	  class Enc {
+	    private var x = 42
+	    class Child : public Parent {
+	        public foo() {
+	          return x
+	        }
+	    }
+	  }
+	}
 }

@@ -20,18 +20,14 @@ rules
   resolveLexicalVar_shadowingHack: scope * scope * ID -> VAR_PATH
   resolveLexicalVar_shadowingHack_ok: scope * ID * /* optional enclosing class */ list((path * scope)) * list(VAR_DECL_PATH) -> VAR_PATH
 
-  resolveLexicalVar_shadowingHack(s, s_cls, x) = resolveLexicalVar_shadowingHack_ok(s, x, enclosingClassOpt(s_cls), filterAccessible(s, R)) :-
+  resolveLexicalVar_shadowingHack(s, s_cls, x) = resolveLexicalVar_shadowingHack_ok(s, x, enclosingScopeOpt(s_cls), filterAccessible(s, R)) :-
     query var
       filter
         // LEX* // do not look in lexical parents
         (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
       and
         { x'' :- x'' == x }
-      min
-        EXTEND < LEX,
-        EXTEND_PROT < LEX,
-        EXTEND_PRIV < LEX,
-        
+      min        
         $ < EXTEND,
         $ < EXTEND_PROT,
         $ < EXTEND_PRIV
@@ -51,10 +47,10 @@ rules
 
 rules // enclosing class
 
-  enclosingClassOpt: scope -> list((path * scope))
+  enclosingScopeOpt: scope -> list((path * scope))
 
-  enclosingClassOpt(s_cls) = R :-
-    query thisClass
+  enclosingScopeOpt(s_cls) = R :-
+    query ()
       filter LEX
       in s_cls |-> R.
 

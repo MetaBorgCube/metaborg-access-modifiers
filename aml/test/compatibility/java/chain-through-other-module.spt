@@ -52,7 +52,7 @@ module p1 {
 class A {
   internal var x = 42
 }
-class C : public B {
+class C : public p2.B {
   public foo(a: A) {
   	return a.x
   }
@@ -116,7 +116,7 @@ module p1 {
 class A {
   protected internal var x = 42
 }
-class C : public B {
+class C : public p2.B {
   public foo(a: A) {
   	return a.x
   }

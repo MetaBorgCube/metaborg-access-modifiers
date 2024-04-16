@@ -85,6 +85,7 @@ rules
   
   [T-Ref]
   resolveVar(s, Id(x)) = T :- {p ACC}
+    // (p, (T, ACC)) == resolveLexicalVar(s, s, x),
     (p, (T, ACC)) == resolveLexicalVar_shadowingHack(s, thisClass(s), x),
     accessOk(s, p, ACC, LEX()) | error $[Variable [x] is not visible.] @x,
     pathOk(s, p, LEX()) | error $[Variable [x] is hidden by a subclass.].
