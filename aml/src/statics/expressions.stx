@@ -22,7 +22,7 @@ rules
 
   typeOfExpr(s, LHS2Expr(lhs)) = typeOfLHS(s, lhs).
 
-  typeOfExpr(s, NewInstance(x)) = CLASS(scopeOfClassRef(s, x)).
+  typeOfExpr(s, NewInstance(x)) = CLASS(scopeOfQClassRef(s, x)).
 
   typeOfExpr(_, IntLit(_)) = INT().
 

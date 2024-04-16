@@ -20,6 +20,10 @@ signature
 
   sorts ACCESS
 
+  sorts MODE constructors
+    LEX: MODE
+    MEM: MODE
+
   // The scope parameter has MODULE-edges to the scopes of all modules
   // This allows easy filtering in a set of modules using the query filter
 
@@ -29,7 +33,7 @@ rules // templates, to be extended in other modules
   accessModifierToAccess : scope * AccessModifier -> ACCESS
   
   // Judgment `s |- p ! A`
-  accessOk       : scope * path * ACCESS
+  accessOk       : scope * path * ACCESS * MODE // Due to lack of a `p ~ RE` constraint, the rule for PRV needs this mode.
 
 
 
@@ -40,4 +44,4 @@ rules // templates, to be extended in other modules
 rules
 
   // Judgment `s |- p ¡`
-  pathOk: scope * path
+  pathOk: scope * path * MODE

@@ -153,7 +153,7 @@ rules // transform
 
    aml-to-java-type :: Type -> JType
    aml-to-java-type : IntT() -> JInt()
-   aml-to-java-type : RefT(x) -> JTypeRef(Id(x))
+   aml-to-java-type : RefT(x) -> JTypeRef(x)
 
 rules // statements & expressions
 
@@ -225,7 +225,7 @@ rules // types
   java-type-from-expr :: Expr -> JType
 
   java-type-from-expr : IntLit(_)      -> JInt()
-  java-type-from-expr : NewInstance(x) -> JTypeRef(Id(x))
+  java-type-from-expr : NewInstance(x) -> JTypeRef(x)
 
 rules
 

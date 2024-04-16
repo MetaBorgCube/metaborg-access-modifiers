@@ -5,6 +5,8 @@ imports
   signatures/lib/start-sig
   
   statics/base
+  statics/classes
+  statics/variables-shadowing
   statics/access/base
 
 signature
@@ -54,6 +56,7 @@ rules
         $ < EXTEND,
         $ < EXTEND_PROT,
         $ < EXTEND_PRIV
+      and { d1, d2 :- true /* should validate accessibility if choice is `EXTEND(_PROT|_PRIV) < LEX` */ }
       in s |-> [(p, (x', T))]
       | error $[Reference [x] is ambiguous.],
     @x.ref := x',
@@ -75,19 +78,20 @@ rules
     @x.ref := x',
     @x.type := T.
 
+
 rules
 
   resolveVar: scope * QId -> TYPE
   
   [T-Ref]
   resolveVar(s, Id(x)) = T :- {p ACC}
-    (p, (T, ACC)) == resolveLexicalVar(s, x),
-    accessOk(s, p, ACC) | error $[Variable [x] is not visible.] @x,
-    pathOk(s, p) | error $[Variable [x] is hidden by a subclass.].
+    (p, (T, ACC)) == resolveLexicalVar_shadowingHack(s, thisClass(s), x),
+    accessOk(s, p, ACC, LEX()) | error $[Variable [x] is not visible.] @x,
+    pathOk(s, p, LEX()) | error $[Variable [x] is hidden by a subclass.].
 
   [T-FAcc]
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
     resolveVar(s, qid) == CLASS(s_cls),
     resolveMemberVar(s_cls, x) == (p, (T, ACC)),
-    accessOk(s, p, ACC) | error $[Field [x] is not visible.] @x,
-    pathOk(s, p) | error $[Field [x] is hidden by a subclass.].
+    accessOk(s, p, ACC, MEM()) | error $[Field [x] is not visible.] @x,
+    pathOk(s, p, MEM()) | error $[Field [x] is hidden by a subclass.].

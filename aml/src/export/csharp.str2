@@ -170,7 +170,7 @@ rules // class members
 
   aml-to-csharp-type :: Type -> CSType
   aml-to-csharp-type : IntT() -> CSInt()
-  aml-to-csharp-type : RefT(x) -> CSTypeRef(Id(x))
+  aml-to-csharp-type : RefT(x) -> CSTypeRef(x)
 
 rules
 
@@ -231,7 +231,7 @@ rules // types
   csharp-type-from-expr :: Expr -> CSType
 
   csharp-type-from-expr : IntLit(_)      -> CSInt()
-  csharp-type-from-expr : NewInstance(x) -> CSTypeRef(Id(x))
+  csharp-type-from-expr : NewInstance(x) -> CSTypeRef(x)
 
 rules
 

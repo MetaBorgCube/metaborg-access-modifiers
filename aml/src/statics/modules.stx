@@ -64,6 +64,51 @@ rules
 
 rules
 
+  resolveModOrClass: scope * QId -> scope
+  resolveModOrClass_acc: scope * QId * list(ID) -> scope
+  resolveModOrClass_root : scope * ID * list((path * (ID * scope))) * list(ID) -> scope
+  resolveModOrClass_next : scope * list(ID) -> scope
+  resolveModOrClass_next_: scope * ID * list((path * (ID * scope))) * list(ID) -> scope
+
+  resolveClassIdList: scope * list(ID) -> scope
+  
+
+  // bootstrap with empty accumulator.
+  resolveModOrClass(s, qid) = resolveModOrClass_acc(s, qid, []).
+  
+  // build up accumulator.
+  resolveModOrClass_acc(s, QId(qid, x), acc) = resolveModOrClass_acc(s, qid, [x | acc]).
+  // resolve LHS lexically, branching on result.
+  resolveModOrClass_acc(s, Id(x), acc) = resolveModOrClass_root(s, x, M, acc) :-
+    M == resolveLexicalMod(s, x).
+ 	
+  // LHS is a module: continue resolving accumulator as module/class.
+  resolveModOrClass_root(_, _, [(_, (_, s_mod)) | _], acc) = resolveModOrClass_next(s_mod, acc).
+ 	
+  // LHS is a class: continue resolving accumulator as class only.
+  resolveModOrClass_root(s, x, [], acc) = resolveClassIdList(s_cls, acc) :- 
+  	s_cls == scopeOfClassRef(s, x).
+    
+  // resolution finished: module as result
+  resolveModOrClass_next(s_mod, []) = s_mod.
+  // resolve x as mod, branch on result
+  resolveModOrClass_next(s_mod, [x| xs]) = resolveModOrClass_next_(s_mod, x, M, xs) :-
+    M == resolveLocalMod(s_mod, x).
+
+  // name is a module: continue resolving accumulator as module/class.
+  resolveModOrClass_next_(_, _, [(_, (_, s_mod)) | _], acc) = resolveModOrClass_next(s_mod, acc).
+  // name is a class: continue resolving accumulator as class.
+  resolveModOrClass_next_(s_mod, x, [], acc) = resolveClassIdList(s_cls, [x|acc]).
+ 
+  // resolution finished: class as result
+  resolveClassIdList(s, []) = s.
+  // resolve x as class
+  resolveClassIdList(s, [x|xs]) = resolveClassIdList(s_cls, xs) :-
+    s_cls == scopeOfLocalClassRef(s, x).
+    
+
+rules
+
   thisMod: scope -> scope
   
   [Enc-MI]

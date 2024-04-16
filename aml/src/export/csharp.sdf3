@@ -107,7 +107,7 @@ context-free sorts
 context-free syntax
 
   CSExpr.Var             = QId
-  CSExpr.NewInstance     = <new <ID>()>
+  CSExpr.NewInstance     = <new <QId>()>
   CSExpr.Add             = <<CSExpr> + <CSExpr>>
   CSExpr.Int             = INT
   

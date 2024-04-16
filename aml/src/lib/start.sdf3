@@ -150,7 +150,7 @@ context-free syntax
   LHS.Var           = QId
   
   Expr 				= LHS
-  Expr.NewInstance  = <new <ID>()>
+  Expr.NewInstance  = <new <QId>()>
   Expr.Plus 		= <<Expr> + <Expr>> {left}
   Expr.IntLit       = INT
 
@@ -172,7 +172,7 @@ context-free sorts
 context-free syntax
 
   Type.IntT = <int>
-  Type.RefT = <<ID>>
+  Type.RefT = <<QId>>
 
 
 // Access modifiers

@@ -96,7 +96,7 @@ context-free syntax
 
   RSExpr.LocalVar = <<QId>>
   RSExpr.Var      = <self.<QId>>
-  RSExpr.New      = <<ID>::default()>
+  RSExpr.New      = <<QId>::default()>
   RSExpr.Add      = <<RSExpr> + <RSExpr>>
   RSExpr.Int      = INT
   

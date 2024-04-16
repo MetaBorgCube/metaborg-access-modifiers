@@ -78,7 +78,7 @@ context-free sorts
 context-free syntax
 
   JExpr.Var     = QId
-  JExpr.New     = <new <ID>()>
+  JExpr.New     = <new <QId>()>
   JExpr.Add     = <<JExpr> + <JExpr>>
   JExpr.Int     = INT
   

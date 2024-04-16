@@ -121,7 +121,7 @@ rules // transform
 
    aml-to-rust-type :: Type -> RSType
    aml-to-rust-type : IntT() -> RSInt()
-   aml-to-rust-type : RefT(x) -> RSTypeRef(Id(x))
+   aml-to-rust-type : RefT(x) -> RSTypeRef(x)
 
 rules // statements & expressions
 
@@ -182,4 +182,4 @@ rules // types
   rust-type-from-expr :: Expr -> RSType
 
   rust-type-from-expr : IntLit(_)      -> RSInt()
-  rust-type-from-expr : NewInstance(x) -> RSTypeRef(Id(x))
+  rust-type-from-expr : NewInstance(x) -> RSTypeRef(x)

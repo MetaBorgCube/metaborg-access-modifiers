@@ -64,8 +64,8 @@ rules // references (with/without) receivers
         $ < LEX
       in s |-> [(p, (x', (T, ACC)))]
       | error $[Reference to method [x] is ambiguous.],
-    accessOk(s, p, ACC) | error $[Method [x] is not visible.],
-    pathOk(s, p) | error $[Method [x] is hidden in a subclass.],
+    accessOk(s, p, ACC, LEX()) | error $[Method [x] is not visible.],
+    pathOk(s, p, LEX()) | error $[Method [x] is hidden in a subclass.],
     @x.ref := x',
     @x.type := T.
 
@@ -81,7 +81,7 @@ rules // references (with/without) receivers
         $ < EXTEND_PRIV
       in s |-> [(p, (x', (T, ACC))) | _]
       | error $[Reference to method [x] is ambiguous.],
-    accessOk(s, p, ACC) | error $[Method [x] is not visible.],
+    accessOk(s, p, ACC, MEM()) | error $[Method [x] is not visible.],
     @x.ref := x',
     @x.type := T.
 

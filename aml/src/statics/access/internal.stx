@@ -35,17 +35,17 @@ rules
 rules
 
   [AP-Int]
-  accessOk(s, p, MOD(mods)) :- {L REF_OK PATH_OK}
+  accessOk(s, p, MOD(mods), m) :- {L REF_OK PATH_OK}
     exposedToModules(s, mods) == REF_OK,
     internalPathOk(resolveInternalAccess(s), p, mods) == PATH_OK,
-    modulesAccessOk(REF_OK, PATH_OK, s, p).
+    modulesAccessOk(REF_OK, PATH_OK, s, p, m).
 
-      modulesAccessOk : PATH_LIST * PATH_LIST * scope * path
+      modulesAccessOk : PATH_LIST * PATH_LIST * scope * path * MODE
 
-      modulesAccessOk([_|_], [_|_],_, _).
-      modulesAccessOk(_, _, s, p) :-
+      modulesAccessOk([_|_], [_|_],_, _, _).
+      modulesAccessOk(_, _, s, p, m) :-
 	    // member access of 'private' member should be allowed
-  	    privateAccessOk(resolvePrivateAccess(s), s, /* private in declaration scope */ dst(p), p).
+  	    privateAccessOk(resolvePrivateAccess(s), s, /* private in declaration scope */ dst(p), p, m).
 
 rules
 

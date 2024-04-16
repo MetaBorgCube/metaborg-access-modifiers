@@ -1,0 +1,97 @@
+module statics/variables-shadowing
+
+imports statics/base
+imports statics/classes
+imports statics/variables
+
+imports statics/access/auxiliary
+imports statics/access/base
+
+signature
+
+  sorts
+    VAR_DECL_PATH = (path * (ID * VAR_DECL))
+
+  relations
+    candidateDecl: VAR_DECL_PATH
+
+rules
+
+  resolveLexicalVar_shadowingHack: scope * scope * ID -> VAR_PATH
+  resolveLexicalVar_shadowingHack_ok: scope * ID * /* optional enclosing class */ list((path * scope)) * list(VAR_DECL_PATH) -> VAR_PATH
+
+  resolveLexicalVar_shadowingHack(s, s_cls, x) = resolveLexicalVar_shadowingHack_ok(s, x, enclosingClassOpt(s_cls), filterAccessible(s, R)) :-
+    query var
+      filter
+        // LEX* // do not look in lexical parents
+        (EXTEND | EXTEND_PROT | EXTEND_PRIV)*
+      and
+        { x'' :- x'' == x }
+      min
+        EXTEND < LEX,
+        EXTEND_PROT < LEX,
+        EXTEND_PRIV < LEX,
+        
+        $ < EXTEND,
+        $ < EXTEND_PROT,
+        $ < EXTEND_PRIV
+      in s_cls |-> R.
+
+  // no accessible var found, return default result for error message
+  resolveLexicalVar_shadowingHack_ok(s, x, [], []) = resolveLexicalVar(s, x).
+
+  // no accessible var found, try in enclosing class
+  resolveLexicalVar_shadowingHack_ok(s, x, [(_, s_enc)], []) = resolveLexicalVar_shadowingHack(s, s_enc, x).
+
+  // some accessible var found, assert unique, stitch path, and return
+  resolveLexicalVar_shadowingHack_ok(s, x, _, [(p, (x', D@(T, _)))| tl]) = stitchPath(s, (p, D)) :-
+    try { tl == [] } | error $[Reference [x] is ambiguous.],
+    @x.ref := x',
+    @x.type := T.
+
+rules // enclosing class
+
+  enclosingClassOpt: scope -> list((path * scope))
+
+  enclosingClassOpt(s_cls) = R :-
+    query thisClass
+      filter LEX
+      in s_cls |-> R.
+
+rules // result filtering
+  
+  resultToCandidateDecl: scope * VAR_DECL_PATH
+  resultsToCandidateDecls maps resultToCandidateDecl(*, list(*))
+  
+  filterAccessible: /* resolution scope */ scope * /* set of candidate decls */ list(VAR_DECL_PATH) -> list(VAR_DECL_PATH)
+
+  pathdecl2decl: (path * VAR_DECL_PATH) -> VAR_DECL_PATH
+  pathdecls2decls maps pathdecl2decl(list(*)) = list(*)
+
+  resultToCandidateDecl(s_decls, decl) :-
+    !candidateDecl[decl] in s_decls.
+
+  filterAccessible(s, decls) = pathdecls2decls(R) :- {s_decls}
+    new s_decls,
+    resultsToCandidateDecls(s_decls, decls),
+    query candidateDecl
+      filter e and { (p, (_, (_, A))) :- accessOk(s, p, A, LEX()) }
+      in s_decls |-> R.
+
+  pathdecl2decl((p, d)) = d.
+
+rules // path stitching
+
+  stitchPath: scope * VAR_PATH -> VAR_PATH
+  prepend_path: path * path -> path
+
+  stitchPath(s_ref, (p, decl)) = (prepend_path(p', p), decl) :- {src}
+    src == src(p),
+    query ()
+      filter LEX* and { s :- s == src(p) }
+      min $ < LEX 
+      in s_ref |-> [(p', _) | _].
+   
+
+  prepend_path(p, _PathEmpty(_)) = p.
+  prepend_path(p, _PathStep(p', l, s)) = _PathStep(prepend_path(p, p'), l, s).

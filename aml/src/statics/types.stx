@@ -17,9 +17,8 @@ rules
 
   typeOfType: scope * Type -> TYPE
   typeOfType(_, IntT()) = INT().
-  typeOfType(s, RefT(x)) = CLASS(s_cls) :- {x'}
-    resolveClass(s, x) == [(_, (x', s_cls)) | _],
-    @x.ref := x'.
+  typeOfType(s, RefT(x)) = CLASS(s_cls) :-
+    scopeOfQClassRef(s, x) == s_cls.
 
 rules
 
