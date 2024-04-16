@@ -175,3 +175,137 @@ transform "Test Java Compatibility"
 // mem | pos - ref sibling def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: inheriting from child class
 
 // mem | pos - ref sibling def | inh - ref sibling def: no access path
+
+
+
+/// .....
+
+
+test mem | pos - ref sub rec | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+  }
+  class Rec: public Def {
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem | wrapped | pos - ref sub rec | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#java 
+
+module M {
+  class A {
+    class Def {
+      private var x = 42
+    }
+    class Rec: public Def {
+      class Ref: public Rec {
+        public foo(i: Rec) {
+      	  return i.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem | pos - ref sub rec | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+    class Rec: public Def {
+      class Ref: public Rec {
+        public foo(i: Rec) {
+          return i.x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem | wrapped | pos - ref sub rec | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#java 
+
+module M {
+  class A {
+    class Def {
+      private var x = 42
+      class Rec: public Def {
+        class Ref: public Rec {
+          public foo(i: Rec) {
+      	    return i.x
+          }
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+// mem | pos - ref sub rec | inh - ref child def | pos - recv sub ref | inh - recv parent ref: mutual nesting
+
+// mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: mutual nesting
+
+// mem | pos - ref sibling def | inh - ref same def: impossible
+// mem | pos - ref sibling def | inh - ref parent def: no access path
+
+test mem | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+  }
+  class Ref: public Rec {
+    public foo(i: Rec) {
+      return i.x
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#java 
+
+module M {
+  class A {
+    class Def {
+      private var x = 42
+    }
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+// mem | pos - ref sibling def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: inheriting from child class
+
+// mem | pos - ref sibling def | inh - ref sibling def: no access path
