@@ -6,7 +6,7 @@ test lex | wrapped | pos - ref same def | inh - ref same def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
       public var y = x
@@ -21,7 +21,7 @@ test lex | shadow | pos - ref same def | inh - ref same def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
@@ -33,8 +33,8 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
-// lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
-// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
+// lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class Wrappert the same time
+// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class Wrappert the same time
 // lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
 
 // lex | pos - ref - enclosing - def | inh - ref same def: enclosing class cannot be same class
@@ -42,7 +42,7 @@ transform "Test Java Compatibility"
 // lex | pos - ref - enclosing - def | inh - ref child def: enclosing class cannot be child class
 // lex | pos - ref - enclosing - def | inh - ref sibling def: no access path
 
-// lex | pos - ref - sub - def | inh - ref same def: cannot be subclass and same
+// lex | pos - ref - sub - def | inh - ref same def: cannot be subclass Wrappernd same
 // lex | pos - ref - sub - def | inh - ref parent def: enclosing class cannot be child class
 
 
@@ -65,7 +65,7 @@ test lex | wrapped | pos - ref sub def | inh - ref child def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
       class Ref: public Def {
@@ -82,7 +82,7 @@ test lex | shadow | pos - ref sub def | inh - ref child def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
@@ -118,7 +118,7 @@ test lex | wrapped | pos - ref sibling def | inh - ref child def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
     }
@@ -135,7 +135,7 @@ test lex | shadow | pos - ref sibling def | inh - ref child def [[
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
@@ -173,7 +173,7 @@ test lex | wrapped | pos - ref sub def | inh - ref child def | via int | int sib
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
       class Ref: public Int {
@@ -192,7 +192,7 @@ test lex | shadow | pos - ref sub def | inh - ref child def | via int | int sibl
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
@@ -227,7 +227,7 @@ test lex | wrapped | pos - ref sub def | inh - ref child def | via int | int sib
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
       class Ref: public Int {
@@ -246,7 +246,7 @@ test lex | shadow | pos - ref sub def | inh - ref child def | via int | int sibl
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
@@ -284,7 +284,7 @@ test lex | wrapped | pos - ref sibling def | inh - ref child def | via int | int
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     class Def {
       private var x = 42
     }
@@ -302,7 +302,7 @@ test lex | shadow | pos - ref sibling def | inh - ref child def | via int | int 
 #java 
 
 module M {
-  class A {
+  class Wrapper {
     private var x = 42
     class Def {
       private var x = 42
