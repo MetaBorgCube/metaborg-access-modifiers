@@ -1,0 +1,463 @@
+module compatibility/java/nested-private
+
+// Direct references
+test lex - same - class container [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+      public var y = x
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - child - sibling [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+    }
+    class Child : public Parent {
+      public var y = x
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - child - nested [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+      
+	  class Child : public Parent {
+	    public var y = x
+	  }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - unrelated - nested [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+      
+	  class Child {
+	    public var y = x
+	  }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+
+test lex - same - class container - nested [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+      class Access {
+      	public var y = x
+      }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - child - sibling - nested [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+    }
+    class Child : public Parent {
+      class Access {
+      	public var y = x
+      }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - child - nested - nested [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+      
+	  class Child : public Parent {
+	    class Access {
+	      public var y = x
+	    }
+	  }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex - unrelated - nested - nested [[
+#java 
+
+module M {
+  class A {
+    class Parent {
+      private var x = 42
+      
+	  class Child {
+	    class Access {
+	      public var y = x
+	    }
+	  }
+    }
+  }
+}
+
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+// Member accesses
+
+test mem - same - class container - recv def/ref [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+      private var cls = new Inner()
+      public var y = cls.x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv def [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      private var cls = new Inner()
+      public var y = cls.x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - unrelated - class container - recv def [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub { 
+      private var cls = new Inner()
+      public var y = cls.x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test mem - parent - class container - recv ref [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var cls = new Sub()
+      public var y = cls.x
+    }
+    class Sub : public Inner { 
+      private var x = 42
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv ref [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      private var cls = new Sub()
+      public var y = cls.x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - parent - class container - recv sub | sibling [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var cls = new SubSub()
+      public var y = cls.x
+    }
+    class Sub : public Inner { 
+      private var x = 42
+    }
+    class SubSub: public Sub { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv sub | sibling [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      private var cls = new SubSub()
+      public var y = cls.x
+    }
+    class SubSub: public Sub { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - parent - class container - recv sub | parent [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var cls = new SubSub()
+      public var y = cls.x
+    }
+    class Sub : public Inner { 
+      private var x = 42
+    }
+  }
+  class SubSub: public A.Sub { }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv sub | parent [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      private var cls = new SubSub()
+      public var y = cls.x
+    }
+    class SubSub: public Sub { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - parent - class container - recv sub | child [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      public foo(cls: Sub.SubSub) {
+        return cls.x
+      }
+    }
+    class Sub : public Inner { 
+      private var x = 42
+      class SubSub: public Sub { }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv sub | child [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      private var cls = new SubSub()
+      public var y = cls.x
+      class SubSub: public Sub { }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test mem - same - class container - recv def/ref | acc inner [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+      class Access {
+        private var cls = new Inner()
+        public var y = cls.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv def | acc inner [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      class Access {
+        private var cls = new Inner()
+        public var y = cls.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - unrelated - class container - recv def | acc inner [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub { 
+      class Access {
+        private var cls = new Inner()
+        public var y = cls.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test mem - parent - class container - recv ref | acc inner [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      class Access {
+        private var cls = new Sub()
+        public var y = cls.x
+      }
+    }
+    class Sub : public Inner { 
+      private var x = 42
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test mem - child - class container - recv ref | acc inner [[
+#java 
+
+module M {
+  class A {
+    class Inner {
+      private var x = 42
+    }
+    class Sub : public Inner { 
+      class Access {
+        private var cls = new Sub()
+        public var y = cls.x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"

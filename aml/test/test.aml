@@ -1,17 +1,14 @@
-#java 
-
+#java
 module M {
   class A {
-	  class Parent {
-	    private var x = 42  
-	  }
-	  class Enc {
-	    private var x = 42
-	    class Child : public Parent {
-	        public foo() {
-	          return x
-	        }
-	    }
-	  }
-	}
+    class Ref: public Int {
+      class Def {
+        private var x = 42
+      }
+      public foo(i: Int) {
+        return i.x
+      }
+      class Int: public Def { }
+    }
+  }
 }
