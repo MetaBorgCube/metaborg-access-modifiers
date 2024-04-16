@@ -1,14 +1,14 @@
 #java
 module M {
-  class A {
-    class Ref: public Int {
-      class Def {
-        internal var x = 42
+  class Wrapper {
+    class Def {
+      private var x = 42
+      class Ref: public Rec {
+        public foo(i: Rec) {
+      	  return i.x
+        }
+        class Rec: public Def { }
       }
-      public foo(i: Int) {
-        return i.x
-      }
-      class Int: public Def { }
     }
   }
 }

@@ -33,8 +33,8 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
-// lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class Wrappert the same time
-// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class Wrappert the same time
+// lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
+// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
 // lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
 
 // lex | pos - ref - enclosing - def | inh - ref same def: enclosing class cannot be same class
@@ -42,7 +42,7 @@ transform "Test Java Compatibility"
 // lex | pos - ref - enclosing - def | inh - ref child def: enclosing class cannot be child class
 // lex | pos - ref - enclosing - def | inh - ref sibling def: no access path
 
-// lex | pos - ref - sub - def | inh - ref same def: cannot be subclass Wrappernd same
+// lex | pos - ref - sub - def | inh - ref same def: cannot be subclass and same
 // lex | pos - ref - sub - def | inh - ref parent def: enclosing class cannot be child class
 
 
@@ -149,9 +149,9 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
+
 // lex | pos - ref sibling def | inh - ref sibling def: no access path
 
-// .....
 
 test lex | pos - ref sub def | inh - ref child def | via int | int sibling def [[
 #java 

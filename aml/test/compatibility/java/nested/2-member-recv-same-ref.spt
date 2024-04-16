@@ -21,8 +21,8 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
-// mem | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class Wrappert the same time
-// mem | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class Wrappert the same time
+// mem | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
+// mem | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
 // mem | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
 
 // mem | pos - ref - enclosing - def | inh - ref same def: enclosing class cannot be same class
@@ -30,7 +30,7 @@ transform "Test Java Compatibility"
 // mem | pos - ref - enclosing - def | inh - ref child def: enclosing class cannot be child class
 // mem | pos - ref - enclosing - def | inh - ref sibling def: no access path
 
-// mem | pos - ref - sub - def | inh - ref same def: cannot be subclass Wrappernd same
+// mem | pos - ref - sub - def | inh - ref same def: cannot be subclass and same
 // mem | pos - ref - sub - def | inh - ref parent def: enclosing class cannot be child class
 
 
