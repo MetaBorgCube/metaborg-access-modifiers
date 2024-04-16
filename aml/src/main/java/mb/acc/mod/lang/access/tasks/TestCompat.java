@@ -139,7 +139,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			// Transformation failed
 			final KeyedMessagesBuilder kmb = new KeyedMessagesBuilder();
 			for(IStrategoTerm message : transformResultTerm.getSubterm(0)) {
-				kmb.addMessage(TermUtils.toJavaString(message), Severity.Error, args.file);
+				kmb.addMessage(TermUtils.toJavaString(message), Severity.Error, file);
 			}
 			return CommandFeedback.of(kmb.build());
 		}
@@ -161,7 +161,7 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 
 			final CommandFeedbackBuilder cfb = new CommandFeedbackBuilder();
 			cfb.addShowFeedback(ShowFeedback.showText("Error: AML analysis reported errors, but " + langName + " compiler did not.", "Compatibility check Failed"));
-			cfb.withKeyedMessages(analysisResult.result.messages.toKeyed(args.file));
+			cfb.withKeyedMessages(analysisResult.result.messages.toKeyed(file));
 			return cfb.build();
 		}
 		// source analysis has no errors
@@ -203,11 +203,19 @@ public abstract class TestCompat implements TaskDef<TestCompat.Args, CommandFeed
 			final ResourceKeyString baseResourcePath = ResourceKeyString.of(root.getPath().getQualifier(), file.getIdAsString());
 			baseResource = resourceService.getResourcePath(baseResourcePath);
 		}
+		final String normalizedFile;
 		if(baseResource.isAbsolute()) {
-			return root.getPath().relativize(baseResource);
+			normalizedFile = root.getPath().relativize(baseResource);
 		} else {
-			return root.getPath().appendRelativePath(baseResource).asString();
+			normalizedFile = root.getPath().appendRelativePath(baseResource).asString();
 		}
+		return normalizedFile
+				.replace("|", "_")
+				.replace(":", "_")
+				.replace(";", "_")
+				.replace("/", "_")
+				.replace("\\", "_")
+				.replace(" ", "_");
 	}
 
 	protected HierarchicalResource buildRoot(HierarchicalResource project) {

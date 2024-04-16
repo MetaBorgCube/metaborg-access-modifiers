@@ -3,7 +3,7 @@ module M {
   class A {
     class Ref: public Int {
       class Def {
-        private var x = 42
+        internal var x = 42
       }
       public foo(i: Int) {
         return i.x
