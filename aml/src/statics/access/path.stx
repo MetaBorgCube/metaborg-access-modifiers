@@ -99,7 +99,7 @@ rules // path validation
     s_this == thisClass(s),
     // must be private in this very class (not necessarily in instance class `src(p)`)
     privateInCurrent(s_this, dst(p)),
-    privateAccessOk(resolvePrivateAccess(s), s, s_this, p, m).
+    privateAccessOk(resolvePrivateAccess(s), s, s_this, p, p, m).
 	
 
   privateInCurrent: scope * scope

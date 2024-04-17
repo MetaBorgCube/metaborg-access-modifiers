@@ -1,13 +1,12 @@
 #java
+
 module M {
-  class Wrapper {
-    class Def {
-      private var x = 42
-      class Ref: public Rec {
-        public foo(i: Rec) {
-      	  return i.x
-        }
-        class Rec: public Def { }
+  class Outer {
+    protected var x = 43
+    class Lex {
+      private var x = new Lex()
+      class Inner: public Outer {
+        public var y = x + 3
       }
     }
   }

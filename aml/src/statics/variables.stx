@@ -87,12 +87,12 @@ rules
   resolveVar(s, Id(x)) = T :- {p ACC}
     // (p, (T, ACC)) == resolveLexicalVar(s, s, x),
     (p, (T, ACC)) == resolveLexicalVar_shadowingHack(s, thisClass(s), x),
-    accessOk(s, p, ACC, LEX()) | error $[Variable [x] is not visible.] @x,
+    accessOk(s, p, p, ACC, LEX()) | error $[Variable [x] is not visible.] @x,
     pathOk(s, p, LEX()) | error $[Variable [x] is hidden by a subclass.].
 
   [T-FAcc]
   resolveVar(s, QId(qid, x)) = T :- {s_cls p ACC}
     resolveVar(s, qid) == CLASS(s_cls),
     resolveMemberVar(s_cls, x) == (p, (T, ACC)),
-    accessOk(s, p, ACC, MEM()) | error $[Field [x] is not visible.] @x,
+    accessOk(s, p, p, ACC, MEM()) | error $[Field [x] is not visible.] @x,
     pathOk(s, p, MEM()) | error $[Field [x] is hidden by a subclass.].

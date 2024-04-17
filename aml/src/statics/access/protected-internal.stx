@@ -20,10 +20,10 @@ rules
 
 rules
 
-  accessOk(s, p, SMD(mods), m) :- {REF_OK}
+  accessOk(s, p_cls_to_var, p_full, SMD(mods), m) :- {REF_OK}
     exposedToModules(s, mods) == REF_OK,
     // Note: no `internalPathOk(...)` because inheritance happens regardless of module exposure
-    subclassOrModulesAccessOk(REF_OK, s, p).
+    subclassOrModulesAccessOk(REF_OK, s, p_full).
 
   	  subclassOrModulesAccessOk  : PATH_LIST * scope * path
 

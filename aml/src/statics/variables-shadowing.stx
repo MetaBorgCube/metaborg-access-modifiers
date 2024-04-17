@@ -6,6 +6,7 @@ imports statics/variables
 
 imports statics/access/auxiliary
 imports statics/access/base
+imports statics/access/private
 
 signature
 
@@ -71,7 +72,7 @@ rules // result filtering
     new s_decls,
     resultsToCandidateDecls(s_decls, decls),
     query candidateDecl
-      filter e and { (p, (_, (_, A))) :- accessOk(s, p, A, LEX()) }
+      filter e and { (p, (_, (_, A))) :- accessOk(s, p, stitchPath(s, p), A, /* accessing var in member mode */MEM()) }
       in s_decls |-> R.
 
   pathdecl2decl((p, d)) = d.

@@ -572,3 +572,43 @@ class C {
 analysis fails
 run java-test-transform
 transform "Test Java Compatibility"
+
+
+test shadowing lexical preferred over inaccessible inherited [[
+#java
+
+module M {
+  class Outer {
+    private var x = new Lex()
+    class Lex {
+      private var x = 42
+      class Inner: public Outer {
+        public var y = x + 3
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test shadowing accessible inherited preferred over lexical [[
+#java
+
+module M {
+  class Outer {
+    protected internal var x = 43
+    class Lex {
+      private var x = new Lex()
+      class Inner: public Outer {
+        public var y = x + 3
+      }
+    }
+  }
+}
+]]
+analysis succeeds
+run java-test-transform
+transform "Test Java Compatibility"
