@@ -579,9 +579,9 @@ test shadowing lexical preferred over inaccessible inherited [[
 
 module M {
   class Outer {
-    private var x = new Lex()
+    [[private]] var x = new Lex()
     class Lex {
-      private var x = 42
+      [[private]] var x = 42
       class Inner: public Outer {
         public var y = x + 3
       }
@@ -592,6 +592,8 @@ module M {
 analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
+transform "Test Complete To Current" on #1
+transform "Test Complete To Current" on #2
 
 
 test shadowing accessible inherited preferred over lexical [[
@@ -599,10 +601,10 @@ test shadowing accessible inherited preferred over lexical [[
 
 module M {
   class Outer {
-    protected internal var x = 43
+    [[protected internal]] var x = 43
   }
   class Lex {
-    private var x = new Lex()
+    [[private]] var x = new Lex()
     class Inner: public Outer {
       public var y = x + 3
     }
@@ -612,6 +614,8 @@ module M {
 analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
+transform "Test Complete To Current" on #1
+transform "Test Complete To Current" on #2
 
 
 test shadowing accessible inherited preferred over lexical - nested [[
@@ -619,9 +623,9 @@ test shadowing accessible inherited preferred over lexical - nested [[
 
 module M {
   class Outer {
-    protected internal var x = 43
+    [[protected internal]] var x = 43
     class Lex {
-      private var x = new Lex()
+      [[private]] var x = new Lex()
       class Inner: public Outer {
         public var y = x + 3
       }
@@ -632,3 +636,5 @@ module M {
 analysis succeeds
 run java-test-transform
 transform "Test Java Compatibility"
+transform "Test Complete To Current" on #1
+transform "Test Complete To Current" on #2

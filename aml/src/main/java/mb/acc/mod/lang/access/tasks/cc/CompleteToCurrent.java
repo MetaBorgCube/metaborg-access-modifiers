@@ -193,7 +193,7 @@ public class CompleteToCurrent implements TaskDef<CompleteToCurrent.Args, Comman
             
             if(containsNil && !analysisSucceeded) {
             	return error("Despite failing analysis, current modifier was suggested", args);
-            } else if(containsNil && !analysisSucceeded) {
+            } else if(!containsNil && analysisSucceeded) {
             	return error("Despite succeeding analysis, current modifier was not suggested", args);
             }
             

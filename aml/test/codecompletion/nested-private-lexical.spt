@@ -1,0 +1,614 @@
+module codecompletion/nested-private/lexical
+
+// lex | pos - ref same def | inh - ref same def: no nested classes involved
+
+test lex | wrapped | pos - ref same def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref same def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref nested def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref nested def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+// lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
+// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
+// lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
+
+// lex | pos - ref - enclosing - def | inh - ref same def: enclosing class cannot be same class
+// lex | pos - ref - enclosing - def | inh - ref parent def: no access path
+// lex | pos - ref - enclosing - def | inh - ref child def: enclosing class cannot be child class
+// lex | pos - ref - enclosing - def | inh - ref sibling def: no access path
+
+// lex | pos - ref - sub - def | inh - ref same def: cannot be subclass and same
+// lex | pos - ref - sub - def | inh - ref parent def: enclosing class cannot be child class
+
+
+test lex | pos - ref sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Def {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Def {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Def {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Def {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Def {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Def {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+// lex | pos - ref sibling def | inh - ref same def: impossible
+// lex | pos - ref sibling def | inh - ref parent def: no access path
+
+test lex | pos - ref sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+  }
+  class Ref: public Def {
+    public var y = x
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+    }
+    class Ref: public Def {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+    }
+    class Ref: public Def {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+  }
+  class Ref: public Def {
+    public var y = x
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+    }
+    class Ref: public Def {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+    }
+    class Ref: public Def {
+      class Enc {
+       public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+// lex | pos - ref sibling def | inh - ref sibling def: no access path
+
+
+test lex | pos - ref sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Int {
+      public var y = x
+    }
+  }
+  class Int : public Def { }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        public var y = x
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | shadow | pos - ref sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        public var y = x
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+  class Int : public Def { }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | pos - ref sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Int {
+      public var y = x
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        public var y = x
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | shadow | pos - ref sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        public var y = x
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+// lex | pos - ref sibling def | inh - ref same def: impossible
+// lex | pos - ref sibling def | inh - ref parent def: no access path
+
+test lex | pos - ref sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+  }
+  class Int: public Def { }
+  class Ref: public Int {
+    public var y = x
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+test lex | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    [[private]] var x = 42
+  }
+  class Int: public Def { }
+  class Ref: public Int {
+    class Enc {
+      public var y = x
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | wrapped | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      [[private]] var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+test lex | shadow | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    [[private]] var x = 42
+    class Def {
+      [[private]] var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+transform "Test Complete To Current" on #1
+
+
+// lex | pos - ref sibling def | inh - ref sibling def: no access path
