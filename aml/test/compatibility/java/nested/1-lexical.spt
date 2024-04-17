@@ -33,6 +33,41 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
+test lex | wrapped | pos - ref nested def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | shadow | pos - ref nested def | inh - ref same def [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
 // lex | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
 // lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
 // lex | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
@@ -96,6 +131,63 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
+
+test lex | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+    class Ref: public Def {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+      class Ref: public Def {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+      class Ref: public Def {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
 // lex | pos - ref sibling def | inh - ref same def: impossible
 // lex | pos - ref sibling def | inh - ref parent def: no access path
 
@@ -142,6 +234,60 @@ module M {
     }
     class Ref: public Def {
       public var y = x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+  }
+  class Ref: public Def {
+    public var y = x
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | wrapped | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+    }
+    class Ref: public Def {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | shadow | pos - ref enclosed by sibling def | inh - ref child def [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+    }
+    class Ref: public Def {
+      class Enc {
+       public var y = x
+      }
     }
   }
 }
@@ -207,6 +353,67 @@ module M {
 run java-test-transform
 transform "Test Java Compatibility"
 
+
+test lex | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+  class Int : public Def { }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
 test lex | pos - ref sub def | inh - ref child def | via int | int sibling ref [[
 #java 
 
@@ -252,6 +459,66 @@ module M {
       private var x = 42
       class Ref: public Int {
         public var y = x
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+    class Int : public Def { }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | wrapped | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
+      }
+      class Int : public Def { }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+
+test lex | shadow | pos - ref enclosed by sub def | inh - ref child def | via int | int sibling ref [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+      class Ref: public Int {
+        class Enc {
+          public var y = x
+        }
       }
       class Int : public Def { }
     }
@@ -316,5 +583,66 @@ module M {
 ]]
 run java-test-transform
 transform "Test Java Compatibility"
+
+
+test lex | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Def {
+    private var x = 42
+  }
+  class Int: public Def { }
+  class Ref: public Int {
+    class Enc {
+      public var y = x
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | wrapped | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    class Def {
+      private var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
+test lex | shadow | pos - ref enclosed by sibling def | inh - ref child def | via int | int sibling def [[
+#java 
+
+module M {
+  class Wrapper {
+    private var x = 42
+    class Def {
+      private var x = 42
+    }
+    class Int: public Def { }
+    class Ref: public Int {
+      class Enc {
+        public var y = x
+      }
+    }
+  }
+}
+]]
+run java-test-transform
+transform "Test Java Compatibility"
+
 
 // lex | pos - ref sibling def | inh - ref sibling def: no access path

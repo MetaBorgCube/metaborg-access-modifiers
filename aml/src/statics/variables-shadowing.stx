@@ -40,7 +40,7 @@ rules
   resolveLexicalVar_shadowingHack_ok(s, x, [(_, s_enc)], []) = resolveLexicalVar_shadowingHack(s, s_enc, x).
 
   // some accessible var found, assert unique, stitch path, and return
-  resolveLexicalVar_shadowingHack_ok(s, x, _, [(p, (x', D@(T, _)))| tl]) = stitchPath(s, (p, D)) :-
+  resolveLexicalVar_shadowingHack_ok(s, x, _, [(p, (x', D@(T, _)))| tl]) = (stitchPath(s, p), D) :-
     try { tl == [] } | error $[Reference [x] is ambiguous.],
     @x.ref := x',
     @x.type := T.
@@ -78,16 +78,16 @@ rules // result filtering
 
 rules // path stitching
 
-  stitchPath: scope * VAR_PATH -> VAR_PATH
+  stitchPath: scope * path -> path
   prepend_path: path * path -> path
 
-  stitchPath(s_ref, (p, decl)) = (prepend_path(p', p), decl) :- {src}
+  stitchPath(s_ref, p) = prepend_path(p', p) :- {src}
     src == src(p),
     query ()
-      filter LEX* and { s :- s == src(p) }
+      filter LEX* and { s :- s == src }
       min $ < LEX 
       in s_ref |-> [(p', _) | _].
    
 
-  prepend_path(p, _PathEmpty(_)) = p.
+  prepend_path(p, _PathEmpty(s)) = p :- dst(p) == s. // ends should match
   prepend_path(p, _PathStep(p', l, s)) = _PathStep(prepend_path(p, p'), l, s).
