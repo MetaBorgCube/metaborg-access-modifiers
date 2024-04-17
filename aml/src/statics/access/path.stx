@@ -22,8 +22,8 @@ signature
     
 rules
   
-  pathOk(s, p, m) :-
-    pathLevelOk(pathLevel(p), s, p, m).
+  pathOk(s, p) :-
+    pathLevelOk(pathLevel(p), s, p).
 
 rules
 
@@ -88,18 +88,18 @@ rules
 
 rules // path validation
 
-  pathLevelOk: PATHLEVEL * /*s ref*/scope * path * MODE
+  pathLevelOk: PATHLEVEL * /*s ref*/scope * path
   
-  pathLevelOk(PUBLIC(), _, _, _).
+  pathLevelOk(PUBLIC(), _, _).
 
-  pathLevelOk(PROT(), s, p, _) :-
+  pathLevelOk(PROT(), s, p) :-
     protectedAccessOk(resolveProtectedAccess(s), s, p).
   
-  pathLevelOk(_, s, p, m) :- {s_this}
+  pathLevelOk(_, s, p) :- {s_this}
     s_this == thisClass(s),
     // must be private in this very class (not necessarily in instance class `src(p)`)
     privateInCurrent(s_this, dst(p)),
-    privateAccessOk(resolvePrivateAccess(s), s, s_this, p, m).
+    privateAccessOk(resolvePrivateAccess(s), s, s_this, p).
 	
 
   privateInCurrent: scope * scope

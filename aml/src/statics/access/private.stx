@@ -17,27 +17,30 @@ rules
 
 rules
 
-  privateAccessOk   : PrivateAccess * scope * scope * path * MODE
+  privateAccessOk   : PrivateAccess * scope * scope * path
 
-  privateAccessOk(IfExactType(), s_ref, s_priv, p, m) :-
+  privateAccessOk(IfExactType(), s_ref, s_priv, p) :-
     privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
-	noSubclassInPath(p, s_priv, m).									// assert that no class in the path is a subclass of the defining class
+	noExtInPath(p, s_priv).											// assert that no EXTENDS{...} edges are traversed
 
-  privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p, m) :-
+  privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p) :-
     privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
     nonEmpty(subClass(thisClass(src(p)), s_priv)).        			// instance of var must be a subclass of the class in which the variable is private
 
 rules // subclass check
 
-  noSubclassInPath: path * scope * MODE
-  
-  noSubclassInPath(p, s, LEX()) :-
-    query thisClass
-      filter LEX* and { s_cls :- s_cls == s }
-      in src(p) |-> [_].
+  noExtInPath: path * scope
 
   // no EXT-steps in path
-  noSubclassInPath(_PathEmpty(s), s_prnt, _).
+  noExtInPath(_PathEmpty(s), s_prnt).
+  
+  noExtInPath(_PathStep(_, l, _), _) :- {s_tmp1 s_tmp2 lblLEX}
+    // obtain reference to LEX as a term
+    new s_tmp1 s_tmp2,
+    s_tmp1 -LEX-> s_tmp2,
+    query () filter LEX in s_tmp1 |-> [(_PathStep(_, lblLEX, _), _)],
+    // check the last step was actually a LEX step
+    try { l == lblLEX }.
 
 rules
 

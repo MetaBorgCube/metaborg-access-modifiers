@@ -72,11 +72,7 @@ rules // result filtering
     new s_decls,
     resultsToCandidateDecls(s_decls, decls),
     query candidateDecl
-      filter e and { (p, (_, (_, A))) :-
-        // check if current var can be accessed as a member
-        // if that is the case, it can be accessed from nested classes lexically as well
-        accessOk(s, p, A, MEM()) 
-      }
+      filter e and { (p, (_, (_, A))) :- accessOk(s, stitchPath(s, p), A) }
       in s_decls |-> R.
 
   pathdecl2decl((p, d)) = d.

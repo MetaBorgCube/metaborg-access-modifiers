@@ -28,8 +28,8 @@ rules
 rules
 
   [AP-SMC]
-  accessOk(s, p, SMC(mods), m) :-
-    accessOk(s, p, MOD(mods), m),
+  accessOk(s, p, SMC(mods)) :-
+    accessOk(s, p, MOD(mods)),
 	protectedAccessOk(resolveProtectedAccess(s), s, p).
 
 rules

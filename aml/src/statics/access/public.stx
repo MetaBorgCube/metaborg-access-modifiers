@@ -16,4 +16,4 @@ rules
 rules
 
   [AP-Pub]
-  accessOk(s, p, PUB(), m).
+  accessOk(s, p, PUB()).
