@@ -28,9 +28,9 @@ rules
 rules
 
   [AP-SMC]
-  accessOk(s, p_cls_to_var, p_full, SMC(mods), m) :-
-    accessOk(s, p_cls_to_var, p_full, MOD(mods), m),
-	protectedAccessOk(resolveProtectedAccess(s), s, p_full).
+  accessOk(s, p, SMC(mods), m) :-
+    accessOk(s, p, MOD(mods), m),
+	protectedAccessOk(resolveProtectedAccess(s), s, p).
 
 rules
 

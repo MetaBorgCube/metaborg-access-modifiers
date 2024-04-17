@@ -33,7 +33,7 @@ rules // templates, to be extended in other modules
   accessModifierToAccess : scope * AccessModifier -> ACCESS
   
   // Judgment `s |- p ! A`
-  accessOk       : scope * path * path * ACCESS * MODE // Due to lack of a `p ~ RE` constraint, the rule for PRV needs this mode.
+  accessOk       : scope * path * ACCESS * MODE // Due to lack of a `p ~ RE` constraint, the rule for PRV needs this mode.
 
 
 

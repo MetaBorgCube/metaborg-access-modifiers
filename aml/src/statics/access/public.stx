@@ -16,4 +16,4 @@ rules
 rules
 
   [AP-Pub]
-  accessOk(s, p_cls_to_var, p_full, PUB(), m).
+  accessOk(s, p, PUB(), m).

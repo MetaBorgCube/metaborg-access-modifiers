@@ -1,4 +1,4 @@
-module recv-same-def
+module compatibility/java/nested/private/member-recv-same-def
 
 
 // derived from 1: added explicit receiver which is instance of Def

@@ -17,26 +17,27 @@ rules
 
 rules
 
-  privateAccessOk   : PrivateAccess * scope * scope * path * path * MODE
+  privateAccessOk   : PrivateAccess * scope * scope * path * MODE
 
-  privateAccessOk(IfExactType(), s_ref, s_priv, p_cls_to_var, p_full, m) :-
-    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),						// access must occur in the class in which the reference is private
-	noSubclassInPath(p_cls_to_var, p_full, s_priv, m).								// assert that no class in the path is a subclass of the defining class
+  privateAccessOk(IfExactType(), s_ref, s_priv, p, m) :-
+    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
+	noSubclassInPath(p, s_priv, m).									// assert that no class in the path is a subclass of the defining class
 
-  privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p_cls_to_var, p_full, m) :-
-    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),						// access must occur in the class in which the reference is private
-    nonEmpty(subClass(thisClass(src(p_full)), s_priv)).        						// instance of var must be a subclass of the class in which the variable is private
+  privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p, m) :-
+    privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
+    nonEmpty(subClass(thisClass(src(p)), s_priv)).        			// instance of var must be a subclass of the class in which the variable is private
 
 rules // subclass check
 
-  noSubclassInPath: path * path * scope * MODE
+  noSubclassInPath: path * scope * MODE
   
-  noSubclassInPath(p_cls_to_var, p_full, s, LEX()) :-
+  noSubclassInPath(p, s, LEX()) :-
     query thisClass
       filter LEX* and { s_cls :- s_cls == s }
-      in src(p_full) |-> [_].
+      in src(p) |-> [_].
 
-  noSubclassInPath(_PathEmpty(s), _, s_prnt, _).
+  // no EXT-steps in path
+  noSubclassInPath(_PathEmpty(s), s_prnt, _).
 
 rules
 

@@ -1,4 +1,4 @@
-module recv-child-def
+module compatibility/java/nested/private/member-recv-child-def
 
 // derived from 3: made receiver a newly introduced parent of Def
 
@@ -15,7 +15,7 @@ test mem | pos - ref enclosing def | inh - ref parent def | pos - recv sibling d
 module M {
   class Ref {
     class Def: public Ref {
-      private var x = 42
+      protected internal var x = 42
     }
     public foo(i: Rec) {
       return i.x
@@ -34,7 +34,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def: public Ref {
-        private var x = 42
+        protected internal var x = 42
       }
       public foo(i: Rec) {
         return i.x
@@ -54,7 +54,7 @@ test mem | pos - ref enclosing def | inh - ref parent def | pos - recv sibling o
 module M {
   class Ref {
     class Def: public Ref {
-      private var x = 42
+      protected internal var x = 42
     }
     public foo(i: Enc.Rec) {
       return i.x
@@ -75,7 +75,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def: public Ref {
-        private var x = 42
+        protected internal var x = 42
       }
       public foo(i: Enc.Rec) {
         return i.x
@@ -96,7 +96,7 @@ test mem | pos - ref enclosing def | inh - ref parent def | pos - recv sub def |
 module M {
   class Ref {
     class Def: public Ref {
-      private var x = 42
+      protected internal var x = 42
       class Rec: public Def { }
     }
     public foo(i: Def.Rec) {
@@ -115,7 +115,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def: public Ref {
-        private var x = 42
+        protected internal var x = 42
         class Rec: public Def { }
       }
       public foo(i: Def.Rec) {
@@ -136,7 +136,7 @@ test mem | pos - ref enclosing def | inh - ref sibling def | pos - recv sibling 
 module M {
   class Ref {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     public foo(i: Rec) {
       return i.x
@@ -155,7 +155,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def {
-        private var x = 42
+        protected internal var x = 42
       }
       public foo(i: Rec) {
         return i.x
@@ -174,7 +174,7 @@ test mem | pos - ref enclosing def | inh - ref sibling def | pos - recv enclosed
 module M {
   class Ref {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     public foo(i: Rec) {
       return i.x
@@ -193,7 +193,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def {
-        private var x = 42
+        protected internal var x = 42
       }
       public foo(i: Enc.Rec) {
         return i.x
@@ -214,7 +214,7 @@ test mem | pos - ref enclosing def | inh - ref sibling def | pos - recv sub def 
 module M {
   class Ref {
     class Def {
-      private var x = 42
+      protected internal var x = 42
       class Rec: public Def { }
     }
     public foo(i: Def.Rec) {
@@ -233,7 +233,7 @@ module M {
   class Wrapper {
     class Ref {
       class Def {
-        private var x = 42
+        protected internal var x = 42
         class Rec: public Def { }
       }
       public foo(i: Def.Rec) {
@@ -254,7 +254,7 @@ test mem | pos - ref sub def | inh - ref child def | pos - recv sibling def | in
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
     class Ref: public Rec {
       public foo(i: Rec) {
         return i.x
@@ -273,7 +273,7 @@ test mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv siblin
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
       class Ref: public Rec {
         public foo(i: Rec) {
       	  return i.x
@@ -293,7 +293,7 @@ test mem | pos - ref sub def | inh - ref child def | pos - recv sibling ref | in
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
     class Ref: public Rec {
       public foo(i: Rec) {
         return i.x
@@ -312,7 +312,7 @@ test mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv siblin
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
       class Ref: public Rec {
         public foo(i: Rec) {
       	  return i.x
@@ -332,7 +332,7 @@ test mem | pos - ref sub rec | inh - ref child def | pos - recv sibling def | in
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Rec: public Def {  
     class Ref: public Rec {
@@ -352,7 +352,7 @@ test mem | wrapped | pos - ref sub rec | inh - ref child def | pos - recv siblin
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Rec: public Def {    
       class Ref: public Rec {
@@ -372,7 +372,7 @@ test mem | pos - ref sub rec | inh - ref child def | pos - recv sibling ref | in
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
     class Rec: public Def {
       class Ref: public Rec {
         public foo(i: Rec) {
@@ -392,7 +392,7 @@ test mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv siblin
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
       class Rec: public Def {
         class Ref: public Rec {
           public foo(i: Rec) {
@@ -416,7 +416,7 @@ test mem | pos - ref sibling def | inh - ref parent def | pos - recv sibling ref
 
 module M {
   class Def: public Ref {
-    private var x = 42
+    protected internal var x = 42
   }
   class Rec: public Def { }
   class Ref {
@@ -435,7 +435,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref parent def | pos - recv s
 module M {
   class Wrapper {
     class Def: public Ref {
-      private var x = 42
+      protected internal var x = 42
     }
     class Rec: public Def { }
     class Ref {
@@ -454,7 +454,7 @@ test mem | pos - ref sibling def | inh - ref parent def | pos - recv enclosed by
 
 module M {
   class Def: public Ref {
-    private var x = 42
+    protected internal var x = 42
   }
   class Enc {
     class Rec: public Def { }
@@ -475,7 +475,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref parent def | pos - recv e
 module M {
   class Wrapper {
     class Def: public Ref {
-      private var x = 42
+      protected internal var x = 42
     }
     class Enc {
       class Rec: public Def { }
@@ -496,7 +496,7 @@ test mem | pos - ref sibling def | inh - ref sibling def | pos - recv sibling re
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Rec: public Def { }
   class Ref {
@@ -515,7 +515,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref sibling def | pos - recv 
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Rec: public Def { }
     class Ref {
@@ -534,7 +534,7 @@ test mem | pos - ref sibling def | inh - ref sibling def | pos - recv enclosed b
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Enc {
     class Rec: public Def { }
@@ -555,7 +555,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref sibling def | pos - recv 
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Enc {
       class Rec: public Def { }
@@ -577,7 +577,7 @@ test mem | pos - ref sibling def | inh - ref to enclosing sibling def | pos - re
 module M {
   class Enc {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Rec: public Def { }
   }
@@ -598,7 +598,7 @@ module M {
   class Wrapper {
     class Enc {
       class Def {
-        private var x = 42
+        protected internal var x = 42
       }
       class Rec: public Def { }
     }
@@ -620,7 +620,7 @@ test mem | pos - ref sibling def | inh - ref child def | pos - recv sibling ref 
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Rec: public Def { }
   class Ref: public Def {
@@ -639,7 +639,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv si
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Rec: public Def { }
     class Ref: public Def {
@@ -658,7 +658,7 @@ test mem | pos - ref sibling def | inh - ref child def | pos - recv enclosed by 
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Enc {
     class Rec: public Def { }
@@ -679,7 +679,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv en
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Enc {
       class Rec: public Def { }

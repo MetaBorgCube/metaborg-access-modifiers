@@ -1,4 +1,4 @@
-module recv-parent-ref
+module compatibility/java/nested/private/member-recv-parent-ref
 
 // derived from 2: make each receiver a parent of ref
 

@@ -1,4 +1,4 @@
-module lexical
+module compatibility/java/nested/private/lexical
 
 // lex | pos - ref same def | inh - ref same def: no nested classes involved
 

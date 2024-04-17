@@ -1,4 +1,4 @@
-module recv-same-ref
+module compatibility/java/nested/protected/member-recv-same-ref
 
 // derived from 1: added explicit receiver which is instance of Ref
 
@@ -10,7 +10,7 @@ test mem | wrapped | pos - ref same def | inh - ref same def | recv same ref [[
 module M {
   class Wrapper {
     class Ref {
-      private var x = 42
+      protected internal var x = 42
       public foo(i: Ref) {
       	return i.x
       }
@@ -40,7 +40,7 @@ test mem | pos - ref sub def | inh - ref child def | recv same ref [[
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
     class Ref: public Def {
       public foo(i: Ref) {
      	return i.x
@@ -58,7 +58,7 @@ test mem | wrapped | pos - ref sub def | inh - ref child def | recv same ref [[
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
       class Ref: public Def {
         public foo(i: Ref) {
       	  return i.x
@@ -80,7 +80,7 @@ test mem | pos - ref sibling def | inh - ref child def | recv same ref [[
 
 module M {
   class Def {
-    private var x = 42
+    protected internal var x = 42
   }
   class Ref: public Def {
     public foo(i: Ref) {
@@ -98,7 +98,7 @@ test mem | wrapped | pos - ref sibling def | inh - ref child def | recv same ref
 module M {
   class Wrapper {
     class Def {
-      private var x = 42
+      protected internal var x = 42
     }
     class Ref: public Def {
       public foo(i: Ref) {
