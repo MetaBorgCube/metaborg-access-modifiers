@@ -40,12 +40,13 @@ context-free sorts
 
   JClassMemberDecl
   JAccMod
+  JStatic
   JOverride
   JArg
 
 context-free syntax
 
-  JClassMemberDecl.Field  = <<JAccMod> <JType> <ID> = <JExpr>;>
+  JClassMemberDecl.Field  = <<JAccMod> <JStatic> <JType> <ID> = <JExpr>;>
   JClassMemberDecl.Method = <<JOverride><JAccMod> <JType> <ID>(<{JArg ","}*>) {
     <{JStatement "\n"}+>
   }>
@@ -60,6 +61,9 @@ context-free syntax
   JAccMod.Protected = <protected>
   JAccMod.Default   = <>
   JAccMod.Private   = <private>
+
+  JStatic.NoStatic  = <>
+  JStatic.Static    = <static>
 
 context-free sorts
   

@@ -118,4 +118,25 @@ rules // exposure
 
   isExposedTo(s, m, IncludeSubmodules()) :-
     isEnclosingScope(s, m).
+
+rules
+
+  bendPoint: path -> scope
   
+  bendPoint(p) = bendPoint_(p, lblLEX()).
+  
+  bendPoint_: path * label -> scope
+  
+  bendPoint_(_PathEmpty(s), _) = s.
+  bendPoint_(_PathStep(p, lblLEX, s), lblLEX) = s.
+  bendPoint_(_PathStep(p, _, s), lblLEX) = bendPoint_(p, lblLEX).
+
+rules
+
+  lblLEX: -> label
+  
+  lblLEX() = lblLEX :- {s_tmp1 s_tmp2}
+    // obtain reference to LEX as a term
+    new s_tmp1 s_tmp2,
+    s_tmp1 -LEX-> s_tmp2,
+    query () filter LEX in s_tmp1 |-> [(_PathStep(_, lblLEX, _), _)].

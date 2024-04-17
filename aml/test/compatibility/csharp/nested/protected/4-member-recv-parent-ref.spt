@@ -1,0 +1,448 @@
+module compatibility/csharp/nested/protected/member-recv-parent-ref
+
+// derived from 2: make each receiver a parent of ref
+
+// mem | pos - ref same def | inh - ref same def | pos - recv sibling ref | inh - recv parent ref: no access path
+// mem | pos - ref same def | inh - ref same def | pos - recv sub ref | inh - recv parent ref: no access path
+
+// mem | pos - ref - same - def | inh - ref parent def: ref cannot be same as def and its parent class at the same time
+// mem | pos - ref - same - def | inh - ref child def: ref cannot be same as def and its child class at the same time
+// mem | pos - ref - same - def | inh - ref child def: ref cannot be same as def and unrelated at the same time
+
+// mem | pos - ref - enclosing - def | inh - ref same def: enclosing class cannot be same class
+// mem | pos - ref - enclosing - def | inh - ref parent def: no access path
+// mem | pos - ref - enclosing - def | inh - ref child def: enclosing class cannot be child class
+// mem | pos - ref - enclosing - def | inh - ref sibling def: no access path
+
+// mem | pos - ref - sub - def | inh - ref same def: cannot be subclass and same
+// mem | pos - ref - sub - def | inh - ref parent def: enclosing class cannot be child class
+
+test mem | pos - ref sub def | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+    }
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+      class Ref: public Rec {
+        public foo(i: Rec) {
+      	  return i.x
+        }
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref sub def | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sub def | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+      class Ref: public Rec {
+        public foo(i: Rec) {
+      	  return i.x
+        }
+      }
+      class Rec: public Def { }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+// mem | pos - ref sub def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: inherit from inner
+
+// mem | pos - ref sibling def | inh - ref same def: impossible
+// mem | pos - ref sibling def | inh - ref parent def: no access path
+
+test mem | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Ref: public Rec {
+    public foo(i: Rec) {
+      return i.x
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref enclosed by sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Enc {
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref enclosed by sibling def | inh - ref child def | pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Enc {
+      class Ref: public Rec {
+        public foo(i: Rec) {
+          return i.x
+        }
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+// mem | pos - ref sibling def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: inheriting from child class
+
+// mem | pos - ref sibling def | inh - ref sibling def: no access path
+
+
+
+
+test mem | pos - ref sub rec | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Rec: public Def {
+    class Ref: public Rec {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sub rec | inh - ref child def | pos - recv sibling def | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Rec: public Def {
+      class Ref: public Rec {
+        public foo(i: Rec) {
+      	  return i.x
+        }
+      }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref sub rec | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+    class Rec: public Def {
+      class Ref: public Rec {
+        public foo(i: Rec) {
+          return i.x
+        }
+      }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sub rec | inh - ref child def |  pos - recv sibling ref | inh - recv parent ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+      class Rec: public Def {
+        class Ref: public Rec {
+          public foo(i: Rec) {
+      	    return i.x
+          }
+        }
+      }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+// mem | pos - ref sub rec | inh - ref child def | pos - recv sub ref | inh - recv parent ref: mutual nesting
+
+// mem | wrapped | pos - ref sub def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: mutual nesting
+
+// mem | pos - ref sibling def | inh - ref same def: impossible
+// mem | pos - ref sibling def | inh - ref parent def: no access path
+
+
+test mem | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Ref {
+    public foo(i: Rec) {
+      return i.x
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv sibling ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Ref {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref sibling to enclosing of def | inh - ref child def | pos - recv sibling ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Enc {
+    class Ref {
+      public foo(i: Rec) {
+        return i.x
+      }
+    }
+  }
+  class Rec: public Def { }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sibling to enclosing of def | inh - ref child def | pos - recv sibling ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Enc {
+      class Ref {
+        public foo(i: Rec) {
+          return i.x
+        }
+      }
+    }
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref sibling def | inh - ref child def | pos - recv sibling to enclosing of ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Ref {
+    public foo(i: Enc.Rec) {
+      return i.x
+    }
+  }
+  class Enc {
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sibling def | inh - ref child def | pos - recv sibling to enclosing of ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Ref {
+      public foo(i: Enc.Rec) {
+        return i.x
+      }
+    }
+    class Enc {
+      class Rec: public Def { }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | pos - ref sibling to enclosing of def | inh - ref child def | pos - recv sibling to enclosing of ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Def {
+    protected var x = 42
+  }
+  class Enc2 {
+    class Ref {
+      public foo(i: Enc.Rec) {
+        return i.x
+      }
+    }
+  }
+  class Enc {
+    class Rec: public Def { }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+test mem | wrapped | pos - ref sibling to enclosing of def | inh - ref child def | pos - recv sibling to enclosing of ref | inh - recv sibling ref [[
+#csharp 
+
+module M {
+  class Wrapper {
+    class Def {
+      protected var x = 42
+    }
+    class Enc2 {
+      class Ref {
+        public foo(i: Enc.Rec) {
+          return i.x
+        }
+      }
+    }
+    class Enc {
+      class Rec: public Def { }
+    }
+  }
+}
+]]
+run csharp-test-transform
+transform "Test C# Compatibility"
+
+
+// mem | pos - ref sibling def | inh - ref child def | pos - recv sub ref | inh - recv parent ref: inheriting from child class
+
+// mem | pos - ref sibling def | inh - ref sibling def: no access path

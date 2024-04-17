@@ -1,12 +1,11 @@
-#java
+#csharp 
 
 module M {
-  class Outer {
-    protected var x = 43
-    class Lex {
-      private var x = new Lex()
-      class Inner: public Outer {
-        public var y = x + 3
+  class Wrapper {
+    class Def {
+      private static var x = 42
+      class Enc {
+        public var y = x
       }
     }
   }

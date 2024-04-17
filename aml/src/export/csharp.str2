@@ -145,8 +145,9 @@ rules // class members
 
   aml-to-csharp-cls-member(|SolverResult) :: MemberDecl -> (CSClassMember * Option(CSInit))
 
-  aml-to-csharp-cls-member(|a) : Field(acc, x, e) -> (Property(acc', tp, x), Some(Init(x, e')))
+  aml-to-csharp-cls-member(|a) : Field(acc, stc, x, e) -> (Property(acc', stc', tp, x), Some(Init(x, e')))
     with acc' := <aml-to-csharp-acc> acc
+       ; stc' := <aml-to-csharp-static> stc
        ; tp   := <get-csharp-type(|a)> (x, e)
        ; e'   := <aml-to-csharp-expr> e
 
@@ -191,6 +192,11 @@ rules
   aml-to-csharp-acc : Private() -> Private()
 
   aml-to-csharp-acc = failure(|"Unknown access modifier")
+
+  aml-to-csharp-static :: StaticModifier -> CSStatic
+
+  aml-to-csharp-static: Static() -> Static()
+  aml-to-csharp-static: NoStatic() -> NoStatic()
 
 rules // statements & expressions
 

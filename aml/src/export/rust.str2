@@ -72,6 +72,7 @@ rules // collect errors
   rust-incompat = ?Private(); !"Rust does not support 'private' access modifier."; debug
   rust-incompat = ?ProtectedInternal(_); !"Rust does not support 'protected internal'."; debug
   rust-incompat = ?PrivateProtected(_); !"Rust does not support 'private protected' access modifier."; debug
+  rust-incompat = ?Static(); !"Rust does not support 'static' modifier."; debug
 
 
 rules // transform
@@ -98,7 +99,7 @@ rules // transform
 
   aml-to-rust-field(|SolverResult) :: MemberDecl -> (RSField * RSFieldInit)
 
-  aml-to-rust-field(|a) : Field(acc, x, e) -> (Field(acc', x, tp), FInit(x, e'))
+  aml-to-rust-field(|a) : Field(acc, NoStatic(), x, e) -> (Field(acc', x, tp), FInit(x, e'))
     with acc' := <aml-to-rust-acc> acc
        ; tp   := <get-rust-type(|a)> (x, e)
        ; e'   := <aml-to-rust-expr(|a)> e

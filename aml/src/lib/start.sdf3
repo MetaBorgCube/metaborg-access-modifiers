@@ -117,11 +117,12 @@ context-free sorts
 
   MemberDecl
   MethodModifier
+  StaticModifier
   Arg
 
 context-free syntax
 
-  MemberDecl.Field  = <<AccessModifier> var <ID> = <Expr>>
+  MemberDecl.Field  = <<AccessModifier> <StaticModifier> var <ID> = <Expr>>
   MemberDecl.Method = <<AccessModifier> <MethodModifier> <ID>(<{Arg ","}*>) {
     <{Stmt "\n"}*>
     return <Expr>
@@ -132,6 +133,9 @@ context-free syntax
   MethodModifier.NoMethodModifier	= <>
   MethodModifier.Override  			= <override>
   MethodModifier.New  				= <new>
+
+  StaticModifier.NoStatic           = <>
+  StaticModifier.Static             = <static>
 
   Arg.Arg   = <<ID> : <Type>>
 

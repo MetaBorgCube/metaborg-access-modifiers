@@ -2,6 +2,7 @@ module statics/access/protected
 
 imports
 
+  statics/base
   statics/classes
 
   statics/access/base
@@ -18,9 +19,21 @@ rules
 
   protectedAccessOk : ProtectedAccess * scope * path
   
-  protectedAccessOk(IfInstanceOfDefining(), s, p) :-
-    nonEmpty(subClass(thisClass(s), dst(p))).
+  protectedAccessOk(IfInstanceOfDefining(), s, p) :- {ENC}
+    query thisClass filter LEX* in s |-> ENC,
+    try {false} | note $[enc: [ENC]],
+    query thisClass
+      filter LEX* 
+      and { s_enc :- 
+    		nonEmpty(subClass(s_enc, dst(p)))
+      }
+      in s |-> [_|_].
 
   protectedAccessOk(IfInstanceOfCurrent(), s, p) :-
-    nonEmpty(subClass(thisClass(s), dst(p))),
-    nonEmpty(subClass(thisClass(src(p)), thisClass(s))).
+    query thisClass
+      filter LEX* 
+      and { s_enc :- 
+    	nonEmpty(subClass(s_enc, dst(p))),
+    	nonEmpty(subClass(bendPoint(p), s_enc))
+      }
+      in s |-> [_|_].

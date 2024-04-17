@@ -159,7 +159,7 @@ rules
   membersOk maps memberOk(*, list(*))
 
   [D-Def]
-  memberOk(s_cls, Field(acc, x, e)) :- {T A}
+  memberOk(s_cls, Field(acc, _, x, e)) :- {T A}
     typeOfExpr(s_cls, e) == T,
     accessModifierToAccess(s_cls, acc) == A,
     declareVar(s_cls, x, T, A).

@@ -57,7 +57,7 @@ context-free sorts
   CSOverride
 
 context-free syntax
-  CSClassMember.Property = <<CSAccMod> <CSType> <ID> { get; set; }>
+  CSClassMember.Property = <<CSAccMod> <CSStatic> <CSType> <ID> { get; set; }>
   CSClassMember.Constr   = <
     public <ID>() {
       <{CSInit "\n"}*>
@@ -72,7 +72,7 @@ context-free syntax
   
   CSArg.Arg = <<CSType> <ID>>
 
-  CSInit.Init = <this.<ID> = <CSExpr>;>
+  CSInit.Init = <<ID> = <CSExpr>;>
 
   CSOverride.NoOverride = <>
   CSOverride.Override   = <override>
@@ -81,6 +81,7 @@ context-free syntax
 
 context-free sorts
   CSAccMod
+  CSStatic
 
 context-free syntax
 
@@ -90,6 +91,9 @@ context-free syntax
   CSAccMod.Internal          = <internal>
   CSAccMod.PrivateProtected  = <private protected>
   CSAccMod.Private           = <private>
+
+  CSStatic.NoStatic			 = <>
+  CSStatic.Static  			 = <static>
 
 
 context-free sorts

@@ -129,8 +129,9 @@ rules // transform
 
   aml-to-java-cls-member(|SolverResult) :: MemberDecl -> JClassMemberDecl
 
-  aml-to-java-cls-member(|a) : Field(acc, x, e) -> Field(acc', tp, x, e')
+  aml-to-java-cls-member(|a) : Field(acc, stc, x, e) -> Field(acc', stc', tp, x, e')
     with acc' := <aml-to-java-acc> acc
+       ; stc' := <aml-to-java-static> stc
        ; tp   := <get-java-type(|a)> (x, e)
        ; e'   := <aml-to-java-expr> e
 
@@ -196,6 +197,11 @@ rules // classes
   aml-to-java-acc : Private() -> Private()
 
   aml-to-java-acc = failure(|"Unknown access modifier")
+
+  aml-to-java-static :: StaticModifier -> JStatic
+
+  aml-to-java-static: Static() -> Static()
+  aml-to-java-static: NoStatic() -> NoStatic()
 
 rules // methods
 

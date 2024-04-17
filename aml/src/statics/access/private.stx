@@ -21,11 +21,11 @@ rules
 
   privateAccessOk(IfExactType(), s_ref, s_priv, p) :-
     privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
-	noExtInPath(p, s_priv).											// assert that no EXTENDS{...} edges are traversed
+	bendPoint(p) == s_priv.											// assert that the bend point is the class in which the member became private
 
   privateAccessOk(IfSubtypeOfCurrent(), s_ref, s_priv, p) :-
     privateScopeOk(resolvePrivateScope(s_ref), s_ref, s_priv),		// access must occur in the class in which the reference is private
-    nonEmpty(subClass(thisClass(src(p)), s_priv)).        			// instance of var must be a subclass of the class in which the variable is private
+    nonEmpty(subClass(bendPoint(p), s_priv)).        				// instance of var must be a subclass of the class in which the variable is private
 
 rules // subclass check
 
@@ -34,13 +34,9 @@ rules // subclass check
   // no EXT-steps in path
   noExtInPath(_PathEmpty(s), s_prnt).
   
-  noExtInPath(_PathStep(_, l, _), _) :- {s_tmp1 s_tmp2 lblLEX}
-    // obtain reference to LEX as a term
-    new s_tmp1 s_tmp2,
-    s_tmp1 -LEX-> s_tmp2,
-    query () filter LEX in s_tmp1 |-> [(_PathStep(_, lblLEX, _), _)],
+  noExtInPath(_PathStep(_, l, _), _) :-
     // check the last step was actually a LEX step
-    try { l == lblLEX }.
+    try { l == lblLEX() }.
 
 rules
 
